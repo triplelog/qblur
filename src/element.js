@@ -1,7 +1,7 @@
 /**
  * <qblur-image>: a picture with a filter on it, as an HTML element.
  *
- *   <script type="module" src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur-element.js"></script>
+ *   <script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
  *   <qblur-image src="photo.jpg" filter="Sepia" alt="The harbour at dusk"></qblur-image>
  *   <qblur-image src="photo.jpg" filter="if gray > cutoff then 1 else 0" params='{"cutoff": 0.4}'></qblur-image>
  *

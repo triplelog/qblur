@@ -1,4 +1,4 @@
-/** `import 'qblur/element'` defines <qblur-image>; the class is exported for subclassing. */
+/** `import '@mathzetta/qblur/element'` defines <qblur-image>; the class is exported for subclassing. */
 export declare class QBlurImage extends HTMLElement {
     static readonly observedAttributes: string[];
     /** The drawing, a 2D canvas the picture's size (for toBlob). */

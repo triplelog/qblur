@@ -5,7 +5,7 @@ WebGL shaders, with the same pixels from plain JavaScript where there is no GPU.
 with one `<script>` from a CDN — no build step, no server, nothing uploaded: the pictures stay in the
 visitor's browser.
 
-> **Not on npm yet.** The CDN addresses below (`cdn.jsdelivr.net/npm/qblur@0.1/…`) are where every
+> **Not on npm yet.** The CDN addresses below (`cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/…`) are where every
 > release will be, and start working with the first one. Until then, `npm run build` in the repository
 > writes the same files to `dist/`: serve them yourself and change the address.
 
@@ -45,7 +45,7 @@ controls.
 ```html runnable
 <img id="photo" src="photo.jpg" alt="" hidden>
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo');
   img.decode().then(() => QBlur.applyFilter(img, 'Sepia', { canvas: document.getElementById('out') }));
@@ -60,7 +60,7 @@ scaled down to that first, keeping its shape — `maxSize` sets the limit, up to
 name takes it), the frame in `t`. Calls run one at a time, in the order they were made:
 
 ```js
-import { applyFilter, toBlob } from 'qblur/apply';        // its own entry; the classic scripts have it on window.QBlur
+import { applyFilter, toBlob } from '@mathzetta/qblur/apply';        // its own entry; the classic scripts have it on window.QBlur
 
 const canvas = await applyFilter(img, 'Threshold', { params: { cutoff: 0.3 } });
 const frame = await applyFilter(video, 'pixel(px + 8 sin(py / 10 + t / 5), py)', { t: 12 });
@@ -74,7 +74,7 @@ picture that redraws many times a second as a knob moves, a runner of your own (
 
 ```html runnable
 <qblur-image id="out" src="photo.jpg" filter="Vignette" params='{"strength": 2.5}' alt="A street of coloured houses"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur-element.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
 ```
 
 `<qblur-image>` draws its picture with the filter on it, and again whenever an attribute changes:
@@ -82,14 +82,14 @@ picture that redraws many times a second as a knob moves, a runner of your own (
 `t`, `animate` (present: `t` counts up, 30 a second, while the element is in view), `engine`, `alt` and `crossorigin` (as on `<img>`: a
 picture from another site must allow CORS). It fires `load` after each drawing and `error` (the Error in
 `event.detail`) when the picture or the filter fails; `element.canvas` is the drawing, for
-[saving](#saving-the-result). From npm: `import 'qblur/element'`.
+[saving](#saving-the-result). From npm: `import '@mathzetta/qblur/element'`.
 
 ### One script tag, a runner of your own
 
 ```html runnable
 <img id="photo" src="photo.jpg" alt="">
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo'), canvas = document.getElementById('out');
   img.decode().then(() => {
@@ -111,7 +111,7 @@ a WebGL context and the CPU when it doesn't; pass the same canvas to `draw` eith
 <canvas id="out"></canvas>
 <label>Vignette <input id="strength" type="range" min="0" max="4" step="0.01" value="1.6"></label>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
 
   const img = new Image();
   img.src = 'photo.jpg';
@@ -136,13 +136,13 @@ a WebGL context and the CPU when it doesn't; pass the same canvas to `draw` eith
 ### From npm
 
 ```bash
-npm install qblur mathzetta        # mathzetta is a peer dependency: qblur uses its maths parser and GLSL output
+npm install @mathzetta/qblur mathzetta        # mathzetta is a peer dependency: qblur uses its maths parser and GLSL output
 ```
 
 ```js
-import { compileFilter, createRunner } from 'qblur';      // the filters, the runners, the library
-import { applyFilter, toBlob } from 'qblur/apply';        // one call, and saving
-import 'qblur/element';                                   // defines <qblur-image>
+import { compileFilter, createRunner } from '@mathzetta/qblur';      // the filters, the runners, the library
+import { applyFilter, toBlob } from '@mathzetta/qblur/apply';        // one call, and saving
+import '@mathzetta/qblur/element';                                   // defines <qblur-image>
 ```
 
 A bundler (Vite, esbuild, webpack, rollup) handles the rest. TypeScript types come with the package (`src/index.d.ts`, `src/apply.d.ts`, `src/element.d.ts`). In Node the CPU runner works as it is (see
@@ -154,9 +154,9 @@ Every release has these in `dist/` (sizes compressed, as the CDN sends them):
 
 | File | Size | What |
 | --- | --- | --- |
-| `qblur.js` | 54 KB | ES module, everything but `qblur/apply`, MathZetta inside |
+| `qblur.js` | 54 KB | ES module, everything but `@mathzetta/qblur/apply`, MathZetta inside |
 | `qblur.global.min.js` | 58 KB | a classic script: `window.QBlur`, everything — `applyFilter` and saving too |
-| `qblur-apply.js` | 56 KB | ES module: `qblur/apply` (`applyFilter`, `toBlob`, `encodeGif`…), MathZetta inside |
+| `qblur-apply.js` | 56 KB | ES module: `@mathzetta/qblur/apply` (`applyFilter`, `toBlob`, `encodeGif`…), MathZetta inside |
 | `qblur.core.js` | 33 KB | compile and run on the GPU only: `compileFilter`, `createFilterRunner`, `readFilter`, `filterToLink`, `normalizeFilter` — no CPU runner, library, text or brushes |
 | `qblur.external.js` | 26 KB | `qblur.js` with MathZetta left out: the page provides it (an import map) |
 | `qblur.external.global.min.js` | 30 KB | `qblur.global.min.js` without MathZetta: reads `window.MathZetta`, so a MathZetta script goes first |
@@ -177,7 +177,7 @@ at one file:
 } }
 </script>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.external.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.external.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -194,7 +194,7 @@ is what filters use) and then `…/qblur@0.1/dist/qblur.external.global.min.js`.
 
 Pin a version (`@0.1` follows fixes, `@0.1.0` never changes) and, for a fixed version, add an `integrity`
 hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it
-yourself: `curl -s https://cdn.jsdelivr.net/npm/qblur@0.1.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
+yourself: `curl -s https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
 gives the part after `sha384-`.
 
 ## Filters
@@ -315,7 +315,7 @@ thread when it doesn't or when workers can't start. Both give the same pixels, a
 The CPU runner needs no browser:
 
 ```js node
-import { compileFilter, createCpuRunner, LIBRARY } from 'qblur';
+import { compileFilter, createCpuRunner, LIBRARY } from '@mathzetta/qblur';
 
 // a 64 × 64 picture as RGBA bytes — in practice, decoded from a file (sharp, pngjs, …)
 const width = 64, height = 64, data = new Uint8ClampedArray(width * height * 4);
@@ -345,7 +345,7 @@ so a page can build its controls from the filter:
 <canvas id="out"></canvas>
 <form id="knobs"></form>
 <script type="module">
-  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
 
   const def = {
     name: 'Duotone',
@@ -388,7 +388,7 @@ In a chain, `filterParams` gives each knob's own default; the values a chain set
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -408,7 +408,7 @@ A video is a picture that changes: give the runner each frame.
 <video id="clip" src="clip.mp4" muted loop playsinline autoplay hidden></video>
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
   const video = document.getElementById('clip'), canvas = document.getElementById('out');
   await new Promise((r) => { video.onloadeddata = r; if (video.readyState >= 2) r(); });
   canvas.width = video.videoWidth;
@@ -435,7 +435,7 @@ this pixel, `luma(mask)` its brightness, `alpha(mask)` its transparency — and 
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -471,7 +471,7 @@ frame, so they are crisp at any size.
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -514,7 +514,7 @@ An animated GIF needs a colour quantizer and an LZW encoder. The package has no 
 
 ```js node
 import * as gifenc from 'gifenc';
-import { applyFilter, encodeGif, toBlob } from 'qblur/apply';
+import { applyFilter, encodeGif, toBlob } from '@mathzetta/qblur/apply';
 
 const picture = { width: 64, height: 48, data: new Uint8ClampedArray(64 * 48 * 4).fill(200) };
 const frames = [];
@@ -557,8 +557,8 @@ The editor's [library](https://qblur.com/) shows them all on your own photo, wit
 
 ## Reference
 
-Everything the package exports — from `qblur/apply`, the first seven; from `qblur/element`, `QBlurImage`; from
-`qblur`, the rest:
+Everything the package exports — from `@mathzetta/qblur/apply`, the first seven; from `@mathzetta/qblur/element`, `QBlurImage`; from
+`@mathzetta/qblur`, the rest:
 
 | Export | What |
 | --- | --- |
@@ -569,7 +569,7 @@ Everything the package exports — from `qblur/apply`, the first seven; from `qb
 | `encodeGif(frames, { gifenc, delay, repeat, colours })` | an animated GIF, with gifenc passed in |
 | `encodePng({ width, height, data, palette, colours, quantize })` | the PNG writer `toBlob` uses (indexed, RGB or RGBA) |
 | `pictureData(canvasOrPicture)` | its RGBA bytes |
-| `QBlurImage` (from `qblur/element`) | the `<qblur-image>` element's class; importing the entry defines the element |
+| `QBlurImage` (from `@mathzetta/qblur/element`) | the `<qblur-image>` element's class; importing the entry defines the element |
 | `compileFilter(def, { version })` | a filter (expression, document or chain) → `{ passes, images, graphics, credits, … }`; throws on a malformed filter or maths that doesn't parse |
 | `createRunner(compiled, { gl, prefer, precision, workers })` | `{ runner, engine, reason }`: the GPU when `gl` is a WebGL context, else the CPU |
 | `createFilterRunner(gl, compiled, { precision })` | the WebGL runner |

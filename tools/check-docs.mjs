@@ -3,7 +3,7 @@
  * The examples in docs/library.md, run: every ```html runnable block as a page in headless Chrome
  * (the CDN addresses pointed at this repository's dist/ and MathZetta's build/, photo.jpg and
  * clip.mp4 at the sample photos), which must draw a picture on #out without an error; every
- * ```js node block in Node, `from 'qblur'` and `from 'qblur/apply'` pointed at src/, which must exit cleanly.
+ * ```js node block in Node, `from '@mathzetta/qblur'` and `from '@mathzetta/qblur/apply'` pointed at src/, which must exit cleanly.
  *
  *   npm run build && node tools/check-docs.mjs
  */
@@ -20,7 +20,7 @@ const heading = (code) => { const at = md.indexOf(code); return [...md.slice(0, 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const local = (code) => code
-    .replaceAll('https://cdn.jsdelivr.net/npm/qblur@0.1/dist/', '/dist/')
+    .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/', '/dist/')
     .replaceAll('https://cdn.jsdelivr.net/npm/mathzetta@1/build/', '/node_modules/mathzetta/build/')
     .replaceAll("'photo.jpg'", "'/demo/photos/charleston.jpg'").replaceAll('"photo.jpg"', '"/demo/photos/charleston.jpg"')
     .replaceAll('"clip.mp4"', '"/demo/photos/waves.mp4"');
@@ -49,8 +49,8 @@ for (const [i, { kind, code }] of blocks.entries()) {
     let ok, note;
     if (kind === 'js node') {
         const file = `${OUT}${i}.mjs`;
-        writeFileSync(file, code.replaceAll("from 'qblur'", `from '${pathToFileURL(`${ROOT}src/index.js`).href}'`)
-            .replaceAll("from 'qblur/apply'", `from '${pathToFileURL(`${ROOT}src/apply.js`).href}'`));
+        writeFileSync(file, code.replaceAll("from '@mathzetta/qblur'", `from '${pathToFileURL(`${ROOT}src/index.js`).href}'`)
+            .replaceAll("from '@mathzetta/qblur/apply'", `from '${pathToFileURL(`${ROOT}src/apply.js`).href}'`));
         const run = spawnSync(process.execPath, [file], { encoding: 'utf8' });
         ok = run.status === 0;
         note = (ok ? run.stdout : run.stderr).trim().split('\n').pop();

@@ -1,4 +1,4 @@
-/** `import { applyFilter, toBlob } from 'qblur/apply'` — one call to filter a picture, and the ways to save the result. */
+/** `import { applyFilter, toBlob } from '@mathzetta/qblur/apply'` — one call to filter a picture, and the ways to save the result. */
 import type { CompiledFilter, FilterInput, Picture, Picture8, PictureSource, Colour, Engine } from './index.js';
 
 // ---- one call ------------------------------------------------------------------------------

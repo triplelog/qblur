@@ -3,12 +3,12 @@
  * `npm run build` — the library for a CDN, and the editor as a folder any static host can serve:
  *
  *   dist/qblur.js             the package as one ES module, minified, MathZetta inside (what a page imports from jsDelivr)
- *   dist/qblur.global.min.js  a classic <script>: window.QBlur (everything, qblur/apply too)
+ *   dist/qblur.global.min.js  a classic <script>: window.QBlur (everything, @mathzetta/qblur/apply too)
  *   dist/qblur.core.js        compile a filter and run it on the GPU, nothing else (no CPU runner, strokes,
  *                             graphics or the built-in library): 60% of the size
  *   dist/qblur.external.js    everything, MathZetta left out (bare imports 'mathzetta', 'mathzetta/glsl',
  *                             'mathzetta/formulas' remain for an import map): half the size
- *   dist/qblur-apply.js       qblur/apply: applyFilter and saving (src/apply.js), MathZetta inside
+ *   dist/qblur-apply.js       @mathzetta/qblur/apply: applyFilter and saving (src/apply.js), MathZetta inside
  *   dist/qblur-element.js     <qblur-image>: the custom element (src/element.js), MathZetta inside
  *   dist/cpu-worker.js        the CPU runner's worker (drawAsync on big pictures), MathZetta inside; found beside the bundle
  *   dist/qblur.external.global.min.js
@@ -118,7 +118,7 @@ await rm(join(ROOT, 'dist'), { recursive: true, force: true });
 await mkdir(join(ROOT, 'dist'), { recursive: true });
 const minify = terser({ format: { comments: /MIT licence/ } });
 const CORE = join(ROOT, 'src/core-entry.tmp.js');   // the GPU-only entry, written for the build and removed after
-const GLOBAL = join(ROOT, 'src/global-entry.tmp.js');   // the classic scripts: everything on window.QBlur, qblur/apply too
+const GLOBAL = join(ROOT, 'src/global-entry.tmp.js');   // the classic scripts: everything on window.QBlur, @mathzetta/qblur/apply too
 await writeFile(GLOBAL, "export * from './index.js';\nexport * from './apply.js';\n");
 await writeFile(CORE, "export { compileFilter, readFilter, filterToLink, normalizeFilter, FILTER_FORMAT } from './format.js';\nexport { createFilterRunner } from './runtime.js';\n");
 const builds = [

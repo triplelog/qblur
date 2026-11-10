@@ -3016,7 +3016,7 @@ const LIBRARY = FILTERS;
 const GROUPS = ['Colour & tone', 'Blur & edges', 'Shape & motion', 'Text & shapes', 'Brushes', 'Other pictures', 'Chains'];
 
 /** Shareable image filters: the JSON format (format.js), the GPU and CPU runners, the library, graphics and strokes. Two more entries:
- *  qblur/apply (applyFilter and saving: apply.js) and qblur/element (<qblur-image>: element.js). */
+ *  @mathzetta/qblur/apply (applyFilter and saving: apply.js) and @mathzetta/qblur/element (<qblur-image>: element.js). */
 
 var filters = /*#__PURE__*/Object.freeze({
     __proto__: null,

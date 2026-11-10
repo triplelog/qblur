@@ -77,9 +77,9 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   the editor's intro and "On your own site" blurb and each app's lead (between `<!-- claude-ui:begin/end … -->` lines in
   demo/index.html and demo/<app>/index.html — keep the markers), each page's meta description, and privacy.md / terms.md whole.
 - `src/library.js` — `LIBRARY`, the built-in filters (tested by test/library.test.js). The editor opens on "Colour circle" (still, so no redraw loop).
-- The package's three entries, each with its .d.ts (test/types.test.js checks every export is declared): `qblur` (src/index.js),
-  `qblur/apply` (src/apply.js: `applyFilter` from src/apply-filter.js — pictures over `maxSize`, 4096 GPU / 2048 CPU, scaled down
-  first — and saving: save.js, png.js) and `qblur/element` (src/element.js, `<qblur-image>`). dist/: qblur.js (the main entry),
+- The package's three entries, each with its .d.ts (test/types.test.js checks every export is declared): `@mathzetta/qblur` (src/index.js),
+  `@mathzetta/qblur/apply` (src/apply.js: `applyFilter` from src/apply-filter.js — pictures over `maxSize`, 4096 GPU / 2048 CPU, scaled down
+  first — and saving: save.js, png.js) and `@mathzetta/qblur/element` (src/element.js, `<qblur-image>`). dist/: qblur.js (the main entry),
   qblur-apply.js, qblur-element.js; the classic scripts carry all of it on window.QBlur.
 - `src/graphics.js` — text/rect/ellipse graphics: validated in the format (`graphics`), drawn by the page (or `renderGraphics`) into frame-sized pictures. Each pass's graphic is bound under its own key (`pass.bind`: `title` → `title~2`), unlike pictures, which are shared by name.
 - `src/strokes.js` — brush strokes: a `strokes` graphic re-rasterized per frame by its own dab rasterizer (channels are data: alpha coverage, red age, green passes/4, blue progress), uploaded as ImageData (a canvas would premultiply the channels away). The page calls `updateStrokes()` in draw(), export and GIF frames.
@@ -88,7 +88,7 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
 - `tools/shot.mjs` — `node tools/shot.mjs "/site/index.html" "<js>" out.png` for a look at the page.
 - `docs/filters.md` — the guide to what an expression can use (`px py rgb gray`, neighbourhoods, geometry, several pictures).
 - `docs/library.md` — the library on other people's pages: the CDN (placeholder jsDelivr URLs until qblur is on npm — they are
-  written there and in README.md; grep `cdn.jsdelivr.net/npm/qblur`), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,
+  written there and in README.md; grep `cdn.jsdelivr.net/npm/@mathzetta/qblur`), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,
   every export. Blocks fenced ```` ```html runnable ```` / ```` ```js node ```` are run by `npm run check:docs`: keep them working.
   The build renders it as site/library.html (the editor's "On your own site" links it). `dist/cpu-worker.js` ships beside the bundles
   for drawAsync; from another origin cpu-runner.js starts it through a blob: module, and falls back to draw() if workers can't start.

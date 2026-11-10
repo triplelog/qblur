@@ -12,7 +12,7 @@
  * Paths are relative to the folder above the app, so the same code runs in demo/ (development: the
  * runtimes from node_modules) and in the built site (site/<app>/, the runtimes in site/ort/).
  */
-import * as qblur from 'qblur';
+import * as qblur from '@mathzetta/qblur';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 
 export const MZ = qblur;

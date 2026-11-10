@@ -8,7 +8,7 @@ package turns one into WebGL shaders (through MathZetta's GLSL output) and
 runs it on a picture.
 
 ```js
-import { applyFilter, toBlob } from 'qblur/apply';      // one call, and saving: its own entry
+import { applyFilter, toBlob } from '@mathzetta/qblur/apply';      // one call, and saving: its own entry
 
 const canvas = await applyFilter(img, 'Sepia');                                  // a built-in filter, by name
 const sharp = await applyFilter(img, 'Threshold', { params: { cutoff: 0.3 } });  // …with a knob set
@@ -19,13 +19,13 @@ const png = await toBlob(mine);                                                 
 
 ```html
 <qblur-image src="photo.jpg" filter="Vignette" params='{"strength": 2}' alt="…"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur-element.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
 ```
 
 For live knobs and video, a runner of your own:
 
 ```js
-import { compileFilter, createRunner, filterToLink } from 'qblur';
+import { compileFilter, createRunner, filterToLink } from '@mathzetta/qblur';
 
 const compiled = compileFilter({ name: 'Old film', params: { strength: 1 }, color: 'gray + strength * 0.1 * sin(py)' });
 const { runner } = createRunner(compiled, { gl: canvas.getContext('webgl') });
@@ -33,9 +33,9 @@ runner.setImage(img).draw({ t: 0, canvas });
 filterToLink(compiled);   // a URL anyone can open
 ```
 
-Needs `mathzetta` 1.x (a peer dependency: `npm install qblur mathzetta`). TypeScript types are included.
-Three entries: `qblur` (the filters, the runners, the library), `qblur/apply` (`applyFilter` and saving) and
-`qblur/element` (`<qblur-image>`).
+Needs `mathzetta` 1.x (a peer dependency: `npm install @mathzetta/qblur mathzetta`). TypeScript types are included.
+Three entries: `@mathzetta/qblur` (the filters, the runners, the library), `@mathzetta/qblur/apply` (`applyFilter` and saving) and
+`@mathzetta/qblur/element` (`<qblur-image>`).
 Saving: `toBlob` (PNG anywhere, JPEG/WebP in a browser) and `encodeGif` (bring
 [gifenc](https://www.npmjs.com/package/gifenc): the package has no dependencies of its own). See [CHANGELOG.md](CHANGELOG.md). [docs/library.md](docs/library.md) is how to use the
 library on your own pages — the CDN, the builds, the API, with examples that `npm run check:docs` runs.
@@ -72,7 +72,7 @@ Serve the folder from anywhere (GitHub Pages, S3, a CDN); share links are
 ## From a CDN
 
 > Not on npm yet: the addresses below are where releases will be (placeholders until the first one).
-> Search for `cdn.jsdelivr.net/npm/qblur` to find every place they are written: this README,
+> Search for `cdn.jsdelivr.net/npm/@mathzetta/qblur` to find every place they are written: this README,
 > docs/library.md (and the site's library.html built from it).
 
 Every npm release's `dist/` is on jsDelivr (and unpkg), MathZetta's GLSL output bundled in —
@@ -80,18 +80,18 @@ Every npm release's `dist/` is on jsDelivr (and unpkg), MathZetta's GLSL output 
 
 ```html
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
 </script>
 <!-- or a classic script: window.QBlur -->
-<script src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
 ```
 
 Every build comes **with MathZetta inside or without it** (`*.external.*`). Sizes as the CDN sends them (compressed):
 
 | | ES module | classic `<script>` (`window.QBlur`) |
 |---|---|---|
-| everything, MathZetta inside (the classic script: `qblur/apply` too) | `qblur.js` 54 KB | `qblur.global.min.js` 58 KB |
-| `qblur/apply`: applyFilter and saving, MathZetta inside | `qblur-apply.js` 56 KB | |
+| everything, MathZetta inside (the classic script: `@mathzetta/qblur/apply` too) | `qblur.js` 54 KB | `qblur.global.min.js` 58 KB |
+| `@mathzetta/qblur/apply`: applyFilter and saving, MathZetta inside | `qblur-apply.js` 56 KB | |
 | the `<qblur-image>` element (applyFilter and MathZetta inside) | `qblur-element.js` 56 KB | |
 | everything, without MathZetta | `qblur.external.js` 26 KB | `qblur.external.global.min.js` 30 KB |
 | compile + run on the GPU only (no CPU runner, strokes, graphics, library) | `qblur.core.js` 33 KB | |

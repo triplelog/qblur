@@ -1,5 +1,5 @@
 import * as core from 'mathzetta';   // the core (shared with qblur's own imports); qblur's checks read window.MathZetta
-import * as filters from 'qblur';
+import * as filters from '@mathzetta/qblur';
 import { HELP, explain } from './help.js';
 import { EXAMPLES, resolveExample } from './examples.js';
 import { decodeGif } from './gif.js';

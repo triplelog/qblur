@@ -603,7 +603,7 @@ there (some browsers, Node, servers). Where it is, the GPU is the one to use:
 a filter's shaders compile once and then serve every picture and frame.
 
 ```js
-import { compileFilter, createCpuRunner, createRunner } from 'qblur';
+import { compileFilter, createCpuRunner, createRunner } from '@mathzetta/qblur';
 
 const runner = createCpuRunner(compileFilter(def));      // same interface as createFilterRunner
 runner.setImage(imageData);                               // ImageData or { data, width, height }; an <img>/<canvas> in a browser
@@ -758,7 +758,7 @@ the names and authors of everything used as `credits`.
 and in Node, knobs, video, other pictures, text, sharing and every export, with examples that are run as tests.
 
 ```js
-import { compileFilter, createFilterRunner, filterToLink, readFilter } from 'qblur';
+import { compileFilter, createFilterRunner, filterToLink, readFilter } from '@mathzetta/qblur';
 
 const compiled = compileFilter(def);             // def: JSON, or a string expression
 compiled.passes;                                 // shader passes, in order

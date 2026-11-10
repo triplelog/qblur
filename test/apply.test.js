@@ -156,10 +156,10 @@ suite('the CPU runner\'s workers', () => {
 });
 
 suite('entries', () => {
-    test('applyFilter and saving are in qblur/apply, not the main entry', () => eq(['applyFilter', 'toCompiled', 'toBlob', 'encodeGif', 'pictureData', 'encodePng'].filter((n) => n in main), []));
+    test('applyFilter and saving are in @mathzetta/qblur/apply, not the main entry', () => eq(['applyFilter', 'toCompiled', 'toBlob', 'encodeGif', 'pictureData', 'encodePng'].filter((n) => n in main), []));
 });
 
-suite('qblur/element', () => {
+suite('@mathzetta/qblur/element', () => {
     test('loads in Node without defining anything', () => eq(typeof element.QBlurImage, 'function'));
     test('watches its attributes', () => eq(element.QBlurImage.observedAttributes.includes('filter'), true));
 });

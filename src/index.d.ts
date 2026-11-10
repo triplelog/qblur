@@ -1,5 +1,5 @@
 /**
- * qblur — image filters written as maths. Types for `import … from 'qblur'`
+ * qblur — image filters written as maths. Types for `import … from '@mathzetta/qblur'`
  * (and dist/qblur.js, dist/qblur.external.js, window.QBlur in the classic builds).
  * The format itself is described in docs/filters.md; these follow src/.
  */
