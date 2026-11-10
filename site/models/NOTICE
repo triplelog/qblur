@@ -1,0 +1,6 @@
+The object models, all Apache License 2.0 (LICENSE in this folder):
+
+mobilesam-encoder.onnx, mobilesam-decoder.onnx — MobileSAM (https://github.com/ChaoningZhang/MobileSAM)
+  image encoder and Segment Anything's mask decoder (Meta, https://github.com/facebookresearch/segment-anything),
+  from the ONNX exports at https://huggingface.co/Acly/MobileSAM (MIT).
+  Modified: quantized to int8 by tools/export-model.py (the encoder's MatMuls only).

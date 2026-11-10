@@ -1,0 +1,15 @@
+The object models, all Apache License 2.0 (LICENSE in this folder):
+
+rfdetr-seg-small.onnx, rfdetr-seg-nano.onnx — RF-DETR-Seg Small and Nano by Roboflow
+  (https://github.com/roboflow/rf-detr), Copyright (c) 2025 Roboflow.
+  Modified: exported to ONNX (Small at 576 x 576, Nano at its own 312 x 312) and quantized to int8
+  by tools/export-model.py.
+
+mobilesam-encoder.onnx, mobilesam-decoder.onnx — MobileSAM (https://github.com/ChaoningZhang/MobileSAM)
+  image encoder and Segment Anything's mask decoder (Meta, https://github.com/facebookresearch/segment-anything),
+  from the ONNX exports at https://huggingface.co/Acly/MobileSAM (MIT).
+  Modified: quantized to int8 by tools/export-model.py (the encoder's MatMuls only).
+
+magic_touch.tflite — MediaPipe's MagicTouch interactive segmenter, Google
+  (https://ai.google.dev/edge/mediapipe/solutions/vision/interactive_segmenter), unmodified.
+  Run by @mediapipe/tasks-vision (Apache-2.0), copied into the site as mediapipe/.

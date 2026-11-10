@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+demo/photos/originals/
+dist/
+.docs-check/
+# the object models kept only for comparing in development (demo/models/README.md says how to get them);
+# MobileSAM, which the site ships, stays in git
+demo/models/rfdetr-*.onnx
+demo/models/magic_touch*

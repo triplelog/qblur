@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fancy text — qblur</title>
+<meta name="description" content="Fancy text as a picture: gold, chrome, fire, a photo inside the letters — or any formula you write for the letters and their border. Download a transparent PNG or a GIF.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://qblur.com/text/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="qblur">
+<meta property="og:title" content="Fancy text">
+<meta property="og:description" content="Fancy text as a picture: gold, chrome, fire, a photo inside the letters — or any formula you write for the letters and their border. Download a transparent PNG or a GIF.">
+<meta property="og:url" content="https://qblur.com/text/">
+<meta property="og:image" content="https://qblur.com/share/text.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script type="importmap">
+{
+  "imports": {
+    "mathzetta": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/core.js",
+    "mathzetta/latex": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/latex.js",
+    "mathzetta/mathml": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/mathml.js",
+    "mathzetta/text": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/text.js",
+    "mathzetta/speech": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/speech.js",
+    "mathzetta/javascript": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/javascript.js",
+    "mathzetta/python": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/python.js",
+    "mathzetta/sql": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/sql.js",
+    "mathzetta/excel": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/excel.js",
+    "mathzetta/glsl": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/glsl.js",
+    "mathzetta/evaluate": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/evaluate.js",
+    "mathzetta/calculate": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/calculate.js",
+    "mathzetta/formulas": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/formulas.js",
+    "mathzetta/all": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/mathzetta.esm.min.js",
+    "@mathzetta/inlinemath": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/inlinemath.external.js",
+    "@mathzetta/inlinemath/lite": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/lite.external.js",
+    "@mathzetta/inlinemath/markdown": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/markdown.external.js",
+    "@mathzetta/inlinemath/cas": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/cas.external.js",
+    "onnxruntime-web": "../ort/ort.wasm.min.mjs"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="../shioh-style.css">
+<link rel="stylesheet" href="../site-theme.css">
+<link rel="stylesheet" href="../apps.css">
+<style>
+  .app .stage.wide { width: 100%; }
+  .app textarea { width: 100%; box-sizing: border-box; font: 1.1rem var(--mz-font); padding: .4rem .6rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); }
+  .app .formula { width: 100%; box-sizing: border-box; font: .9rem ui-monospace, monospace; padding: .35rem .5rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); margin-top: .4rem; }
+  .app .formula.bad { border-color: #b00020; }
+  .app .tiles.small { grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr)); }
+  .app .tiles.small .tile { font-size: .78rem; }
+  .app .parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 1.4rem; }
+  .app .frame.text { min-height: 8rem; display: flex; align-items: center; justify-content: center; }
+  .app .frame.text canvas { width: auto; max-width: 100%; max-height: 22rem; }
+  .app .formula-help { font-size: .82rem; color: var(--mz-muted); }
+  .app .formula-help code { font: .8rem ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="ss-cell qb-head">
+  <h1>Fancy text</h1>
+  <p class="lead">
+<!-- claude-ui:begin lead -->
+Type something, pick a look for the letters and for their border — gold, chrome, fire, a photo inside the letters — and download it as a transparent PNG. Every look is a formula you can change.
+<!-- claude-ui:end lead -->
+  </p>
+  </section>
+
+  <div class="stage wide">
+    <div id="frame" class="frame text"></div>
+    <div class="row" style="margin-top:.6rem">
+      <button id="download" class="primary" type="button">Download PNG</button>
+      <button id="gif" type="button" hidden>Save a GIF (it moves)</button>
+      <span id="status" class="status" role="status"></span>
+    </div>
+  </div>
+
+  <div class="side">
+    <section aria-labelledby="h-words">
+      <h2 id="h-words">Words</h2>
+      <textarea id="words" rows="2" aria-labelledby="h-words" spellcheck="false">FANCY</textarea>
+      <div class="row" style="margin-top:.4rem">
+        <label class="hint" for="font">font</label><select id="font"></select>
+        <div class="slider" style="flex:1; min-width: 14rem; margin: 0"><label for="size">size</label><input type="range" id="size" min="40" max="320" step="2" value="180"></div>
+      </div>
+    </section>
+
+    <div class="parts">
+      <section aria-labelledby="h-fill">
+        <h2 id="h-fill">Letters</h2>
+        <div id="fill-presets" class="tiles small" role="group" aria-labelledby="h-fill"></div>
+        <div class="row" style="margin-top:.5rem">
+          <input type="color" id="c1" value="#ffd23f" aria-label="letters: first colour (c1)">
+          <input type="color" id="c2" value="#ff3c6e" aria-label="letters: second colour (c2)">
+        </div>
+        <label class="hint" for="fill">formula</label>
+        <input type="text" id="fill" class="formula" spellcheck="false">
+        <div id="fill-error" class="status bad" role="status"></div>
+      </section>
+
+      <section aria-labelledby="h-border">
+        <h2 id="h-border">Border</h2>
+        <div class="slider" style="margin-top:0"><label for="border-width">width</label><input type="range" id="border-width" min="0" max="40" step="1" value="10"></div>
+        <div id="border-presets" class="tiles small" role="group" aria-labelledby="h-border"></div>
+        <div class="row" style="margin-top:.5rem">
+          <input type="color" id="k1" value="#1b1340" aria-label="border: first colour (c1)">
+          <input type="color" id="k2" value="#5a2ca0" aria-label="border: second colour (c2)">
+        </div>
+        <label class="hint" for="border">formula</label>
+        <input type="text" id="border" class="formula" spellcheck="false">
+        <div id="border-error" class="status bad" role="status"></div>
+      </section>
+    </div>
+
+    <section aria-labelledby="h-effects">
+      <h2 id="h-effects">Shadow and background</h2>
+      <div class="row">
+        <div class="seg" role="radiogroup" aria-label="shadow">
+          <label><input type="radio" name="glow" value="none"> None</label>
+          <label><input type="radio" name="glow" value="shadow" checked> Shadow</label>
+          <label><input type="radio" name="glow" value="glow"> Glow</label>
+        </div>
+        <input type="color" id="glow-colour" value="#000000" aria-label="shadow or glow colour">
+        <div class="seg" role="radiogroup" aria-label="background">
+          <label><input type="radio" name="bg" value="none" checked> Transparent</label>
+          <label><input type="radio" name="bg" value="colour"> Colour</label>
+        </div>
+        <input type="color" id="bg-colour" value="#ffffff" aria-label="background colour">
+      </div>
+    </section>
+
+    <section aria-labelledby="h-pattern">
+      <h2 id="h-pattern">The picture (<code>pattern</code>)</h2>
+      <div class="row">
+        <label class="button">Choose a picture…<input type="file" id="file" accept="image/*" hidden></label>
+        <label class="hint" for="sample">or</label>
+        <select id="sample"></select>
+      </div>
+      <p class="hint" style="margin:.4rem 0 0">Used by the "Picture" look, or anywhere a formula says <code>pattern</code>.</p>
+    </section>
+
+    <details>
+      <summary class="hint">Writing your own formula</summary>
+      <div class="formula-help">
+        <p>A formula gives a colour for each pixel of the letters (or the border). It can use
+        <code>x y</code> — where the pixel is, 0 to 1 across and down the text; <code>px py</code> — the same in pixels;
+        <code>t</code> — time, so anything with <code>t</code> in it moves; <code>c1 c2</code> — the two colours above it;
+        <code>pattern</code> — the picture, or <code>pattern(px * 2, py * 2)</code> to read it elsewhere.</p>
+        <p>Colours are written <code>(r, g, b)</code> from 0 to 1. Some ideas:
+        <code>mix(c1, c2, y)</code> · <code>fromhsv((fract(x + t / 200), 0.8, 1))</code> ·
+        <code>if fract(px / 20) &lt; 0.5 then c1 else c2</code> · <code>pattern * (1.2, 1, 0.8)</code> ·
+        <code>c1 * (0.6 + 0.4 sin(py / 4))</code>. The full list is in <a href="../guide.html">the guide</a>; <a href="../">the editor</a> does whole pictures.</p>
+      </div>
+    </details>
+
+    <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Colour splash</a> · <a href="../move/">Make it move</a> · <a href="../">the full editor</a>.</p>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+<script type="module">
+import { mountShell } from '../shell.js';
+mountShell({ page: 'text', base: '../' });
+</script>
+<script src="../shioh.js" defer></script>
+</body>
+</html>

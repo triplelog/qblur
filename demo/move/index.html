@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Make it move — qblur</title>
+<meta name="description" content="Turn a photo into a moving picture — a wave, a ripple, a slow zoom, a glitch — and save it as a GIF or a video. Free, in your browser — nothing is uploaded.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="importmap">
+{ "imports": {
+    "mathzetta": "/node_modules/mathzetta/src/index.js",
+    "mathzetta/glsl": "/node_modules/mathzetta/src/glsl.js",
+    "mathzetta/formulas": "/node_modules/mathzetta/src/formulas.js",
+    "qblur": "/src/index.js",
+    "gifenc": "/node_modules/gifenc/dist/gifenc.esm.js"
+} }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="../shioh-style.css">
+<link rel="stylesheet" href="../site-theme.css">
+<link rel="stylesheet" href="../apps.css">
+</head>
+<body>
+<main class="app">
+  <section class="ss-cell qb-head">
+  <h1>Make it move</h1>
+  <p class="lead">
+<!-- claude-ui:begin lead -->
+Pick a photo and a motion, set how fast and how much, and save a GIF or a short video. It all happens in your browser — your photo isn't uploaded.
+<!-- claude-ui:end lead -->
+  </p>
+  </section>
+
+  <div class="layout">
+    <div class="stage" style="width:min(100%, 560px)">
+      <div id="frame" class="frame"></div>
+      <div class="row" style="margin-top:.5rem"><button id="pause" type="button" aria-pressed="false">Pause</button></div>
+      <div id="credit" class="credit"></div>
+    </div>
+
+    <div class="side">
+      <section aria-labelledby="h-photo">
+        <h2 id="h-photo">Photo</h2>
+        <div class="row">
+          <label class="button primary">Choose a photo…<input type="file" id="file" accept="image/*" hidden></label>
+          <label class="hint" for="sample">or try</label>
+          <select id="sample"></select>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-motion">
+        <h2 id="h-motion">Motion</h2>
+        <div id="motions" class="tiles" role="group" aria-labelledby="h-motion"></div>
+      </section>
+
+      <section aria-labelledby="h-adjust">
+        <h2 id="h-adjust">Adjust</h2>
+        <div class="slider"><label for="speed">Speed</label><input type="range" id="speed" min="0.2" max="3" step="0.05" value="1"></div>
+        <div class="slider" id="amount-row"><label for="amount">How much</label><input type="range" id="amount" min="0" max="1" step="0.01" value="0.5"></div>
+        <details id="formulas" style="margin-top:.6rem">
+          <summary class="hint">Formulas: different speeds and amounts across the picture</summary>
+          <label class="hint" for="speed-formula">speed</label>
+          <input type="text" id="speed-formula" class="formula" value="speed" spellcheck="false" autocomplete="off">
+          <div id="amount-formula-row"><label class="hint" for="amount-formula">how much</label>
+          <input type="text" id="amount-formula" class="formula" value="amount" spellcheck="false" autocomplete="off"></div>
+          <p class="formula-help">Maths worked out for every pixel. <code>speed</code> and <code>amount</code> are the sliders;
+            use <code>x y</code> (0–1 across and down), <code>px py</code>, <code>r g b</code>, <code>gray</code>, <code>t</code>…
+            Try <code>speed (0.3 + y)</code> (faster lower down), <code>amount gray</code> (bright parts move most) or
+            <code>amount smoothstep(0.3, 0.7, x)</code> (only the right side). <button type="button" id="formulas-reset">reset</button></p>
+        </details>
+      </section>
+
+      <section aria-labelledby="h-save">
+        <h2 id="h-save">Save</h2>
+        <div class="row">
+          <button id="gif" class="primary" type="button">Save a GIF</button>
+          <button id="video" type="button">Save a video</button>
+          <label class="hint" for="length">length</label>
+          <select id="length"><option value="2">2 s</option><option value="3" selected>3 s</option><option value="5">5 s</option></select>
+        </div>
+        <div id="status" class="status" role="status"></div>
+      </section>
+
+      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Colour splash</a> · <a href="../text/">Fancy text</a> · <a href="../">the full editor</a>.</p>
+    </div>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+<script type="module">
+import { mountShell } from '../shell.js';
+mountShell({ page: 'move', base: '../' });
+</script>
+<script src="../shioh.js" defer></script>
+</body>
+</html>

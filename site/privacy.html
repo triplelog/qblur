@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>qblur · privacy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How qblur handles your data: your pictures stay in your browser — no accounts, no uploads.">
+<link rel="canonical" href="https://qblur.com/privacy.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="qblur">
+<meta property="og:title" content="Privacy">
+<meta property="og:description" content="How qblur handles your data: your pictures stay in your browser — no accounts, no uploads.">
+<meta property="og:url" content="https://qblur.com/privacy.html">
+<meta property="og:image" content="https://qblur.com/share/index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="shioh-style.css">
+<link rel="stylesheet" href="site-theme.css">
+<style>
+  h2, h3 { scroll-margin-top: 1rem; }
+  main p a { color: var(--mz-accent); }
+  blockquote { margin: 1rem 0; padding: .6rem 1rem; border-left: 4px solid var(--mz-accent); background: var(--mz-soft); border-radius: 0 var(--ss-radius-sm) var(--ss-radius-sm) 0; }
+  blockquote p { margin: 0; }
+  p code, li code, td code { overflow-wrap: anywhere; }      /* a long address or name wraps on a phone */
+</style>
+</head>
+<body class="ss">
+<main>
+<article class="ss-cell qb-doc">
+<p><a href="index.html">← the editor</a></p>
+<h1 id="privacy">Privacy</h1>
+<p>Last updated: November 3, 2026</p>
+<p>Triplelog, LLC ("we", "us") runs qblur at qblur.com. qblur is built so that we learn as little about you as possible: there are no accounts, and your pictures never leave your device. Questions: rwilcox@mathzetta.com.</p>
+<h2 id="your-pictures-stay-on-your-device">Your pictures stay on your device</h2>
+<p>Every photo, video or GIF you open in the editor or the small apps (profile picture, colour splash, make it move, fancy text) is read and filtered <strong>in your browser</strong>. It is not uploaded to us or to anyone else. The same goes for the selection tools: "find objects" runs its neural network (MobileSAM) in your browser, from a file our site serves; what it sees is never sent anywhere. What you download is made on your device too.</p>
+<h2 id="what-is-stored-on-your-device">What is stored on your device</h2>
+<p>The site keeps a few things in your browser's local storage, so they are there next time. They stay on your device; we never receive them. Clearing the site's data in your browser removes them.</p>
+<ul><li>filters you save in the editor ("Your saved filters");</li><li>your choices: which panels are open, and which object model to use.</li></ul>
+<p>There are <strong>no cookies</strong> and <strong>no analytics or advertising</strong> on qblur.</p>
+<h2 id="share-links">Share links</h2>
+<p>A link you copy carries the filter itself after the <code>#</code> in the address. Browsers don't send that part to the server, so when someone opens your link, the filter goes from the link to their browser, not through us. A link carries the filter, never the picture.</p>
+<h2 id="who-else-is-involved">Who else is involved</h2>
+<div class="scroll" tabindex="0"><table>
+<tr><th>Service</th><th>Why</th><th>What they receive</th></tr>
+<tr><td>Cloudflare (Cloudflare Pages)</td><td>serves the site's files</td><td>the standard information any web request carries — your IP address, browser type, the address requested, the time — kept in their logs under their own policy</td></tr>
+<tr><td>Google Fonts (<code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code>)</td><td>the site's typefaces, and the fonts you pick for text</td><td>the same request information, when your browser fetches a font</td></tr>
+<tr><td>A font address you type in</td><td>text in that font</td><td>the same request information, from that address's owner</td></tr>
+</table></div>
+<p>The sample photos' credits link to Unsplash and Pexels; those sites see you only if you follow a link. We don't sell or share information about you, and we hold none to sell.</p>
+<h2 id="children">Children</h2>
+<p>qblur collects no personal information from anyone, children included. If you believe otherwise, contact us and we'll look into it.</p>
+<h2 id="your-rights">Your rights</h2>
+<p>Depending on where you live (for example under the GDPR in the EU and UK, or the CCPA in California), you may have rights to access, correct or delete data about you. Since we hold none beyond what our hosting provider logs, the most useful step is usually to clear the site's data in your browser. For anything else, contact rwilcox@mathzetta.com; we'll answer within 30 days. You can also complain to your local data protection authority.</p>
+<h2 id="changes">Changes</h2>
+<p>We'll update this page when the site's practices change, and the date above.</p>
+<h2 id="contact">Contact</h2>
+<p>Triplelog, LLC · rwilcox@mathzetta.com</p>
+</article>
+</main>
+<script type="module">
+import { mountShell } from './shell.js';
+mountShell({ page: 'privacy', base: './' });
+</script>
+<script src="shioh.js" defer></script>
+</body>
+</html>

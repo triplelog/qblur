@@ -1,0 +1,114 @@
+{
+  "name": "qblur",
+  "version": "0.1.0",
+  "description": "Shareable image filters written as maths: a JSON format with params, pictures and chains, compiled to WebGL shaders by MathZetta.",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./apply": {
+      "types": "./src/apply.d.ts",
+      "default": "./src/apply.js"
+    },
+    "./element": {
+      "types": "./src/element.d.ts",
+      "default": "./src/element.js"
+    },
+    "./dist/qblur.js": {
+      "types": "./src/index.d.ts",
+      "default": "./dist/qblur.js"
+    },
+    "./dist/qblur.external.js": {
+      "types": "./src/index.d.ts",
+      "default": "./dist/qblur.external.js"
+    },
+    "./dist/qblur-apply.js": {
+      "types": "./src/apply.d.ts",
+      "default": "./dist/qblur-apply.js"
+    },
+    "./dist/qblur-element.js": {
+      "types": "./src/element.d.ts",
+      "default": "./dist/qblur-element.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "./src/cpu-worker.js",
+    "./src/element.js",
+    "./dist/*"
+  ],
+  "files": [
+    "src/",
+    "!src/*.tmp.js",
+    "dist/",
+    "docs/filters.md",
+    "docs/library.md",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/run.js",
+    "serve": "node tools/serve.js",
+    "build": "node tools/build.mjs",
+    "check:site": "node tools/build.mjs && node tools/check.mjs --site",
+    "check:ai": "node tools/check.mjs --ai",
+    "test:ai": "MZ_AI=1 node test/run.js",
+    "check": "node tools/check.mjs",
+    "check:cpu": "node tools/check.mjs --cpu",
+    "check:nowebgl": "node tools/check.mjs --no-webgl",
+    "prepublishOnly": "npm test && npm run build",
+    "check:apps": "node tools/check-apps.mjs",
+    "check:docs": "node tools/check-docs.mjs"
+  },
+  "peerDependencies": {
+    "mathzetta": "^1.0.0"
+  },
+  "devDependencies": {
+    "@mathzetta/inlinemath": "file:../mathzetta/packages/inlinemath",
+    "@mediapipe/tasks-vision": "^1.1.1",
+    "@rollup/plugin-terser": "^1.0.2",
+    "gifenc": "^1.0.3",
+    "mathzetta": "file:../mathzetta/packages/mathzetta",
+    "mathzetta-sites": "file:../mathzetta-sites",
+    "onnxruntime-node": "^1.30.0",
+    "onnxruntime-web": "^1.30.0",
+    "rollup": "^4.64.12"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Robert Wilcox",
+    "email": "rwilcox@mathzetta.com",
+    "url": "https://qblur.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://qblur.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/triplelog/qblur.git"
+  },
+  "bugs": {
+    "url": "https://github.com/triplelog/qblur/issues",
+    "email": "rwilcox@mathzetta.com"
+  },
+  "unpkg": "dist/qblur.global.min.js",
+  "jsdelivr": "dist/qblur.global.min.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "image",
+    "filter",
+    "webgl",
+    "shader",
+    "glsl",
+    "mathzetta"
+  ]
+}

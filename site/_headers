@@ -1,0 +1,52 @@
+/models/mobilesam-decoder.onnx
+  Cache-Control: public, max-age=2592000
+/models/mobilesam-encoder.onnx
+  Cache-Control: public, max-age=2592000
+/ort/ort-wasm-simd-threaded.mjs
+  Cache-Control: public, max-age=86400
+/ort/ort-wasm-simd-threaded.wasm
+  Cache-Control: public, max-age=86400
+/ort/ort.wasm.min.mjs
+  Cache-Control: public, max-age=86400
+/photos/charleston.jpg
+  Cache-Control: public, max-age=604800
+/photos/cityabove.jpg
+  Cache-Control: public, max-age=604800
+/photos/citytraffic.mp4
+  Cache-Control: public, max-age=604800
+/photos/contrastarchitecture.jpg
+  Cache-Control: public, max-age=604800
+/photos/greenscreen.jpg
+  Cache-Control: public, max-age=604800
+/photos/minimaldesk.jpg
+  Cache-Control: public, max-age=604800
+/photos/mountains.jpg
+  Cache-Control: public, max-age=604800
+/photos/personwalking.mp4
+  Cache-Control: public, max-age=604800
+/photos/portrait.jpg
+  Cache-Control: public, max-age=604800
+/photos/portrait.person.png
+  Cache-Control: public, max-age=604800
+/photos/redumbrella.jpg
+  Cache-Control: public, max-age=604800
+/photos/waves.mp4
+  Cache-Control: public, max-age=604800
+/share/avatar.jpg
+  Cache-Control: public, max-age=604800
+/share/docs.jpg
+  Cache-Control: public, max-age=604800
+/share/index.jpg
+  Cache-Control: public, max-age=604800
+/share/move.jpg
+  Cache-Control: public, max-age=604800
+/share/splash.jpg
+  Cache-Control: public, max-age=604800
+/share/text.jpg
+  Cache-Control: public, max-age=604800
+/favicon.svg
+  Cache-Control: public, max-age=604800
+/favicon.ico
+  Cache-Control: public, max-age=604800
+/apple-touch-icon.png
+  Cache-Control: public, max-age=604800

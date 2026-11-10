@@ -1,0 +1,71 @@
+/* ===================================================================================================
+ * The family's Shioh frame (this site's own rules, loaded after shioh-style.css, which is the Shioh
+ * base copied unchanged from the shioh-style skill: update the look by replacing that file only).
+ *
+ * chrome.js mounts the frame for a site whose registry entry has look: 'shioh' (tabdn.com), in place
+ * of the shared header and footer: a sticky sidebar (the wordmark and the site's pages in an
+ * .ss-navcell, then a cell with "Made with MathZetta", the other sites, privacy and terms) beside the
+ * page's own <main>, whose content becomes one cell, or several when the page marks its own
+ * (.ss-cell). On phones the sidebar is a slim bar with a Menu button (shioh.js) and the "Made with"
+ * cell is repeated after the page (.ss-phone-only). The theme is the Shioh default: the pastels,
+ * navy, a black background, the wordmark.
+ * ================================================================================================= */
+
+/* raspberry is the darkest cell: small muted text there is drawn in the ink */
+.ss-p5 { --ss-muted: var(--ss-ink); }
+
+/* the frame */
+.ss-shell, .ss-shell .ss-sidebar, .ss-shell .ss-sidebar *, .ss-shell > .ss-frame-foot { box-sizing: border-box; }
+body.ss .ss-main { max-width: none; margin: 0; padding: 0; }
+body.ss .ss-main:focus { outline: none; }
+.ss-frame-foot p { margin: 4px 0; font-size: 14px; }
+.ss-family { display: flex; flex-wrap: wrap; gap: 6px; }
+.ss-family a, .ss-nav a { text-decoration: none !important; }
+.ss-family a { background: var(--ss-panel); border: var(--ss-chip-border); border-radius: var(--ss-chip-radius); padding: 2px 9px; font-size: 13.5px; color: var(--ss-ink); }
+.ss-family a:hover { background: var(--ss-panel-strong); }
+/* the wordmark keeps the accent; the Menu button keeps the base's look over site.css's buttons */
+body.ss .ss-logo { color: var(--ss-accent); }
+body.ss .ss-menu-btn { display: none; background: #fff; color: var(--ss-ink); border: 1px solid #222; border-radius: var(--ss-radius-sm); min-height: 36px; }
+@media (max-width: 860px) { .ss-js body.ss .ss-menu-btn { display: block; } }
+
+/* a page's own heading, at the top of its cell */
+body.ss .ss-main .ss-cell > h1:first-child,
+body.ss .ss-main .ss-cell > header:first-child h1 { font-family: var(--ss-font-head); font-weight: 700; font-size: 1.6rem; line-height: 1.25; margin: 0 0 0.8rem; padding-bottom: 0.35rem; border-bottom: 2px solid var(--ss-rule); }
+body.ss .ss-main .ss-cell h2 { font-family: var(--ss-font-head); }
+body.ss .ss-main .ss-cell > :is(h2, h3):first-child { margin-top: 0; }
+
+/* the family's pieces inside a cell: translucent white on every pastel */
+.ss-cell .mz-card { background: var(--ss-panel); border-color: var(--ss-rule); color: var(--ss-ink); }
+.ss-cell .mz-card:hover { background: var(--ss-panel-strong); }
+.ss-cell .mz-card .mz-what, .ss-cell .lead, .ss-cell .muted { color: var(--ss-muted); }
+/* links in a cell are the ink, underlined (the base says so with :where(), which site.css's body.mz a would beat) */
+body.ss .ss-cell a:not(.ss-btn):not(.ss-logo) { color: inherit; text-underline-offset: 3px; }
+/* text fields: the base's white boxes (again over site.css's body.mz controls) */
+body.ss .ss-cell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']) {
+	background: #fff; color: var(--ss-ink); border: 1px solid rgb(34 34 34 / 0.35); border-radius: var(--ss-radius-sm); padding: 0.5rem; font: inherit;
+}
+/* inside a cell, the family's tokens (site.css) tuned to the pastels: muted text, links, buttons, states,
+   and the base's slight rounding for site.css's buttons, selects, cards and code */
+.ss-cell {
+	--mz-muted: var(--ss-muted); --muted: var(--ss-muted);
+	--mz-accent: var(--ss-accent); --accent: var(--ss-accent); --mz-accent-soft: var(--ss-panel-strong); --accent-soft: var(--ss-panel-strong);
+	--mz-err: #4a0702; --err: #4a0702; --mz-ok: #022010; --ok: #022010; --mz-warn: #332100; --warn: #332100;   /* 4.5:1 on the darkest pastel too */
+	--mz-radius: var(--ss-radius-sm); --mz-radius-sm: var(--ss-radius-sm); --radius: var(--ss-radius-sm);
+}
+/* the frame keeps its spacing whatever a page says about bare section, aside or main */
+.ss-shell .ss-sidebar > *, .ss-shell .ss-main > .ss-cell, .ss-shell > .ss-frame-foot { margin: 0; }
+/* a plain table in a cell (the legal pages' "who else is involved") */
+.ss-cell table.plain { border-collapse: collapse; width: 100%; margin: 0.5rem 0 1rem; background: var(--ss-panel); border-radius: var(--ss-radius-sm); overflow: hidden; }
+.ss-cell table.plain th, .ss-cell table.plain td { text-align: left; vertical-align: top; padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--ss-rule); }
+
+/* phones: the slim bar with its Menu (shioh-style.css), nav links big enough to tap, the "Made with"
+   cell after the page (the sidebar's copy is .ss-desktop-only), and nothing wider than the screen */
+@media (max-width: 860px) {
+	.ss-navcell .ss-nav a { padding: 0.6rem 0.7rem; }
+	.ss-frame-foot .ss-family a { padding: 5px 11px; }
+	/* an app page's own <main>, inside the cell (tabview's demo): less padding, so its table gets the width */
+	body.ss .ss-cell main { padding: 8px 8px 16px; }
+	body.ss .ss-main .ss-cell > h1:first-child,
+	body.ss .ss-main .ss-cell > header:first-child h1 { font-size: 1.35rem; }
+}
+@media (max-width: 600px) { .ss-cell table.plain, .ss-cell table.plain tbody, .ss-cell table.plain tr, .ss-cell table.plain td { display: block; } .ss-cell table.plain thead { display: none; } }

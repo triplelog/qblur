@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://qblur.com/sitemap.xml

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>qblur · on your own pages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="qblur on your own pages: one script tag or an ES module from a CDN, filters on the GPU or the CPU (in Node too), knobs, video, text and sharing — with working examples.">
+<link rel="canonical" href="https://qblur.com/library.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="qblur">
+<meta property="og:title" content="On your own pages">
+<meta property="og:description" content="qblur on your own pages: one script tag or an ES module from a CDN, filters on the GPU or the CPU (in Node too), knobs, video, text and sharing — with working examples.">
+<meta property="og:url" content="https://qblur.com/library.html">
+<meta property="og:image" content="https://qblur.com/share/docs.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="shioh-style.css">
+<link rel="stylesheet" href="site-theme.css">
+<style>
+  h2, h3 { scroll-margin-top: 1rem; }
+  main p a { color: var(--mz-accent); }
+  blockquote { margin: 1rem 0; padding: .6rem 1rem; border-left: 4px solid var(--mz-accent); background: var(--mz-soft); border-radius: 0 var(--ss-radius-sm) var(--ss-radius-sm) 0; }
+  blockquote p { margin: 0; }
+  p code, li code, td code { overflow-wrap: anywhere; }      /* a long address or name wraps on a phone */
+</style>
+</head>
+<body class="ss">
+<main>
+<article class="ss-cell qb-doc">
+<p><a href="index.html">← the editor</a></p>
+<h1 id="qblur-on-your-own-pages">qblur on your own pages</h1>
+<p>qblur is the library behind <a href="https://qblur.com/">the editor</a>: image filters written as maths, compiled to WebGL shaders, with the same pixels from plain JavaScript where there is no GPU. Put it on any page with one <code>&lt;script&gt;</code> from a CDN — no build step, no server, nothing uploaded: the pictures stay in the visitor's browser.</p>
+<blockquote><p><strong>Not on npm yet.</strong> The CDN addresses below (<code>cdn.jsdelivr.net/npm/qblur@0.1/…</code>) are where every release will be, and start working with the first one. Until then, <code>npm run build</code> in the repository writes the same files to <code>dist/</code>: serve them yourself and change the address.</p></blockquote>
+<h2 id="what-you-can-do-with-it">What you can do with it</h2>
+<ul><li><strong>Filters on your pictures, live.</strong> Any <code>&lt;img&gt;</code>, <code>&lt;canvas&gt;</code>, <code>&lt;video&gt;</code> or webcam — sepia, blur, comic, tilt-shift, a colour splash, or one of your own in a line of maths: <code>1 - rgb</code>, <code>if gray &gt; 0.5 then (1, 0, 0) else rgb</code>, <code>mix(rgb, gaussian(4), y)</code>.</li><li><strong>Knobs.</strong> A filter declares its parameters (<code>strength</code>, <code>tint</code>, …) with ranges; your sliders set them and the picture redraws at once, without recompiling.</li><li><strong>79 ready-made filters</strong> in <code>LIBRARY</code>, in seven groups (colour and tone, blur and edges, shape and motion, text, brushes, other pictures, chains) — use them as they are, chain them, or read their maths.</li><li><strong>Chains.</strong> Filters run one after another, each with its own settings and opacity; a chain is a filter too, so published chains nest and keep their authors' names.</li><li><strong>Animation.</strong> <code>t</code> counts frames: <code>pixel(px + 8 sin(py / 10 + t / 5), py)</code> is a wave. On a video, the filter runs on every frame.</li><li><strong>Several pictures.</strong> Masks, overlays, a second photo to blend in, a background for a green screen — each placed (cover, fit, tile, zoomed, turned) and set by name.</li><li><strong>Text and shapes</strong> drawn into the picture and coloured, shadowed, frosted or animated by the maths.</li><li><strong>Share a filter as a link</strong> or a small JSON document; reading one is safe — a filter is only maths: it can read the picture and write colours, nothing else.</li><li><strong>Save the result</strong> as PNG (in Node too), JPEG, WebP or an animated GIF.</li><li><strong>GPU or CPU, the same pixels.</strong> WebGL when it is there (fast: the shaders are compiled once), plain JavaScript when it isn't — old browsers, locked-down machines, <strong>Node</strong> (thumbnails on a server, tests).</li></ul>
+<p>Some things people build with it: filters on upload in a photo or social app; effects on a <code>&lt;video&gt;</code> or a webcam stream; a product page that recolours an item as the customer picks; generative art and animated backgrounds; previews in a CMS; high-contrast or colour-blindness views for accessibility; a lesson on how pictures are just numbers. The <a href="https://qblur.com/avatar/">small apps</a> on qblur.com — profile picture, colour splash, make it move, fancy text — are each a page of this library and a few controls.</p>
+<h2 id="start-here">Start here</h2>
+<h3 id="one-line-applyfilter">One line: applyFilter</h3>
+<pre><code>&lt;img id="photo" src="photo.jpg" alt="" hidden&gt;
+&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.global.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const img = document.getElementById('photo');
+  img.decode().then(() =&gt; QBlur.applyFilter(img, 'Sepia', { canvas: document.getElementById('out') }));
+&lt;/script&gt;</code></pre>
+<p><code>applyFilter(picture, filter, options)</code> takes the filter in any form — maths (<code>'1 - rgb'</code>), a built-in filter's name (<code>'Sepia'</code>, <code>'Gaussian blur'</code>), a filter document, JSON, a share link or a compiled filter — and resolves with the result at the picture's size: a 2D canvas (yours, given as <code>canvas</code>, or a new one) in a page, <code>{ data, width, height }</code> in Node. A picture longer than 4096 px on its long side (2048 on the CPU) is scaled down to that first, keeping its shape — <code>maxSize</code> sets the limit, up to what the GPU can hold. Knobs go in <code>params</code> (in a chain, every step with a knob of that name takes it), the frame in <code>t</code>. Calls run one at a time, in the order they were made:</p>
+<pre><code>import { applyFilter, toBlob } from 'qblur/apply';        // its own entry; the classic scripts have it on window.QBlur
+
+const canvas = await applyFilter(img, 'Threshold', { params: { cutoff: 0.3 } });
+const frame = await applyFilter(video, 'pixel(px + 8 sin(py / 10 + t / 5), py)', { t: 12 });</code></pre>
+<p>It uses the GPU when WebGL is there and the CPU when it isn't (<code>engine: 'gpu' | 'cpu'</code> to choose), keeps one hidden WebGL canvas for every call, and compiles a filter once for all the calls that use it. For a picture that redraws many times a second as a knob moves, a runner of your own (below) skips the copy.</p>
+<h3 id="as-an-html-element">As an HTML element</h3>
+<pre><code>&lt;qblur-image id="out" src="photo.jpg" filter="Vignette" params='{"strength": 2.5}' alt="A street of coloured houses"&gt;&lt;/qblur-image&gt;
+&lt;script type="module" src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur-element.js"&gt;&lt;/script&gt;</code></pre>
+<p><code>&lt;qblur-image&gt;</code> draws its picture with the filter on it, and again whenever an attribute changes: <code>src</code>, <code>filter</code> (any form <code>applyFilter</code> takes), <code>params</code> (JSON, or set the <code>params</code> property to an object: whichever was set last counts), <code>t</code>, <code>animate</code> (present: <code>t</code> counts up, 30 a second, while the element is in view), <code>engine</code>, <code>alt</code> and <code>crossorigin</code> (as on <code>&lt;img&gt;</code>: a picture from another site must allow CORS). It fires <code>load</code> after each drawing and <code>error</code> (the Error in <code>event.detail</code>) when the picture or the filter fails; <code>element.canvas</code> is the drawing, for <a href="#saving-the-result">saving</a>. From npm: <code>import 'qblur/element'</code>.</p>
+<h3 id="one-script-tag-a-runner-of-your-own">One script tag, a runner of your own</h3>
+<pre><code>&lt;img id="photo" src="photo.jpg" alt=""&gt;
+&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.global.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const img = document.getElementById('photo'), canvas = document.getElementById('out');
+  img.decode().then(() =&gt; {
+    canvas.width = img.naturalWidth;                   // the result is the canvas's size: make it the picture's
+    canvas.height = img.naturalHeight;
+    const compiled = QBlur.compileFilter('1 - rgb');   // a filter: here, one line of maths
+    const { runner } = QBlur.createRunner(compiled, { gl: canvas.getContext('webgl') });
+    runner.setImage(img).draw({ canvas });             // the GPU draws on gl's canvas; without WebGL, the CPU draws on `canvas`
+  });
+&lt;/script&gt;</code></pre>
+<p>The classic build puts everything on <code>window.QBlur</code>. <code>createRunner</code> picks the GPU when the canvas gives a WebGL context and the CPU when it doesn't; pass the same canvas to <code>draw</code> either way.</p>
+<h3 id="an-es-module-a-library-filter-and-a-slider">An ES module, a library filter and a slider</h3>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;label&gt;Vignette &lt;input id="strength" type="range" min="0" max="4" step="0.01" value="1.6"&gt;&lt;/label&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  const byName = (name) =&gt; LIBRARY.find((f) =&gt; f.name === name);
+  const compiled = compileFilter({ steps: [byName('Sepia'), byName('Vignette')] });   // a chain of two
+  const { runner } = createRunner(compiled, { gl: canvas.getContext('webgl') });
+  runner.setImage(img).draw({ canvas });
+
+  // knobs change live: set the value on every pass that has it, and draw again (no recompiling)
+  document.getElementById('strength').oninput = (e) =&gt; {
+    for (const pass of runner.passes) if ('strength' in pass.params) pass.values.strength = Number(e.target.value);
+    runner.draw({ canvas });
+  };
+&lt;/script&gt;</code></pre>
+<h3 id="from-npm">From npm</h3>
+<pre><code>npm install qblur mathzetta        # mathzetta is a peer dependency: qblur uses its maths parser and GLSL output</code></pre>
+<pre><code>import { compileFilter, createRunner } from 'qblur';      // the filters, the runners, the library
+import { applyFilter, toBlob } from 'qblur/apply';        // one call, and saving
+import 'qblur/element';                                   // defines &lt;qblur-image&gt;</code></pre>
+<p>A bundler (Vite, esbuild, webpack, rollup) handles the rest. TypeScript types come with the package (<code>src/index.d.ts</code>, <code>src/apply.d.ts</code>, <code>src/element.d.ts</code>). In Node the CPU runner works as it is (see <a href="#in-node">In Node</a>).</p>
+<h3 id="which-file">Which file</h3>
+<p>Every release has these in <code>dist/</code> (sizes compressed, as the CDN sends them):</p>
+<div class="scroll" tabindex="0"><table>
+<tr><th>File</th><th>Size</th><th>What</th></tr>
+<tr><td><code>qblur.js</code></td><td>54 KB</td><td>ES module, everything but <code>qblur/apply</code>, MathZetta inside</td></tr>
+<tr><td><code>qblur.global.min.js</code></td><td>58 KB</td><td>a classic script: <code>window.QBlur</code>, everything — <code>applyFilter</code> and saving too</td></tr>
+<tr><td><code>qblur-apply.js</code></td><td>56 KB</td><td>ES module: <code>qblur/apply</code> (<code>applyFilter</code>, <code>toBlob</code>, <code>encodeGif</code>…), MathZetta inside</td></tr>
+<tr><td><code>qblur.core.js</code></td><td>33 KB</td><td>compile and run on the GPU only: <code>compileFilter</code>, <code>createFilterRunner</code>, <code>readFilter</code>, <code>filterToLink</code>, <code>normalizeFilter</code> — no CPU runner, library, text or brushes</td></tr>
+<tr><td><code>qblur.external.js</code></td><td>26 KB</td><td><code>qblur.js</code> with MathZetta left out: the page provides it (an import map)</td></tr>
+<tr><td><code>qblur.external.global.min.js</code></td><td>30 KB</td><td><code>qblur.global.min.js</code> without MathZetta: reads <code>window.MathZetta</code>, so a MathZetta script goes first</td></tr>
+<tr><td><code>qblur-element.js</code></td><td>56 KB</td><td><code>&lt;qblur-image&gt;</code>, with <code>applyFilter</code> and MathZetta inside</td></tr>
+<tr><td><code>cpu-worker.js</code></td><td>31 KB</td><td>the CPU runner's helper for big pictures (<code>drawAsync</code>), loaded only when used; it must sit beside the bundle (it does on the CDN)</td></tr>
+</table></div>
+<p>MathZetta is about half of a full build. A page that already uses MathZetta, or several libraries built on it, loads it once and takes the <code>external</code> build. With modules, an import map points every MathZetta name at one file:</p>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script type="importmap"&gt;
+{ "imports": {
+    "mathzetta": "https://cdn.jsdelivr.net/npm/mathzetta@1/build/mathzetta.esm.min.js",
+    "mathzetta/glsl": "https://cdn.jsdelivr.net/npm/mathzetta@1/build/mathzetta.esm.min.js",
+    "mathzetta/formulas": "https://cdn.jsdelivr.net/npm/mathzetta@1/build/mathzetta.esm.min.js"
+} }
+&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.external.js';
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const { runner } = createRunner(compileFilter('(gray, gray, gray)'), { gl: canvas.getContext('webgl') });
+  runner.setImage(img).draw({ canvas });
+&lt;/script&gt;</code></pre>
+<p>With classic scripts: <code>&lt;script src="…/mathzetta@1/build/mathzetta.glsl.min.js"&gt;</code> (the GLSL flavour, which is what filters use) and then <code>…/qblur@0.1/dist/qblur.external.global.min.js</code>.</p>
+<p>Pin a version (<code>@0.1</code> follows fixes, <code>@0.1.0</code> never changes) and, for a fixed version, add an <code>integrity</code> hash so the browser checks the file: <code>npm run cdn</code> in the repository prints the snippets with hashes.</p>
+<h2 id="filters">Filters</h2>
+<p>A filter is maths run on every pixel. The <a href="guide.html">guide</a> is the full language — what an expression can use, animation, neighbouring pixels, geometry, several pictures, colour spaces, text and brushes. In short: <code>r g b a</code> (or <code>rgb</code>) is the pixel, <code>x y</code> its position from 0 to 1, <code>px py</code> in pixels, <code>w h</code> the picture's size, <code>t</code> the frame, <code>gray</code> its brightness, <code>source</code> the original picture, and <code>pixel(px, py)</code> reads another pixel. The result is a colour <code>(r, g, b)</code> or a number (grey).</p>
+<p>What you pass to <code>compileFilter</code>:</p>
+<pre><code>compileFilter('1 - rgb');                                    // an expression
+compileFilter({                                              // a filter document
+  name: 'Threshold', author: 'Ada', description: 'Black or white',
+  params: { cutoff: { default: 0.5, min: 0, max: 1 } },      // a knob
+  color: 'if gray &gt; cutoff then 1 else 0',
+});
+compileFilter({                                              // a chain: steps run top to bottom
+  name: 'Old photo',
+  steps: [
+    LIBRARY.find((f) =&gt; f.name === 'Sepia'),                 // a filter as it is
+    { filter: LIBRARY.find((f) =&gt; f.name === 'Vignette'), with: { strength: 1.2 } },   // with its knob set
+    { filter: 'rgb * 1.1', opacity: 0.5 },                   // half strength
+    { filter: 'gaussian(2)', skip: true },                   // left out for now
+  ],
+});</code></pre>
+<p>The fields of a filter document:</p>
+<div class="scroll" tabindex="0"><table>
+<tr><th>Field</th><th>What</th></tr>
+<tr><td><code>format</code></td><td><code>"mathzetta-filter/1"</code> — optional when writing one; <code>filterToJSON</code> adds it. The format is frozen: later versions add, never change</td></tr>
+<tr><td><code>name</code>, <code>author</code>, <code>description</code></td><td>shown in credits and the editor's library</td></tr>
+<tr><td><code>params</code></td><td>knobs: <code>{ name: { default, min, max, step?, label? } }</code>; a colour is <code>[r, g, b]</code> (0–1) or <code>{ type: 'color', default: [r, g, b] }</code>; a bare number is a default</td></tr>
+<tr><td><code>color</code></td><td>the maths: a string, or by channel — <code>{ rgb: '…', a: '…' }</code>, <code>{ r, g, b, a }</code>, <code>{ rgba: '…' }</code></td></tr>
+<tr><td><code>space</code></td><td>the colour space the maths works in: <code>'hsv'</code>, <code>'hsl'</code>, <code>'lab'</code>, <code>'oklab'</code>, <code>'linear'</code>, <code>'ycbcr'</code>, or <code>{ in, out }</code></td></tr>
+<tr><td><code>images</code></td><td>other pictures it reads, by name: <code>{ mask: { description: 'light where the effect shows' } }</code></td></tr>
+<tr><td><code>graphics</code></td><td>text, rectangles, ovals or brush strokes drawn into pictures it reads (<a href="#text-and-shapes">Text and shapes</a>)</td></tr>
+<tr><td><code>steps</code></td><td>a chain instead of <code>color</code>: each step a filter (or an expression), with <code>with</code>, <code>opacity</code> and <code>skip</code></td></tr>
+</table></div>
+<h2 id="running-a-filter">Running a filter</h2>
+<h3 id="compilefilter">compileFilter</h3>
+<pre><code>const compiled = compileFilter(def, { version: 100 });    // 100: WebGL 1 (the default); 300: WebGL 2
+compiled.passes;      // one shader pass per filter in the chain, in order; each has params, values, images, placements
+compiled.images;      // every picture it needs, by name
+compiled.graphics;    // every graphic, by name
+compiled.credits;     // [{ name: 'Sepia', author: '' }, …] — the filters it is made of</code></pre>
+<p>It throws when the filter is malformed or its maths doesn't parse: <code>the filter: Failed to parse expression "rgb * (1, 2": …</code>. A name the maths doesn't know (<code>rgb * nope</code>) is found when a runner is made: <code>unknown name "nope"</code>. <code>validateFilter(def)</code> lists every problem with the document itself, as messages naming the filter (<code>"Vignette": "with" sets "nope", but there is no parameter called that</code>), without throwing.</p>
+<h3 id="createrunner-the-gpu-or-the-cpu">createRunner: the GPU, or the CPU</h3>
+<pre><code>const { runner, engine, reason } = createRunner(compiled, {
+  gl: canvas.getContext('webgl'),   // null or missing: the CPU
+  prefer: 'auto',                   // 'gpu' or 'cpu' to insist
+  precision: 'byte',                // 'half' or 'float' keeps values over 1 between passes (bloom, edges)
+});
+engine;   // 'gpu' or 'cpu'
+reason;   // why: 'WebGL is here', 'no WebGL here', 'the GPU refused the shader (…)', 'asked for the CPU'</code></pre>
+<p>Both runners have the same methods:</p>
+<div class="scroll" tabindex="0"><table>
+<tr><th></th><th></th></tr>
+<tr><td><code>runner.setImage(picture)</code></td><td>the picture to filter: <code>&lt;img&gt;</code>, <code>&lt;canvas&gt;</code>, <code>&lt;video&gt;</code>, <code>ImageData</code>, <code>ImageBitmap</code>, or <code>{ data, width, height }</code>. Call it again for each new picture or video frame. Returns the runner</td></tr>
+<tr><td><code>runner.setImage(name, picture)</code></td><td>another picture the filter names (<code>compiled.images</code>, graphics)</td></tr>
+<tr><td><code>runner.draw({ t, canvas })</code></td><td>runs every pass. The GPU draws on the canvas <code>gl</code> belongs to; the CPU draws on <code>canvas</code> when given, and returns <code>{ data, width, height }</code> (RGBA bytes)</td></tr>
+<tr><td><code>runner.passes</code></td><td><code>compiled.passes</code>, live: <code>passes[i].values.cutoff = 0.3</code>, then <code>draw()</code></td></tr>
+<tr><td><code>runner.dispose()</code></td><td>frees the textures and programs (or the CPU's workers)</td></tr>
+</table></div>
+<p>The output is the canvas's size (GPU) or the picture's size (CPU), and the picture is stretched to it — so <strong>size the canvas to the picture</strong>, or to the size you want to save.</p>
+<h3 id="on-the-gpu-createfilterrunner">On the GPU: createFilterRunner</h3>
+<pre><code>const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true, premultipliedAlpha: false });
+const runner = createFilterRunner(gl, compiled, { precision: 'half' });
+runner.precision;     // what the GPU gave: 'byte', 'half' or 'float'</code></pre>
+<ul><li><code>preserveDrawingBuffer: true</code> keeps the result on the canvas after the frame, so <code>canvas.toBlob()</code> can save it later (otherwise call it straight after <code>draw()</code>).</li><li><code>premultipliedAlpha: false</code> keeps transparent results (<code>a</code> below 1) as they are.</li><li>WebGL 2: <code>canvas.getContext('webgl2')</code> and <code>compileFilter(def, { version: 300 })</code>.</li><li>The browser can take the context away (a GPU reset, a sleeping laptop): listen for <code>webglcontextlost</code> (call <code>preventDefault()</code>), and on <code>webglcontextrestored</code> make a new runner.</li><li>Pictures from another site need <code>img.crossOrigin = 'anonymous'</code> <strong>and</strong> that site's CORS header, or WebGL refuses them (the same rule as reading a canvas's pixels).</li></ul>
+<h3 id="on-the-cpu-createcpurunner">On the CPU: createCpuRunner</h3>
+<pre><code>const runner = createCpuRunner(compiled, { precision: 'byte', workers: 'auto', parallelFrom: 250000 });
+const out = runner.setImage(img).draw({ t: 0, canvas });         // on this thread
+const out2 = await runner.drawAsync({ t: 0, canvas });           // big pictures: rows shared among workers</code></pre>
+<p><code>drawAsync</code> splits each pass's rows among workers (<code>cpu-worker.js</code> beside the bundle — on the CDN it is; <code>workerUrl</code> puts it elsewhere) when the picture has at least <code>parallelFrom</code> pixels, and draws on the calling thread when it doesn't or when workers can't start. Both give the same pixels, and the same as the GPU.</p>
+<h3 id="in-node">In Node</h3>
+<p>The CPU runner needs no browser:</p>
+<pre><code>import { compileFilter, createCpuRunner, LIBRARY } from 'qblur';
+
+// a 64 × 64 picture as RGBA bytes — in practice, decoded from a file (sharp, pngjs, …)
+const width = 64, height = 64, data = new Uint8ClampedArray(width * height * 4);
+for (let i = 0; i &lt; width * height; i++) data.set([(i % width) * 4, 120, 200, 255], i * 4);
+
+const sepia = LIBRARY.find((f) =&gt; f.name === 'Sepia');
+const runner = createCpuRunner(compileFilter(sepia));
+const out = runner.setImage({ data, width, height }).draw();
+console.log(out.width, out.height, out.data.slice(0, 4));    // 64 64 Uint8ClampedArray [ … ]</code></pre>
+<p>With <a href="https://sharp.pixelplumbing.com/">sharp</a> for the files:</p>
+<pre><code>const { data, info } = await sharp('in.jpg').ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+const out = createCpuRunner(compileFilter('1 - rgb')).setImage({ data: new Uint8ClampedArray(data), width: info.width, height: info.height }).draw();
+await sharp(Buffer.from(out.data), { raw: { width: out.width, height: out.height, channels: 4 } }).toFile('out.png');</code></pre>
+<h2 id="knobs">Knobs</h2>
+<p><code>filterParams(normalizeFilter(def))</code> lists every knob a filter or chain has — <code>{ strength: { type: 'number', default: 1.6, min: 0, max: 4 } }</code>, colours as <code>{ type: 'color', default: [r, g, b] }</code> — so a page can build its controls from the filter:</p>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;form id="knobs"&gt;&lt;/form&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+
+  const def = {
+    name: 'Duotone',
+    params: { dark: [0.1, 0.05, 0.3], light: [1, 0.8, 0.4], contrast: { default: 1, min: 0.5, max: 2, label: 'Contrast' } },
+    color: 'mix(dark, light, clamp((gray - 0.5) contrast + 0.5, 0, 1))',
+  };
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const { runner } = createRunner(compileFilter(def), { gl: canvas.getContext('webgl') });
+  runner.setImage(img).draw({ canvas });
+
+  const set = (name, value) =&gt; {
+    for (const pass of runner.passes) if (name in pass.params) pass.values[name] = value;
+    runner.draw({ canvas });
+  };
+  const hex = (rgb) =&gt; '#' + rgb.map((v) =&gt; Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+  const rgb = (h) =&gt; [1, 3, 5].map((i) =&gt; parseInt(h.slice(i, i + 2), 16) / 255);
+  for (const [name, p] of Object.entries(filterParams(normalizeFilter(def)))) {
+    const input = document.createElement('input');
+    if (p.type === 'color') { input.type = 'color'; input.value = hex(p.default); input.oninput = () =&gt; set(name, rgb(input.value)); }
+    else Object.assign(input, { type: 'range', min: p.min, max: p.max, step: p.step ?? (p.max - p.min) / 200, value: p.default, oninput: () =&gt; set(name, Number(input.value)) });
+    const label = document.createElement('label');
+    label.append(p.label ?? name, ' ', input);
+    document.getElementById('knobs').append(label);
+  }
+&lt;/script&gt;</code></pre>
+<p>In a chain, <code>filterParams</code> gives each knob's own default; the values a chain sets with <code>with</code> are in <code>compiled.passes[i].values</code>.</p>
+<h2 id="animation-video-and-the-webcam">Animation, video and the webcam</h2>
+<p><code>t</code> is whatever you pass to <code>draw</code>. Count frames for an animation:</p>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const { runner } = createRunner(compileFilter('pixel(px + 6 sin(py / 12 + t / 5), py)'), { gl: canvas.getContext('webgl') });
+  runner.setImage(img);                           // a still picture: set it once
+  let t = 0;
+  (function frame() { runner.draw({ t: t++, canvas }); requestAnimationFrame(frame); })();
+&lt;/script&gt;</code></pre>
+<p>A video is a picture that changes: give the runner each frame.</p>
+<pre><code>&lt;video id="clip" src="clip.mp4" muted loop playsinline autoplay hidden&gt;&lt;/video&gt;
+&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  const video = document.getElementById('clip'), canvas = document.getElementById('out');
+  await new Promise((r) =&gt; { video.onloadeddata = r; if (video.readyState &gt;= 2) r(); });
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const { runner } = createRunner(compileFilter('(red(px + 6, py), g, blue(px - 6, py))'), { gl: canvas.getContext('webgl') });
+  let t = 0;
+  const frame = () =&gt; {
+    runner.setImage(video).draw({ t: t++, canvas });
+    video.requestVideoFrameCallback ? video.requestVideoFrameCallback(frame) : requestAnimationFrame(frame);
+  };
+  frame();
+&lt;/script&gt;</code></pre>
+<p>The webcam is the same with <code>video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true })</code>. To save what is shown as a video: <code>new MediaRecorder(canvas.captureStream(30))</code>.</p>
+<h2 id="other-pictures-masks-overlays-backgrounds">Other pictures: masks, overlays, backgrounds</h2>
+<p>A filter names the pictures it reads in <code>images</code>; the maths uses them by name — <code>mask</code> is its colour at this pixel, <code>luma(mask)</code> its brightness, <code>alpha(mask)</code> its transparency — and you give them with <code>setImage(name, picture)</code>. A picture not given is white.</p>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  // a spotlight mask: light in the middle, dark at the edges
+  const mask = Object.assign(document.createElement('canvas'), { width: 256, height: 256 });
+  const g = mask.getContext('2d'), grad = g.createRadialGradient(128, 128, 20, 128, 128, 128);
+  grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#000');
+  g.fillStyle = grad; g.fillRect(0, 0, 256, 256);
+
+  // grey everywhere, colour where the mask is light ("Through a mask" is mix(source, rgb, luma(mask)))
+  const byName = (name) =&gt; LIBRARY.find((f) =&gt; f.name === name);
+  const { runner } = createRunner(compileFilter({ steps: [byName('Grayscale'), byName('Through a mask')] }), { gl: canvas.getContext('webgl') });
+  runner.setImage(img).setImage('mask', mask).draw({ canvas });
+&lt;/script&gt;</code></pre>
+<p>A picture of another shape is placed over the frame: <code>cover</code> (the default), <code>fit</code>, <code>stretch</code> or <code>tile</code>, with <code>zoom</code>, <code>x</code>, <code>y</code> and <code>angle</code> — set per step (<code>{ filter, with: { overlay: { place: 'fit', zoom: 0.5 } } }</code>) or live (<code>runner.passes[i].placements.overlay.x = 0.2</code>; changing <code>place</code> needs a new compile). <code>selected</code> is the picture named <code>selection</code> (the editor's selection): give it a mask to limit a filter to part of the picture.</p>
+<h2 id="text-and-shapes">Text and shapes</h2>
+<p>A filter's <code>graphics</code> are drawn into pictures of the frame's size, which the maths reads like any other picture. <code>renderGraphics</code> draws them (loading web fonts first); positions and sizes are fractions of the frame, so they are crisp at any size.</p>
+<pre><code>&lt;canvas id="out"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/qblur@0.1/dist/qblur.js';
+  const img = new Image();
+  img.src = 'photo.jpg';
+  await img.decode();
+  const canvas = document.getElementById('out');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  const compiled = compileFilter({
+    graphics: { title: { type: 'text', text: 'Hello!', size: 0.16, y: 0.5, color: '#ffd23f' } },
+    color: 'mix(rgb * 0.6, title, alpha(title))',        // the picture darkened, the words laid on it
+  });
+  const { runner } = createRunner(compiled, { gl: canvas.getContext('webgl') });
+  runner.setImage(img);
+  for (const [key, picture] of Object.entries(await renderGraphics(compiled, canvas.width, canvas.height))) runner.setImage(key, picture);
+  runner.draw({ canvas });
+&lt;/script&gt;</code></pre>
+<p>Text has <code>text</code>, <code>font</code> (a CSS family, or <code>fontUrl</code> for a web font), <code>weight</code>, <code>style</code>, <code>size</code>, <code>x</code>, <code>y</code>, <code>align</code>, <code>angle</code>, <code>color</code>, <code>outline</code> and shadows; <code>rect</code> and <code>ellipse</code> have <code>x</code>, <code>y</code> (the centre), <code>w</code>, <code>h</code>, <code>angle</code>, <code>color</code>, <code>outline</code> and shadows, and a rectangle a corner <code>radius</code>. Brush strokes (<code>type: 'strokes'</code>) are recorded drawings that play out over <code>t</code>; draw them for each frame with <code>renderGraphics(compiled, w, h, { t })</code> or <code>rasterizeStrokes</code>. The guide's "Text and shapes" and "Brushes" have every field.</p>
+<h2 id="saving-the-result">Saving the result</h2>
+<pre><code>const png = await toBlob(canvas);                                    // a PNG: indexed when there are ≤ 256 colours, RGB when opaque
+const jpeg = await toBlob(canvas, { type: 'image/jpeg', quality: 0.9 });   // JPEG and WebP: the browser's encoder
+const { data, width, height } = cpuRunner.draw();                    // CPU: the bytes themselves</code></pre>
+<p><code>toBlob</code> takes a 2D canvas (what <code>applyFilter</code> returns) or a picture <code>{ data, width, height }</code>, and writes PNG itself, so it works in Node as well; JPEG and WebP need a browser. A WebGL canvas can't be read back with a 2D context: pass the canvas <code>applyFilter</code> gave you, or call the canvas's own <code>toBlob</code> right after <code>draw()</code> (or create the context with <code>preserveDrawingBuffer: true</code>).</p>
+<p>An animated GIF needs a colour quantizer and an LZW encoder. The package has no dependencies, so bring <a href="https://www.npmjs.com/package/gifenc">gifenc</a> (<code>npm i gifenc</code>, 9 KB) and pass it in:</p>
+<pre><code>import * as gifenc from 'gifenc';
+import { applyFilter, encodeGif, toBlob } from 'qblur/apply';
+
+const picture = { width: 64, height: 48, data: new Uint8ClampedArray(64 * 48 * 4).fill(200) };
+const frames = [];
+for (let t = 0; t &lt; 10; t++) frames.push(await applyFilter(picture, '(x, y, 0.5 + 0.5 sin(t / 2))', { t }));
+const gif = await encodeGif(frames, { gifenc, delay: 50 });          // 50 ms a frame, looping
+const png = await toBlob(frames[0]);                                 // PNG in Node: no canvas needed
+console.log(gif.type, gif.size, png.type);</code></pre>
+<p>Frames can be canvases or pictures, all one size, in an array or an async iterable (each frame drawn as it is needed); <code>repeat: -1</code> plays once. To save at a different size than you show, draw into a second canvas of that size, or with the CPU runner on a picture of that size.</p>
+<h2 id="sharing-filters">Sharing filters</h2>
+<pre><code>const link = filterToLink(def, 'https://qblur.com/');   // https://qblur.com/#eyJmb3Jt… — opens in the editor
+const json = filterToJSON(def);                          // the document, defaults left out
+readFilter(text);                                        // whatever was pasted: a link, JSON, or an expression
+filterFromLink(location.hash);                           // a filter from your own page's address
+validateFilter(readFilter(text));                        // [] when it is fine</code></pre>
+<p>A filter from someone else is safe to run: it is maths over the picture, compiled by qblur into shaders (or checked JavaScript on the CPU), with no access to the page, the network or anything else. One thing does reach the network: a filter with text may name a font (a Google Fonts family or an https address), which the page then fetches to draw it — so whoever serves that font sees the request.</p>
+<h2 id="the-built-in-library">The built-in library</h2>
+<p><code>LIBRARY</code> is an array of filter documents (79), each with a <code>group</code> from <code>GROUPS</code>:</p>
+<pre><code>GROUPS;                                                  // ['Colour &amp; tone', 'Blur &amp; edges', 'Shape &amp; motion', 'Text &amp; shapes', 'Brushes', 'Other pictures', 'Chains']
+LIBRARY.filter((f) =&gt; f.group === 'Blur &amp; edges').map((f) =&gt; f.name);
+const comic = LIBRARY.find((f) =&gt; f.name === 'Comic');   // a chain of four</code></pre>
+<p>The editor's <a href="https://qblur.com/">library</a> shows them all on your own photo, with their maths.</p>
+<h2 id="reference">Reference</h2>
+<p>Everything the package exports — from <code>qblur/apply</code>, the first seven; from <code>qblur/element</code>, <code>QBlurImage</code>; from <code>qblur</code>, the rest:</p>
+<div class="scroll" tabindex="0"><table>
+<tr><th>Export</th><th>What</th></tr>
+<tr><td><code>applyFilter(picture, filter, { params, t, images, engine, canvas, maxSize })</code></td><td>the one call: the filtered picture (a 2D canvas, or <code>{ data, width, height }</code> in Node), at most <code>maxSize</code> on its long side; the filter in any form, or a <code>LIBRARY</code> name</td></tr>
+<tr><td><code>MAX_SIZE</code>, <code>MAX_SIZE_CPU</code></td><td>the default <code>maxSize</code>: 4096 on the GPU, 2048 on the CPU</td></tr>
+<tr><td><code>toCompiled(filter)</code></td><td>any form <code>applyFilter</code> takes → the compiled filter</td></tr>
+<tr><td><code>toBlob(canvasOrPicture, { type, quality, palette })</code></td><td>the result as a file: PNG anywhere, JPEG and WebP in a browser</td></tr>
+<tr><td><code>encodeGif(frames, { gifenc, delay, repeat, colours })</code></td><td>an animated GIF, with gifenc passed in</td></tr>
+<tr><td><code>encodePng({ width, height, data, palette, colours, quantize })</code></td><td>the PNG writer <code>toBlob</code> uses (indexed, RGB or RGBA)</td></tr>
+<tr><td><code>pictureData(canvasOrPicture)</code></td><td>its RGBA bytes</td></tr>
+<tr><td><code>QBlurImage</code> (from <code>qblur/element</code>)</td><td>the <code>&lt;qblur-image&gt;</code> element's class; importing the entry defines the element</td></tr>
+<tr><td><code>compileFilter(def, { version })</code></td><td>a filter (expression, document or chain) → <code>{ passes, images, graphics, credits, … }</code>; throws on a malformed filter or maths that doesn't parse</td></tr>
+<tr><td><code>createRunner(compiled, { gl, prefer, precision, workers })</code></td><td><code>{ runner, engine, reason }</code>: the GPU when <code>gl</code> is a WebGL context, else the CPU</td></tr>
+<tr><td><code>createFilterRunner(gl, compiled, { precision })</code></td><td>the WebGL runner</td></tr>
+<tr><td><code>createCpuRunner(compiled, { precision, workers, parallelFrom, workerUrl })</code></td><td>the JavaScript runner (browsers and Node); <code>draw()</code> and <code>drawAsync()</code></td></tr>
+<tr><td><code>chooseEngine({ webgl, prefer })</code></td><td>which runner <code>createRunner</code> would use, and why</td></tr>
+<tr><td><code>toPicture(image)</code></td><td>any picture as <code>{ data: Float32Array, width, height }</code> (what the CPU works on)</td></tr>
+<tr><td><code>normalizeFilter(def)</code></td><td>the full form: types and ranges on params, <code>with</code> and <code>opacity</code> on steps; throws on a bad shape</td></tr>
+<tr><td><code>validateFilter(def)</code></td><td>every problem, as messages naming the filter; <code>[]</code> when it will compile</td></tr>
+<tr><td><code>filterParams(filter)</code> / <code>filterImages(filter)</code> / <code>filterGraphics(filter)</code></td><td>a normalized filter's knobs, pictures, graphics (a chain's included)</td></tr>
+<tr><td><code>filterToJSON(def)</code> / <code>filterFromJSON(text)</code></td><td>the document as JSON, and back</td></tr>
+<tr><td><code>filterToLink(def, pageUrl)</code> / <code>filterFromLink(text)</code></td><td>the filter in a URL's <code>#…</code>, and back</td></tr>
+<tr><td><code>readFilter(text)</code></td><td>a link, JSON or a bare expression → a filter</td></tr>
+<tr><td><code>FILTER_FORMAT</code>, <code>PLACEMENT</code></td><td><code>'mathzetta-filter/1'</code>; the default placement <code>{ place: 'cover', zoom: 1, x: 0.5, y: 0.5, angle: 0 }</code></td></tr>
+<tr><td><code>LIBRARY</code>, <code>GROUPS</code></td><td>the built-in filters and their groups</td></tr>
+<tr><td><code>renderGraphics(compiled, w, h, { t, mask })</code></td><td>every graphic drawn at w × h → <code>{ key: picture }</code> for <code>setImage</code></td></tr>
+<tr><td><code>normalizeGraphic</code>, <code>drawGraphic(ctx, spec, w, h)</code>, <code>loadGraphicFonts</code>, <code>cssFont</code>, <code>GRAPHIC_TYPES</code>, <code>GRAPHIC_DEFAULTS</code></td><td>text and shapes, one at a time</td></tr>
+<tr><td><code>googleFontUrl(family)</code>, <code>googleFontFamily(url)</code>, <code>fontFileFromCss</code>, <code>familyFor</code></td><td>web fonts for text graphics</td></tr>
+<tr><td><code>shadowLayerNames</code>, <code>layeredExpression</code>, <code>MAX_SHADOW_LAYERS</code></td><td>text shadows as pictures of their own</td></tr>
+<tr><td><code>normalizeStrokes</code>, <code>strokeTimeline</code>, <code>rasterizeStrokes(spec, w, h, t, { mask })</code></td><td>brush strokes, frame by frame</td></tr>
+<tr><td><code>BRUSHES</code>, <code>TIMINGS</code>, <code>WIDTH_FROM</code>, <code>CLIPS</code>, <code>FPS</code>, <code>STROKES_DEFAULTS</code></td><td>brush options</td></tr>
+<tr><td><code>traceContours(mask, w, h)</code>, <code>simplify</code>, <code>simplifyLoop</code></td><td>the outlines of a mask, as polylines</td></tr>
+<tr><td><code>compileCpuPass(pass)</code></td><td>one pass as checked JavaScript (what the CPU runner runs; <code>.uses</code> says if it reads <code>t</code>, other pictures, <code>random</code>)</td></tr>
+</table></div>
+<h2 id="good-to-know">Good to know</h2>
+<ul><li><strong>Sizes in pixels stay pixels.</strong> <code>gaussian(4)</code> blurs 4 pixels whatever the picture's size, so effects look finer on a bigger picture; scale such numbers with <code>w</code> or <code>h</code> (<code>gaussian(w / 200)</code>) to keep a look at any size.</li><li><strong>Between passes the picture is 8-bit</strong>, as an image is: values clamp to 0–1. <code>precision: 'half'</code> keeps more where the effect needs it (bloom, edge strengths).</li><li><strong>Big pictures.</strong> WebGL limits a texture to <code>gl.getParameter(gl.MAX_TEXTURE_SIZE)</code> (often 4096 or more); the CPU has no limit but takes longer — <code>drawAsync</code> uses every core.</li><li><strong>Licence.</strong> MIT. The object models used by the editor's "find objects" are not in the package.</li></ul>
+</article>
+</main>
+<script type="module">
+import { mountShell } from './shell.js';
+mountShell({ page: 'library', base: './' });
+</script>
+<script src="shioh.js" defer></script>
+</body>
+</html>

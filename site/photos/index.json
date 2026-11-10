@@ -1,0 +1,58 @@
+[
+  {
+    "file": "charleston.jpg",
+    "title": "Charleston",
+    "credit": "Photo by [Leo Heisenberg](https://unsplash.com/@leoheisenberg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/people-riding-on-carriage-on-road-during-daytime-126F-Xh3sOo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "mountains.jpg",
+    "title": "Mountains",
+    "credit": "Photo by [Bradley Allweil](https://unsplash.com/@bradleyallweilphoto?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/green-trees-and-mountains-during-daytime-c2xLHa-3L8c?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "portrait.jpg",
+    "title": "Portrait",
+    "credit": "Photo by [The Metropolitan Museum of Art](https://unsplash.com/@metropolitanmuseum?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/portrait-of-a-man-with-a-goatee-and-mustache-YMOmgm2S_Jg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)",
+    "person": "portrait.person.png"
+  },
+  {
+    "file": "redumbrella.jpg",
+    "title": "Red Umbrella",
+    "credit": "Photo by [Sebastian Alvarado Rojas](https://unsplash.com/@sebastuan4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/people-with-umbrellas-on-city-plaza-wS8fj93wS4M?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "cityabove.jpg",
+    "title": "City From Above",
+    "credit": "Photo by [Jules Marvin Eguilos](https://unsplash.com/@jmeguilos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/an-aerial-view-of-a-city-at-night-Lo3AkcG1BNw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "greenscreen.jpg",
+    "title": "Green Screen",
+    "credit": "Photo by [S. Laiba Ali](https://unsplash.com/@thelaibaali?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/a-mannequin-sitting-at-a-table-with-a-vase-of-flowers-uZWBH4xGnIs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "minimaldesk.jpg",
+    "title": "Minimal Desk",
+    "credit": "Photo by [Andrej Lišakov](https://unsplash.com/@lishakov?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/gray-balanced-arm-lamp-on-brown-wooden-table-3A4XZUopCJA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "contrastarchitecture.jpg",
+    "title": "High Contrast Architecture",
+    "credit": "Photo by [Jonas Jacobsson](https://unsplash.com/@jonasjacobsson?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/gray-concrete-structure-FxGIEI0dWAM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
+  },
+  {
+    "file": "waves.mp4",
+    "title": "Waves",
+    "credit": "Video by Salva F. Ayala on [Pexels](https://www.pexels.com/video/4k-drone-mediterraneo-15226109/)"
+  },
+  {
+    "file": "citytraffic.mp4",
+    "title": "City Traffic",
+    "credit": "Video by Timo Volz on [Pexels](https://www.pexels.com/video/time-lapse-of-city-at-night-10276143/)"
+  },
+  {
+    "file": "personwalking.mp4",
+    "title": "Person Walking",
+    "credit": "Video by RDNE Stock project on [Pexels](https://www.pexels.com/video/businessman-walking-by-the-lake-8052445/)"
+  }
+]

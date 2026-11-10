@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Colour splash — qblur</title>
+<meta name="description" content="Keep one colour and turn the rest of a photo grey: click the colour, adjust, download. Free, in your browser — nothing is uploaded.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="importmap">
+{ "imports": {
+    "mathzetta": "/node_modules/mathzetta/src/index.js",
+    "mathzetta/glsl": "/node_modules/mathzetta/src/glsl.js",
+    "mathzetta/formulas": "/node_modules/mathzetta/src/formulas.js",
+    "qblur": "/src/index.js",
+    "gifenc": "/node_modules/gifenc/dist/gifenc.esm.js"
+} }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="../shioh-style.css">
+<link rel="stylesheet" href="../site-theme.css">
+<link rel="stylesheet" href="../apps.css">
+</head>
+<body>
+<main class="app">
+  <section class="ss-cell qb-head">
+  <h1>Colour splash</h1>
+  <p class="lead">
+<!-- claude-ui:begin lead -->
+Click a colour in the photo to keep it — the red umbrella, a yellow taxi, a blue door — and the rest turns grey. Click up to three colours. It all happens in your browser — your photo isn't uploaded.
+<!-- claude-ui:end lead -->
+  </p>
+  </section>
+
+  <div class="layout">
+    <div class="stage" style="width:min(100%, 560px)">
+      <div id="frame" class="frame pick" title="click a colour to keep it"></div>
+      <div id="credit" class="credit"></div>
+    </div>
+
+    <div class="side">
+      <section aria-labelledby="h-photo">
+        <h2 id="h-photo">Photo</h2>
+        <div class="row">
+          <label class="button primary">Choose a photo…<input type="file" id="file" accept="image/*" hidden></label>
+          <label class="hint" for="sample">or try</label>
+          <select id="sample"></select>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-keep">
+        <h2 id="h-keep">Colours kept</h2>
+        <div id="kept" class="row" aria-live="polite"></div>
+        <p class="hint" style="margin:.4rem 0 0">Click the photo to add a colour; click a colour here to remove it.</p>
+      </section>
+
+      <section aria-labelledby="h-adjust">
+        <h2 id="h-adjust">Adjust</h2>
+        <div class="slider"><label for="range">Range</label><input type="range" id="range" min="0.01" max="0.2" step="0.005" value="0.035"></div>
+        <div class="slider"><label for="dull" title="greys, browns and pale colours are left grey; set for you from the colours you click">Skip dull</label><input type="range" id="dull" min="0" max="0.9" step="0.01" value="0.3"></div>
+        <div class="slider"><label for="fade" title="how much colour the rest keeps">Rest</label><input type="range" id="fade" min="0" max="0.6" step="0.01" value="0" aria-valuetext="grey"></div>
+      </section>
+
+      <div class="row"><button id="download" class="primary" type="button">Download</button></div>
+      <div id="status" class="status" role="status"></div>
+
+      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../move/">Make it move</a> · <a href="../text/">Fancy text</a> · <a href="../">the full editor</a>.</p>
+    </div>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+<script type="module">
+import { mountShell } from '../shell.js';
+mountShell({ page: 'splash', base: '../' });
+</script>
+<script src="../shioh.js" defer></script>
+</body>
+</html>

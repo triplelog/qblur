@@ -1,0 +1,56 @@
+/* The small apps' look (demo/avatar/, splash/, move/), after the family's site.css. */
+.app { max-width: 1080px; margin: 0 auto; padding: 1rem 1rem 3rem; }
+.app h1 { font-size: 1.6rem; margin: .4rem 0 .2rem; }
+.app .lead { color: var(--mz-muted); margin: 0 0 1.2rem; max-width: 46rem; }
+.app .layout { display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start; }
+.app .stage { flex: 0 0 auto; width: min(100%, 420px); }
+.app .side { flex: 1; min-width: min(100%, 20rem); display: flex; flex-direction: column; gap: 1.1rem; }
+.app .side h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mz-muted); margin: 0 0 .45rem; font-weight: 600; }
+.app [hidden] { display: none !important; }
+
+.app button, .app .button { font: .95rem var(--mz-font); cursor: pointer; padding: .45rem .9rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); background: var(--mz-bg); color: var(--mz-fg); }
+.app button:hover, .app .button:hover { border-color: var(--mz-accent); }
+.app .primary { background: var(--mz-accent); border-color: var(--mz-accent); color: #fff; font-weight: 600; }
+.app .primary:disabled { opacity: .5; cursor: default; }
+.app .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.app select, .app input[type=color] { font: .95rem var(--mz-font); }
+.app input[type=color] { width: 2.6rem; height: 2rem; padding: 0 .1rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); background: var(--mz-bg); }
+.app .hint { color: var(--mz-muted); font-size: .88rem; }
+.app .status { min-height: 1.4em; color: var(--mz-muted); font-size: .9rem; margin-top: .5rem; }
+.app .status.bad { color: #b00020; }
+.app .slider { display: flex; gap: .6rem; align-items: center; margin-top: .3rem; }
+.app .slider label { min-width: 5.5rem; font-size: .9rem; }
+.app .slider input { flex: 1; }
+
+/* a formula the user types (maths only: it is parsed, never run as code) */
+.app .formula { width: 100%; box-sizing: border-box; font: .9rem ui-monospace, monospace; padding: .35rem .5rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); margin: .2rem 0 .4rem; }
+.app .formula.bad { border-color: #b00020; outline: 1px solid #b00020; }
+.app .formula-help { font-size: .82rem; color: var(--mz-muted); margin: .2rem 0 0; }
+.app .formula-help code { font: .8rem ui-monospace, monospace; }
+.app .formula-help button { font-size: .8rem; padding: .1rem .5rem; }
+
+/* choices shown as tiles, with a small preview when there is one */
+.app .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.6rem, 1fr)); gap: .5rem; }
+.app .tile { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .35rem; border: 2px solid var(--mz-line); border-radius: var(--ss-radius-sm); background: var(--mz-bg); font-size: .82rem; }
+.app .tile[aria-pressed="true"] { border-color: var(--mz-accent); box-shadow: 0 0 0 1px var(--mz-accent); }
+.app .tile canvas, .app .tile .swatch { width: 100%; aspect-ratio: 1; border-radius: var(--ss-radius-sm); background: var(--mz-soft); display: block; }
+/* radio buttons drawn as a segmented choice */
+/* the lines between choices are the 1px gaps over the border colour, so a choice that wraps to a new row is still boxed */
+.app .seg { display: inline-flex; flex-wrap: wrap; gap: 1px; background: var(--mz-line); border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); overflow: hidden; }
+.app .seg label { flex: 1 1 auto; text-align: center; padding: .4rem .8rem; cursor: pointer; font-size: .92rem; background: var(--mz-bg); }
+.app .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.app .seg label:has(input:checked) { background: var(--mz-accent); color: #fff; }
+.app .seg label:has(input:focus-visible) { outline: 2px solid var(--mz-accent); outline-offset: -3px; }
+
+/* the picture */
+.app .frame { position: relative; width: 100%; border-radius: var(--ss-radius-sm); overflow: hidden; background: var(--mz-soft) repeating-conic-gradient(#0000000d 0 25%, transparent 0 50%) 0 0 / 20px 20px; }
+.app .frame canvas { display: block; width: 100%; height: auto; }
+.app .frame.round { border-radius: 50%; aspect-ratio: 1; }
+.app .frame.grab { cursor: grab; }
+.app .frame.pick { cursor: crosshair; }
+.app .frame #marks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.app .credit { font-size: .8rem; color: var(--mz-muted); margin-top: .4rem; }
+.app .credit a { color: inherit; }
+.app .more { font-size: .88rem; margin-top: 1.5rem; color: var(--mz-muted); }
+.app .frame::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 var(--ring-w, 0) var(--ring, transparent); pointer-events: none; }
+body { margin: 0; font: 15px/1.5 var(--mz-font); color: var(--mz-fg); background: var(--mz-bg); }

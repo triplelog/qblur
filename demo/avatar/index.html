@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Profile picture — qblur</title>
+<meta name="description" content="Make a profile picture from any photo: centred on you, in a style you like, with the background blurred or replaced. Free, in your browser — nothing is uploaded.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="importmap">
+{ "imports": {
+    "mathzetta": "/node_modules/mathzetta/src/index.js",
+    "mathzetta/glsl": "/node_modules/mathzetta/src/glsl.js",
+    "mathzetta/formulas": "/node_modules/mathzetta/src/formulas.js",
+    "qblur": "/src/index.js",
+    "gifenc": "/node_modules/gifenc/dist/gifenc.esm.js",
+    "onnxruntime-web": "/node_modules/onnxruntime-web/dist/ort.wasm.min.mjs",
+    "@mediapipe/tasks-vision": "/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs"
+} }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('ss-js')</script>
+<link rel="stylesheet" href="../shioh-style.css">
+<link rel="stylesheet" href="../site-theme.css">
+<link rel="stylesheet" href="../apps.css">
+</head>
+<body>
+<main class="app">
+  <section class="ss-cell qb-head">
+  <h1>Profile picture</h1>
+  <p class="lead">
+<!-- claude-ui:begin lead -->
+Pick a photo of yourself. It's centred on you and cut to a circle; choose a style and a background — or none, for a cut-out sticker — drag to adjust, and download. It all happens in your browser — your photo isn't uploaded.
+<!-- claude-ui:end lead -->
+  </p>
+  </section>
+
+  <div class="layout">
+    <div class="stage">
+      <div id="frame" class="frame round grab" title="drag to move, scroll or pinch to zoom"><canvas id="marks" aria-hidden="true"></canvas></div>
+      <div class="row" style="margin-top:.5rem">
+        <span class="hint" id="tool-label">On the photo:</span>
+        <div class="seg" role="radiogroup" aria-labelledby="tool-label">
+          <label title="move the photo in the frame (scroll or pinch to zoom)"><input type="radio" name="tool" value="move" checked> Move</label>
+          <label title="click on yourself: the outline takes in what you mark"><input type="radio" name="tool" value="add"> Mark me</label>
+          <label title="click on what isn't you: the outline leaves it out"><input type="radio" name="tool" value="remove"> Mark not me</label>
+          <label title="paint over what is outlined right: it stays as it is, whatever changes later"><input type="radio" name="tool" value="keep"> Keep as is</label>
+        </div>
+        <label class="hint"><input type="checkbox" id="show-marks" checked> show marks</label>
+        <button id="clear-marks" type="button" title="forget the points and the kept areas, and find you again">Start over</button>
+      </div>
+      <div class="slider"><label for="zoom">Zoom</label><input type="range" id="zoom" min="1" max="4" step="0.01" value="1"></div>
+      <div class="row" style="margin-top:.6rem">
+        <button id="centre" type="button" title="find the person and frame head and shoulders">Centre on me</button>
+        <button id="download" class="primary" type="button">Download</button>
+      </div>
+      <div id="status" class="status" role="status"></div>
+      <p class="hint" style="margin:.3rem 0 0">Outline not right? Choose "Mark me" and click on a part of you it missed, or "Mark not me" and click on what it took by mistake — a few points work best. Green dots are on you, red ones not. When part of the outline is right, choose "Keep as is" and paint over it (blue): it stays that way while you fix the rest.</p>
+      <div id="credit" class="credit"></div>
+    </div>
+
+    <div class="side">
+      <section aria-labelledby="h-photo">
+        <h2 id="h-photo">Photo</h2>
+        <div class="row">
+          <label class="button primary">Choose a photo…<input type="file" id="file" accept="image/*" hidden></label>
+          <label class="hint" for="sample">or try</label>
+          <select id="sample"></select>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-style">
+        <h2 id="h-style">Style</h2>
+        <div id="styles" class="tiles" role="group" aria-labelledby="h-style"></div>
+      </section>
+
+      <section aria-labelledby="h-bg">
+        <h2 id="h-bg">Background</h2>
+        <div class="seg" role="radiogroup" aria-labelledby="h-bg">
+          <label><input type="radio" name="bg" value="keep" checked> As it is</label>
+          <label><input type="radio" name="bg" value="blur"> Blurred</label>
+          <label><input type="radio" name="bg" value="colour"> Colour</label>
+          <label><input type="radio" name="bg" value="gradient"> Gradient</label>
+          <label><input type="radio" name="bg" value="none"> None</label>
+        </div>
+        <div id="bg-colours" class="row" style="margin-top:.5rem" hidden>
+          <input type="color" id="bg1" value="#2a6fdb" aria-label="background colour">
+          <input type="color" id="bg2" value="#f5a3c7" aria-label="second background colour (bottom of the gradient)">
+        </div>
+        <p class="hint" style="margin:.4rem 0 0">Everything but "As it is" finds you in the photo with a small neural network (it loads once, about 19 MB). None removes the background: the PNG is transparent there.</p>
+      </section>
+
+      <section aria-labelledby="h-shape">
+        <h2 id="h-shape">Shape</h2>
+        <div class="row">
+          <div class="seg" role="radiogroup" aria-label="shape">
+            <label><input type="radio" name="shape" value="circle" checked> Circle</label>
+            <label><input type="radio" name="shape" value="square"> Square</label>
+            <label title="just you, cut out round your outline — a sticker"><input type="radio" name="shape" value="cutout"> Cut-out</label>
+          </div>
+          <label class="hint"><input type="checkbox" id="ring"> <span id="ring-label">ring</span></label>
+          <input type="color" id="ring-colour" value="#ffffff" aria-label="ring colour">
+        </div>
+      </section>
+
+      <p class="more">Want more control? <a href="../">Open the full editor</a> — or try <a href="../splash/">Colour splash</a>, <a href="../move/">Make it move</a> and <a href="../text/">Fancy text</a>.</p>
+    </div>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+<script type="module">
+import { mountShell } from '../shell.js';
+mountShell({ page: 'avatar', base: '../' });
+</script>
+<script src="../shioh.js" defer></script>
+</body>
+</html>

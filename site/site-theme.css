@@ -1,0 +1,122 @@
+/*
+ * qblur's own layer on the Shioh style. Load it AFTER shioh-style.css (the style's base, copied
+ * unchanged from the shioh-style skill: updating the look is replacing that one file):
+ *   <link rel="stylesheet" href="shioh-style.css">
+ *   <link rel="stylesheet" href="site-theme.css">
+ *
+ * Theme: the base's defaults (the Shioh pastels #a4b6dd #d09292 #c094cc #a2d0c0 #c37892, navy accent
+ * #000080, plain black background, the "qblur" Montserrat wordmark), so nothing is overridden here.
+ *
+ * The pages' own CSS reads the family's --mz-* variables (they used to come from
+ * mathzetta-sites/site.css); here they take the Shioh values, so every page follows. Each part of a
+ * page is a cell: the editor's top and picture column, the controls, every section of the small
+ * apps, the documents. Sidebar and family links: shell.js.
+ */
+:root {
+	--mz-accent: var(--ss-accent);
+	--mz-fg: var(--ss-ink);
+	--mz-muted: var(--ss-muted);
+	--mz-line: var(--ss-border);
+	--mz-soft: var(--ss-panel);
+	--mz-bg: #fff;                         /* controls, tiles and the canvas frames stay white */
+	--mz-font: var(--ss-font-body);
+}
+/* on the darkest cell, small text takes the full ink (the muted grey is 3.9:1 there) */
+.ss-p5 { --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
+body.ss a:not(.ss-btn):not(.button) { color: var(--ss-link); }
+body.ss .ss-cell a:not(.ss-btn):not(.ss-logo):not(.button) { color: inherit; }
+.qb-footer p { margin: .3rem 0; font-size: .85rem; }
+.qb-footer .qb-family { display: flex; flex-wrap: wrap; gap: .2rem .7rem; }
+/* the phone footer (shell.js): the essentials of the sidebar's second cell, which phones don't show */
+.qb-footer.ss-phone-only p { margin: .2rem 0; }
+.qb-footer.ss-phone-only .qb-family { gap: .1rem 1rem; }
+.qb-footer.ss-phone-only .qb-family a { display: inline-block; padding: .3rem 0; }
+
+/* ---- the editor (demo/index.html) ---- */
+body.ss .page { max-width: none; padding: 0; display: flex; flex-direction: column; gap: var(--ss-gap); }
+body.ss .page > .qb-head { background: var(--ss-p1); }
+body.ss .page .bar { position: static; background: transparent; border-bottom: 1px solid var(--ss-rule); padding-top: 0; }
+body.ss .page .bar h1 { font-family: var(--ss-font-head); font-weight: 800; }
+body.ss .page .intro { color: var(--ss-ink); }
+body.ss .row { margin-top: 0; gap: var(--ss-gap); }
+body.ss .pictures { background: var(--ss-p4); border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); box-sizing: border-box; width: min(100%, 520px); }
+/* the pictures sit on white, the way the style puts previews on a surface */
+body.ss .pictures canvas:not(#overlay):not(#track-overlay):not(#strokes-overlay):not(#select-surface):not(#track-timeline) { background: #fff; border-color: var(--ss-border); border-radius: var(--ss-radius-sm); }
+body.ss .controls { gap: var(--ss-gap); }
+body.ss .controls > .panel { margin-top: 0; border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); }
+body.ss .controls > .panel:nth-of-type(5n + 1) { background: var(--ss-p3); }
+body.ss .controls > .panel:nth-of-type(5n + 2) { background: var(--ss-p1); }
+body.ss .controls > .panel:nth-of-type(5n + 3) { background: var(--ss-p2); }
+body.ss .controls > .panel:nth-of-type(5n + 4) { background: var(--ss-p4); }
+body.ss .controls > .panel:nth-of-type(5n + 5) { background: var(--ss-p5); --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
+body.ss .controls > details.panel > summary { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) 0; padding: .6rem var(--ss-pad-x); }
+body.ss .controls > details.panel[open] > summary { background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; margin-bottom: .6rem; }
+body.ss .controls > details.panel > .body { padding: 0; }
+body.ss .controls h2, body.ss .pictures summary, body.ss .controls summary { font-family: var(--ss-font-head); font-weight: 700; }
+body.ss .controls > section.panel > h2:first-child { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .6rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; }
+body.ss .pictures details.panel { background: var(--ss-panel); border-color: var(--ss-rule); }
+body.ss .card, body.ss ol#steps li, body.ss .example-how { background: var(--ss-panel); border-color: var(--ss-rule); }
+body.ss .card.tile:hover, body.ss .card.tile.current { background: var(--ss-panel-strong); }
+body.ss .empty-steps { border-color: var(--ss-rule); color: var(--ss-ink); }
+/* code (the JSON, the help's examples) on a white surface */
+body.ss pre { background: #fff; border: 1px solid var(--ss-border); border-radius: var(--ss-radius-sm); }
+body.ss .tag { background: var(--ss-panel-strong); color: var(--ss-ink); border-radius: var(--ss-radius-sm); }
+body.ss .mode { background: var(--ss-panel); }
+body.ss .error { color: #6b0000; }
+
+/* ---- the small apps (demo/<app>/, apps.css) ---- */
+body.ss .app { max-width: none; padding: 0; display: flex; flex-direction: column; gap: var(--ss-gap); }
+body.ss .app > .qb-head { background: var(--ss-p1); }
+body.ss .app h1 { font-family: var(--ss-font-head); font-weight: 800; margin-top: 0; }
+body.ss .app .lead { color: var(--ss-ink); margin-bottom: 0; }
+body.ss .app .layout { gap: var(--ss-gap); }
+body.ss .app .stage { background: var(--ss-p4); border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); box-sizing: border-box; }
+body.ss .app .side { gap: var(--ss-gap); }
+body.ss .app .side > * { margin: 0; background: var(--ss-p3); border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); }
+body.ss .app .side > :nth-child(5n + 2) { background: var(--ss-p1); }
+body.ss .app .side > :nth-child(5n + 3) { background: var(--ss-p2); }
+body.ss .app .side > :nth-child(5n + 4) { background: var(--ss-p4); }
+body.ss .app .side > :nth-child(5n + 5) { background: var(--ss-p5); --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
+body.ss .app .side h2 { font-family: var(--ss-font-head); color: var(--ss-ink); margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .5rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; text-align: center; font-size: .82rem; }
+body.ss .app .status.bad, body.ss .formula + .status { color: #6b0000; }
+body.ss .app .tile { background: var(--ss-panel); border-color: var(--ss-rule); }
+body.ss .app .tile[aria-pressed="true"] { background: var(--ss-panel-strong); border-color: var(--ss-accent); }
+/* the picture on a white surface (the chequerboard shows through a transparent one) */
+body.ss .app .frame { border: 1px solid var(--ss-border); background-color: #fff; }
+body.ss .app .frame.round { border-radius: 50%; }
+
+/* ---- the documents (guide, library, privacy, terms: tools/markdown.mjs) ---- */
+body.ss .qb-doc { background: var(--ss-p1); max-width: 860px; }
+body.ss .qb-doc h1 { font-family: var(--ss-font-head); font-weight: 800; margin-top: 0; overflow-wrap: anywhere; }
+body.ss .qb-doc h2 { font-family: var(--ss-font-head); margin: 2rem 0 .6rem; padding: .35rem .7rem; background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius-sm); font-size: 1.15rem; }
+body.ss .qb-doc h3 { font-family: var(--ss-font-head); }
+body.ss .qb-doc pre { background: #fff; border: 1px solid var(--ss-border); border-radius: var(--ss-radius-sm); padding: .7rem .9rem; overflow: auto; font-size: .82rem; max-height: none; }
+body.ss .qb-doc code { font-family: var(--ss-font-mono); }
+body.ss .qb-doc p code, body.ss .qb-doc li code, body.ss .qb-doc td code { background: rgb(255 255 255 / .55); padding: 0 .25rem; border-radius: var(--ss-radius-sm); overflow-wrap: anywhere; }
+body.ss .qb-doc table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+body.ss .qb-doc th, body.ss .qb-doc td { border-bottom: 1px solid var(--ss-rule); padding: .35rem .5rem; text-align: left; vertical-align: top; }
+/* a wide table scrolls in its own white box */
+body.ss .qb-doc .scroll { overflow-x: auto; background: #fff; border: 1px solid var(--ss-border); border-radius: var(--ss-radius-sm); margin: 1rem 0; }
+body.ss .qb-doc .scroll td code { background: rgb(0 0 0 / .05); }
+body.ss .qb-doc blockquote { margin: 1rem 0; padding: .6rem 1rem; background: var(--ss-panel-strong); border-left: 4px solid var(--ss-accent); border-radius: 0 var(--ss-radius-sm) var(--ss-radius-sm) 0; }
+body.ss .qb-doc blockquote p { margin: 0; }
+.qb-skip { position: absolute; left: -9999px; top: 8px; z-index: 50; background: #fff; color: var(--ss-ink); padding: .4rem .8rem; border-radius: var(--ss-radius-sm); }
+.qb-skip:focus { left: 8px; }
+/* an empty status line is not a cell (it stays in the page, so a message still gets announced) */
+body.ss .app .side > .status:empty { padding: 0; border: 0; box-shadow: none; background: transparent; min-height: 0; }
+
+/* ---- phones: controls big enough to tap, folding headings that wrap under their title ---- */
+@media (max-width: 860px) {
+	body.ss .groups button, body.ss .example-list button { min-height: 2rem; padding-inline: .7rem; }
+	body.ss .card.tile .add-on, body.ss .head button { min-width: 2rem; min-height: 1.9rem; }
+	body.ss details.panel > summary { flex-wrap: wrap; row-gap: 0; }
+	body.ss details.panel > summary .hint { flex-basis: 100%; padding-left: 1.1rem; }
+	body.ss input[type=range] { min-height: 1.75rem; }
+	body.ss input[type=checkbox], body.ss input[type=radio]:not(.mode input):not(.seg input) { width: 1.1rem; height: 1.1rem; }
+	body.ss .app .seg label { padding: .5rem .8rem; }
+	/* the selection's grab area reaches 36px past the picture: keep it from widening the page */
+	body.ss .pictures { overflow-x: clip; }
+	/* the cheat sheet's two-column table scrolls in its own box */
+	body.ss #help-body table { display: block; overflow-x: auto; max-width: 100%; }
+	body.ss .example button, body.ss #guide-link, body.ss #help-link { min-height: 1.75rem; }
+}
