@@ -2,6 +2,8 @@
   Cache-Control: public, max-age=2592000
 /models/mobilesam-encoder.onnx
   Cache-Control: public, max-age=2592000
+/ort/LICENSE
+  Cache-Control: public, max-age=86400
 /ort/ort-wasm-simd-threaded.mjs
   Cache-Control: public, max-age=86400
 /ort/ort-wasm-simd-threaded.wasm

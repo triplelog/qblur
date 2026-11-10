@@ -71,10 +71,6 @@ Serve the folder from anywhere (GitHub Pages, S3, a CDN); share links are
 
 ## From a CDN
 
-> Not on npm yet: the addresses below are where releases will be (placeholders until the first one).
-> Search for `cdn.jsdelivr.net/npm/@mathzetta/qblur` to find every place they are written: this README,
-> docs/library.md (and the site's library.html built from it).
-
 Every npm release's `dist/` is on jsDelivr (and unpkg), MathZetta's GLSL output bundled in —
 [docs/library.md](docs/library.md) has working examples of each way in:
 
@@ -142,3 +138,16 @@ Publishing is `npm publish` (`prepublishOnly` runs the tests and the build).
 This was `src/filters/` and `demos/filters.html` in MathZetta until
 2026-10-16; the GLSL expression output (`toGLSL`, `filterShader`) stayed
 there as `mathzetta/glsl`.
+
+## Licence
+
+MIT — [LICENSE](LICENSE), Copyright (c) 2025-2026 Robert Wilcox: the package, the editor, the apps, the
+built-in filters and the site's own files. In this repository but under their own licences:
+
+- `demo/models/` and `site/models/`: the object models, Apache License 2.0 (`LICENSE` and `NOTICE` there);
+  none of them is in the npm package.
+- `demo/photos/` and `site/photos/`: the sample photos and videos, from Unsplash and Pexels under their own
+  licences (the Unsplash License, the Pexels License), credited in `photos/index.json` and under each on the page.
+- `site/ort/`: ONNX Runtime Web, MIT, Copyright (c) Microsoft Corporation (`site/ort/LICENSE`).
+- The site's bundles include gifenc (MIT, Copyright (c) 2017 Matt DesLauriers). `site/THIRD-PARTY-NOTICES.txt`
+  lists all of these for the deployed site.

@@ -6,6 +6,8 @@
  * ```js node block in Node, `from '@mathzetta/qblur'` and `from '@mathzetta/qblur/apply'` pointed at src/, which must exit cleanly.
  *
  *   npm run build && node tools/check-docs.mjs
+ *   node tools/check-docs.mjs --cdn      the pages load qblur and MathZetta from jsDelivr itself, as a visitor's would
+ *                                        (another origin: CORS, the CPU worker started through a blob: module)
  */
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -19,9 +21,10 @@ const heading = (code) => { const at = md.indexOf(code); return [...md.slice(0, 
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
-const local = (code) => code
+const CDN = process.argv.includes('--cdn');
+const local = (code) => (CDN ? code : code
     .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/', '/dist/')
-    .replaceAll('https://cdn.jsdelivr.net/npm/mathzetta@1/build/', '/node_modules/mathzetta/build/')
+    .replaceAll('https://cdn.jsdelivr.net/npm/mathzetta@1/build/', '/node_modules/mathzetta/build/'))
     .replaceAll("'photo.jpg'", "'/demo/photos/charleston.jpg'").replaceAll('"photo.jpg"', '"/demo/photos/charleston.jpg"')
     .replaceAll('"clip.mp4"', '"/demo/photos/waves.mp4"');
 const CATCH = `<script>window.__errors = []; addEventListener('error', (e) => __errors.push(String(e.message || e)));

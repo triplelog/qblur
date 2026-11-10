@@ -5,10 +5,6 @@ WebGL shaders, with the same pixels from plain JavaScript where there is no GPU.
 with one `<script>` from a CDN — no build step, no server, nothing uploaded: the pictures stay in the
 visitor's browser.
 
-> **Not on npm yet.** The CDN addresses below (`cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/…`) are where every
-> release will be, and start working with the first one. Until then, `npm run build` in the repository
-> writes the same files to `dist/`: serve them yourself and change the address.
-
 ## What you can do with it
 
 - **Filters on your pictures, live.** Any `<img>`, `<canvas>`, `<video>` or webcam — sepia, blur,
@@ -601,4 +597,5 @@ Everything the package exports — from `@mathzetta/qblur/apply`, the first seve
   more where the effect needs it (bloom, edge strengths).
 - **Big pictures.** WebGL limits a texture to `gl.getParameter(gl.MAX_TEXTURE_SIZE)` (often 4096 or more);
   the CPU has no limit but takes longer — `drawAsync` uses every core.
-- **Licence.** MIT. The object models used by the editor's "find objects" are not in the package.
+- **Licence.** MIT ([LICENSE](https://github.com/triplelog/qblur/blob/main/LICENSE), Copyright (c) 2025-2026 Robert Wilcox), and so is
+  MathZetta, which the bundles include. The object models used by the editor's "find objects" are not in the package.

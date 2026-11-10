@@ -1,4 +1,4 @@
-/* qblur — MIT licence; mathzetta loads from jsDelivr */
+/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT licence; MathZetta loads from jsDelivr; other people's code in this file (gifenc) and on this site: THIRD-PARTY-NOTICES.txt */
 import { FILTER_NAMES, COLOUR_SPACES, PLACES, filterShader, filterVertexShader, REACH, FILTER_FUNCTIONS, FILTER_VALUES, filterPictureCalls } from 'mathzetta/glsl';
 import { parseTree } from 'mathzetta';
 import { checkGeneratedJs } from 'mathzetta/formulas';

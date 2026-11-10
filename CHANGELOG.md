@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+No change to the code. The licence names its holder (`Copyright (c) 2025-2026 Robert Wilcox`; 0.1.0's said
+"MathZetta Contributors"), and every bundle's banner says whose it is and its licence, MathZetta's too.
+The README has a Licence section, and it and docs/library.md no longer say the package isn't on npm yet.
+
 ## 0.1.0 — first release
 
 The filter format, its compiler and two runners that give the same pixels.

@@ -63,7 +63,7 @@ async function bundle(input, file, { worker = false } = {}) {
         external: (id) => isLibrary(id) || id.startsWith('node:') || id === 'onnxruntime-web' || id === '@mediapipe/tasks-vision',   // Node branches never taken in a browser; the object models' runtimes load from ort/ and mediapipe/ when first used
         onwarn: (warning, warn) => { if (warning.code !== 'CIRCULAR_DEPENDENCY') warn(warning); },
     });
-    await build.write({ file: join(ROOT, 'site', file), format: 'es', banner: '/* qblur — MIT licence; mathzetta loads from jsDelivr */',
+    await build.write({ file: join(ROOT, 'site', file), format: 'es', banner: `/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT licence; MathZetta loads from jsDelivr; other people's code ${worker ? 'on this site' : 'in this file (gifenc) and on this site'}: THIRD-PARTY-NOTICES.txt */`,
         ...(worker ? { paths: (id) => cdnUrl(id, v) ?? id } : {}) });
     await build.close();
     if (worker) cdnUsed.push(...cdnUrlsIn(await readFile(join(ROOT, 'site', file), 'utf8')));
@@ -113,7 +113,9 @@ function head(page, { path, card, description }) {
 }
 
 // the library: one ES module and one classic script, with MathZetta's GLSL output bundled in
-const libBanner = `/* qblur ${pkg.version} — MIT licence — https://qblur.com */`;
+// every file says whose it is and its licence (terser keeps comments with "MIT licence"); MathZetta, inside most bundles, too
+const libBanner = `/* qblur ${pkg.version} — Copyright (c) 2025-2026 Robert Wilcox — MIT licence — https://qblur.com */`;
+const withMathZetta = libBanner.replace(' */', ' — MathZetta inside: Copyright (c) 2025 Robert Wilcox, MIT licence */');
 await rm(join(ROOT, 'dist'), { recursive: true, force: true });
 await mkdir(join(ROOT, 'dist'), { recursive: true });
 const minify = terser({ format: { comments: /MIT licence/ } });
@@ -138,7 +140,7 @@ try {
             external,
             onwarn: (warning, warn) => { if (warning.code !== 'CIRCULAR_DEPENDENCY') warn(warning); },
         });
-        await lib.write({ file: join(ROOT, 'dist', file), format, banner: libBanner, plugins: [minify], ...extra });
+        await lib.write({ file: join(ROOT, 'dist', file), format, banner: withMathZetta, plugins: [minify], ...extra });
         await lib.close();
     }
 } finally { await rm(CORE, { force: true }); await rm(GLOBAL, { force: true }); }
@@ -147,7 +149,7 @@ try {
 {
     const worker = await rollup({ input: join(ROOT, 'src/cpu-worker.js'), plugins: [resolveLikeThePage], external: (id) => id.startsWith('node:'),
         onwarn: (warning, warn) => { if (warning.code !== 'CIRCULAR_DEPENDENCY') warn(warning); } });
-    await worker.write({ file: join(ROOT, 'dist/cpu-worker.js'), format: 'es', banner: libBanner, plugins: [minify] });
+    await worker.write({ file: join(ROOT, 'dist/cpu-worker.js'), format: 'es', banner: withMathZetta, plugins: [minify] });
     await worker.close();
 }
 
@@ -211,6 +213,26 @@ await cp(join(ROOT, 'demo/photos'), join(ROOT, 'site/photos'), { recursive: true
 // the object model and the runtime that runs it, served from the site itself
 await mkdir(join(ROOT, 'site/ort'), { recursive: true });
 for (const f of ['ort.wasm.min.mjs', 'ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) await cp(join(ROOT, 'node_modules/onnxruntime-web/dist', f), join(ROOT, 'site/ort', f));
+// what the site serves that is someone else's, with their licences (MIT asks for the notice to travel with every copy)
+{
+    const MIT = async (holder) => `MIT License\n\nCopyright (c) ${holder}\n\n` + (await readFile(join(ROOT, 'LICENSE'), 'utf8')).split(/\n\n/).slice(2).join('\n\n');
+    const ort = await MIT('Microsoft Corporation');
+    await writeFile(join(ROOT, 'site/ort/LICENSE'), `ONNX Runtime Web ${JSON.parse(await readFile(join(ROOT, 'node_modules/onnxruntime-web/package.json'), 'utf8')).version} (https://github.com/microsoft/onnxruntime), the files in this folder:\n\n${ort}`);
+    const gifenc = await readFile(join(ROOT, 'node_modules/gifenc/LICENSE.md'), 'utf8');
+    await writeFile(join(ROOT, 'site/THIRD-PARTY-NOTICES.txt'), [
+        `qblur.com runs qblur (Copyright (c) 2025-2026 Robert Wilcox, MIT licence: https://github.com/triplelog/qblur).
+These parts of the site are other people's, under their own licences:`,
+        `gifenc (https://github.com/mattdesl/gifenc), bundled into app.js and the apps' app.js to write GIFs:\n\n${gifenc.trim()}`,
+        `ONNX Runtime Web (https://github.com/microsoft/onnxruntime), in ort/, which runs the object model: MIT licence, Copyright (c)
+Microsoft Corporation (the full text: ort/LICENSE).`,
+        `MobileSAM and Segment Anything's mask decoder, in models/: Apache License 2.0 (models/LICENSE, models/NOTICE).`,
+        `The sample photos and videos, in photos/: from Unsplash and Pexels, under the Unsplash License
+(https://unsplash.com/license) and the Pexels License (https://www.pexels.com/license/); each one's author is
+credited under it on the page (photos/index.json).`,
+        `Loaded from elsewhere when a page opens: MathZetta and Inline Math (Copyright (c) 2025 Robert Wilcox, MIT licence) from
+jsDelivr, and the Montserrat and Open Sans fonts (SIL Open Font License) from Google Fonts.`,
+    ].join('\n\n') + '\n');
+}
 // only the shipped models (the MagicTouch ones were the only users of MediaPipe's runtime, so it isn't copied either)
 await rm(join(ROOT, 'site/models'), { recursive: true, force: true });
 await rm(join(ROOT, 'site/mediapipe'), { recursive: true, force: true });

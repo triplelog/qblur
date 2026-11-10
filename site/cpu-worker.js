@@ -1,4 +1,4 @@
-/* qblur — MIT licence; mathzetta loads from jsDelivr */
+/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT licence; MathZetta loads from jsDelivr; other people's code on this site: THIRD-PARTY-NOTICES.txt */
 import { parseTree } from 'https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/core.js';
 import { checkGeneratedJs } from 'https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/formulas.js';
 import { REACH, FILTER_FUNCTIONS, FILTER_VALUES, filterPictureCalls } from 'https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/glsl.js';

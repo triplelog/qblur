@@ -69,6 +69,9 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   repo paths, npm scripts and the API stay on GitHub. Keep new developer-only paragraphs inside such markers.
 - The profile-picture page's opening sample has its outline worked out ahead (`"person"` in demo/photos/index.json,
   `node tools/person-outline.mjs portrait.jpg` remakes it), so the model downloads only for the user's own photo or marks.
+- Licence: MIT, Copyright (c) 2025-2026 Robert Wilcox (LICENSE, every bundle's banner, README's Licence section). The build
+  writes `site/THIRD-PARTY-NOTICES.txt` and `site/ort/LICENSE` for what the site serves that isn't qblur's (gifenc, ONNX Runtime
+  Web, the model, the photos): keep it in step when adding someone else's code or files.
 - Site essentials: `docs/privacy.md` and `docs/terms.md`, rendered by the build as privacy.html and terms.html like the guide;
   their `{{KEY}}`s are filled from `docs/site-details.json` (the owner's name, email, dates…; empty = still `{{KEY}}`, and the
   "Draft" note goes when none is left);
@@ -87,8 +90,8 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
 - `demo/examples.js` — the guided examples (data); test/examples.test.js compiles them, tools/check.mjs runs them in the page.
 - `tools/shot.mjs` — `node tools/shot.mjs "/site/index.html" "<js>" out.png` for a look at the page.
 - `docs/filters.md` — the guide to what an expression can use (`px py rgb gray`, neighbourhoods, geometry, several pictures).
-- `docs/library.md` — the library on other people's pages: the CDN (placeholder jsDelivr URLs until qblur is on npm — they are
-  written there and in README.md; grep `cdn.jsdelivr.net/npm/@mathzetta/qblur`), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,
+- `docs/library.md` — the library on other people's pages: the CDN (jsDelivr: `cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/…`, also in README.md;
+  `node tools/check-docs.mjs --cdn` runs the examples from there), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,
   every export. Blocks fenced ```` ```html runnable ```` / ```` ```js node ```` are run by `npm run check:docs`: keep them working.
   The build renders it as site/library.html (the editor's "On your own site" links it). `dist/cpu-worker.js` ships beside the bundles
   for drawAsync; from another origin cpu-runner.js starts it through a blob: module, and falls back to draw() if workers can't start.
