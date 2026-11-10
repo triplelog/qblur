@@ -68,12 +68,16 @@ export function showcaseHtml() {
     return `<ul class="mz-showcase">${showcase().map((p) => `<li><a class="mz-card" href="${esc(p.url)}"><strong>${esc(p.name)}</strong>${p.site.id !== 'math' && p.site.name !== p.name ? `<span class="mz-tag">${esc(p.site.name)}</span>` : ''}<span class="mz-what">${esc(p.what)}</span><span class="mz-uses">${esc(p.uses)}</span></a></li>`).join('')}</ul>`;
 }
 
-/** A site's own index page as HTML: its pages as cards (in the site's look). */
-export function indexHtml(siteId) {
+/**
+ * A site's own index page as HTML: its pages as cards (in the site's look). A site with more to say
+ * passes `main(cards)` (the main column's HTML, given the cards as <li>s; its own .ss-cell sections),
+ * and `title`, `description`, `head` (extra <head> markup).
+ */
+export function indexHtml(siteId, { title = null, description = null, head = '', main = null } = {}) {
     const s = site(siteId);
     if (!s) throw new Error(`no site ${siteId}`);
     const cards = s.pages.filter((p) => p.path !== '').map((p) => `<li><a class="mz-card" href="${esc(pageHref('', p))}"><strong>${esc(p.name)}</strong><span class="mz-what">${esc(p.what)}</span></a></li>`).join('');
-    const frame = frameHtml({ site: siteId, page: 'home', base: './' }, `<h1>${esc(s.name)}</h1>
+    const frame = frameHtml({ site: siteId, page: 'home', base: './' }, main ? main(cards) : `<h1>${esc(s.name)}</h1>
 <p class="lead">${esc(s.tagline)}</p>
 <ul class="mz-showcase">${cards}</ul>`);
     return `<!doctype html>
@@ -81,9 +85,9 @@ export function indexHtml(siteId) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(s.name)}</title>
-<meta name="description" content="${esc(s.tagline)}">
-${headLinksHtml(siteId)}
+<title>${esc(title ?? s.name)}</title>
+<meta name="description" content="${esc(description ?? s.tagline)}">
+${headLinksHtml(siteId)}${head ? `\n${head}` : ''}
 </head>
 <body class="${frame.bodyClass}">
 ${frame.body}

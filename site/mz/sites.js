@@ -74,6 +74,7 @@ export const SITES = [
             { id: 'generator', name: 'Make an embeddable table', path: 'tabview/generator/', what: 'a CSV becomes a table you paste into any page',
                 uses: 'formulas compiled to JavaScript loops over the columns, in the visitor’s browser' },
             { id: 'tabview', name: 'Table demo', path: 'tabview/demo/', what: 'batting data in the browser: filter, add columns, group, pivot, export to .xlsx with live formulas' },
+            { id: 'help', name: 'Help', path: 'help.html', what: 'how to write a filter, add and arrange columns, group and export; running and hosting your own table server' },
         ],
     },
     {
