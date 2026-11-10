@@ -830,6 +830,12 @@ function createFilterRunner(gl, compiled, options = {}) {
          */
         setImage(name, image) {
             if (typeof name !== 'string') { image = name; name = null; }
+            if (name && name !== 'source' && image == null) {             // setImage(name, null): back to "not given" (white)
+                if (pictures.has(name)) gl.deleteTexture(pictures.get(name));
+                pictures.delete(name);
+                sizes.delete(name);
+                return runner;
+            }
             let texture = source.texture;
             if (name && name !== 'source') {
                 if (!pictures.has(name)) {
@@ -2228,10 +2234,12 @@ function sharedPicture(picture) {
 async function createPool(size, passes, workerUrl) {
     const url = new URL(workerUrl ?? './cpu-worker.js', import.meta.url);
     let make;
+    let revoke = () => {};                                      // the blob: address, once the workers no longer need it
     if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
         // a worker script must come from the page's own origin: from a CDN, a blob: module that imports it does
         const start = url.origin === location.origin ? url
             : URL.createObjectURL(new Blob([`import ${JSON.stringify(url.href)};`], { type: 'text/javascript' }));
+        if (start !== url) revoke = () => URL.revokeObjectURL(start);
         make = () => {
             const w = new Worker(start, { type: 'module' });
             return { send: (m) => w.postMessage(m), on: (fn) => { w.onmessage = (e) => fn(e.data); w.onerror = (e) => fn({ id: -1, ok: false, error: e.message }); }, close: () => w.terminate() };
@@ -2267,7 +2275,14 @@ async function createPool(size, passes, workerUrl) {
         broadcast: (message) => Promise.all(workers.map((_, k) => ask(k, message))),
         close: () => workers.forEach((w) => w.close()),
     };
-    await pool.broadcast({ type: 'init', passes: passes.map(({ fragment, ...rest }) => rest) });
+    try {
+        await pool.broadcast({ type: 'init', passes: passes.map(({ fragment, ...rest }) => rest) });
+    } catch (error) {
+        pool.close();                                          // workers that couldn't start the filter don't stay running
+        throw error;
+    } finally {
+        revoke();                                              // every worker has loaded its script (or failed to)
+    }
     return pool;
 }
 

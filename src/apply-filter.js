@@ -211,6 +211,9 @@ async function apply(picture, filter, { params = {}, t = 0, images = {}, engine 
             }
         });
         runner.setImage(image);
+        // a kept runner still holds the last call's pictures: one this call doesn't give goes back to "not given", as on the CPU
+        for (const name of entry.given ?? []) if (!(name in images)) runner.setImage(name, null);
+        entry.given = Object.keys(images);
         for (const [name, other] of Object.entries(images)) {
             const [w, h] = pictureSize(other);
             runner.setImage(name, w && h ? fit(other, w, h, limit).image : other);

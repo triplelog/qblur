@@ -193,7 +193,9 @@ With classic scripts: `<script src="…/mathzetta@1/build/mathzetta.glsl.min.js"
 is what filters use) and then `…/qblur@0.1/dist/qblur.external.global.min.js`.
 
 Pin a version (`@0.1` follows fixes, `@0.1.0` never changes) and, for a fixed version, add an `integrity`
-hash so the browser checks the file: `npm run cdn` in the repository prints the snippets with hashes.
+hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it
+yourself: `curl -s https://cdn.jsdelivr.net/npm/qblur@0.1.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
+gives the part after `sha384-`.
 
 ## Filters
 

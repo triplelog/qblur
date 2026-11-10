@@ -4,6 +4,11 @@ import { suite, test, eq } from './harness.js';
 import { applyFilter, toCompiled, toBlob, encodeGif, pictureData, MAX_SIZE, MAX_SIZE_CPU } from '../src/apply.js';
 import { compileFilter, filterToLink, LIBRARY } from '../src/index.js';
 import * as main from '../src/index.js';
+import { createCpuRunner } from '../src/cpu-runner.js';
+import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 // The harness is synchronous: everything async happens up here, the tests look at the results.
 const W = 4, H = 2;
@@ -127,6 +132,27 @@ suite('applyFilter: the size limit', () => {
     test('maxSize sets it', () => { if (cappedSmall.error) throw cappedSmall.error; eq([cappedSmall.value.width, cappedSmall.value.height, cappedSmall.value.data[0]], [300, 1, 55]); });
     test('scaling down averages what each new pixel covers', () => { if (halved.error) throw halved.error; eq([...halved.value.data], [128, 128, 128, 255, 128, 128, 128, 255]); });
     test('a maxSize that is not a number is refused', () => eq(/maxSize is a number/.test(badMax.error?.message), true));
+});
+
+// a worker pool that can't start: workers that stay up but refuse the filter. They must be closed — left running, they
+// would keep Node from exiting — and drawAsync draws here instead. Run in a child process with a time limit, so that
+// a regression fails this test instead of hanging the suite.
+const refusing = join(tmpdir(), `qblur-refusing-worker-${process.pid}.mjs`);
+writeFileSync(refusing, "import { parentPort } from 'node:worker_threads';\nparentPort.on('message', (m) => parentPort.postMessage({ id: m.id, ok: false, error: 'this worker refuses the filter' }));\n");
+const child = join(tmpdir(), `qblur-pool-child-${process.pid}.mjs`);
+writeFileSync(child, `import { createCpuRunner } from ${JSON.stringify(new URL('../src/cpu-runner.js', import.meta.url).href)};
+import { compileFilter } from ${JSON.stringify(new URL('../src/format.js', import.meta.url).href)};
+const r = createCpuRunner(compileFilter('1 - rgb'), { workers: 2, parallelFrom: 1, workerUrl: ${JSON.stringify(pathToFileURL(refusing).href)} });
+r.setImage({ width: 2, height: 2, data: new Uint8ClampedArray([200, 40, 90, 255, 200, 40, 90, 255, 200, 40, 90, 255, 200, 40, 90, 255]) });
+const out = await r.drawAsync();
+r.dispose();
+console.log(out.data[0]);
+`);
+const { spawnSync } = await import('node:child_process');
+const run = spawnSync(process.execPath, [child], { encoding: 'utf8', timeout: 20000 });
+
+suite('the CPU runner\'s workers', () => {
+    test('a pool that cannot start is closed (Node exits), and drawAsync draws here', () => eq([run.signal, run.status, run.stdout.trim()], [null, 0, '55']));
 });
 
 suite('entries', () => {

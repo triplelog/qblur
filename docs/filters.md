@@ -634,7 +634,7 @@ can't use the CPU runner.
 
 ### On the GPU
 
-A complete WebGL 1 setup — `demos/filters.html` is this with a UI:
+A complete WebGL 1 setup with MathZetta alone (qblur's `createFilterRunner` does all of this for you):
 
 ```js
 const gl = canvas.getContext('webgl');
@@ -665,7 +665,7 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 ```
 
 For WebGL 2, pass `{ version: 300 }` to both `filterShader` and
-`filterVertexShader`. `npm run check:filters` runs every library filter
+`filterVertexShader`. `npm run check` runs every library filter
 through real WebGL in headless Chrome (`--webgl2` for the ES 3.0 output). To process a GIF or video offline, draw each frame
 to a canvas, upload it, draw, and read the canvas back (`toBlob` or
 `readPixels`).
@@ -835,5 +835,7 @@ only run what has a numeric meaning per pixel:
   followed by a bracket are read as function calls, as in maths: write
   `g * (1 - r)`, not `g(1 - r)`.
 
-`docs/how-it-works.md` describes the GLSL renderer itself, and
-`test/cases/glsl.tsv` lists filter-style expressions with their GLSL.
+MathZetta's [how it works](https://github.com/triplelog/mathzetta/blob/main/packages/mathzetta/docs/how-it-works.md)
+describes the GLSL renderer itself, and its
+[glsl.tsv](https://github.com/triplelog/mathzetta/blob/main/packages/mathzetta/test/cases/glsl.tsv) lists
+filter-style expressions with their GLSL.

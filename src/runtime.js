@@ -87,6 +87,12 @@ export function createFilterRunner(gl, compiled, options = {}) {
          */
         setImage(name, image) {
             if (typeof name !== 'string') { image = name; name = null; }
+            if (name && name !== 'source' && image == null) {             // setImage(name, null): back to "not given" (white)
+                if (pictures.has(name)) gl.deleteTexture(pictures.get(name));
+                pictures.delete(name);
+                sizes.delete(name);
+                return runner;
+            }
             let texture = source.texture;
             if (name && name !== 'source') {
                 if (!pictures.has(name)) {

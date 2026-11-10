@@ -140,7 +140,7 @@ import 'qblur/element';                                   // defines &lt;qblur-i
   runner.setImage(img).draw({ canvas });
 &lt;/script&gt;</code></pre>
 <p>With classic scripts: <code>&lt;script src="…/mathzetta@1/build/mathzetta.glsl.min.js"&gt;</code> (the GLSL flavour, which is what filters use) and then <code>…/qblur@0.1/dist/qblur.external.global.min.js</code>.</p>
-<p>Pin a version (<code>@0.1</code> follows fixes, <code>@0.1.0</code> never changes) and, for a fixed version, add an <code>integrity</code> hash so the browser checks the file: <code>npm run cdn</code> in the repository prints the snippets with hashes.</p>
+<p>Pin a version (<code>@0.1</code> follows fixes, <code>@0.1.0</code> never changes) and, for a fixed version, add an <code>integrity</code> hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it yourself: <code>curl -s https://cdn.jsdelivr.net/npm/qblur@0.1.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A</code> gives the part after <code>sha384-</code>.</p>
 <h2 id="filters">Filters</h2>
 <p>A filter is maths run on every pixel. The <a href="guide.html">guide</a> is the full language — what an expression can use, animation, neighbouring pixels, geometry, several pictures, colour spaces, text and brushes. In short: <code>r g b a</code> (or <code>rgb</code>) is the pixel, <code>x y</code> its position from 0 to 1, <code>px py</code> in pixels, <code>w h</code> the picture's size, <code>t</code> the frame, <code>gray</code> its brightness, <code>source</code> the original picture, and <code>pixel(px, py)</code> reads another pixel. The result is a colour <code>(r, g, b)</code> or a number (grey).</p>
 <p>What you pass to <code>compileFilter</code>:</p>

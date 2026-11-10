@@ -211,6 +211,12 @@ const CHECK = `(async () => {
             big.width = 5000; big.height = 100;
             const limited = await applyFilter(big, 'rgb', { maxSize: 1000 });
             out.limited = limited.width + 'x' + limited.height + ' ' + (MAX_SIZE === 4096);
+            // a picture given in one call and not the next goes back to "not given" (white), as on the CPU
+            const masked = { images: { mask: {} }, color: '(luma(mask), luma(mask), luma(mask))' };
+            const black = document.createElement('canvas'); black.width = black.height = 2;
+            black.getContext('2d').fillRect(0, 0, 2, 2);
+            out.maskGiven = await first(flat(200, 40, 40), masked, { images: { mask: black } });
+            out.maskNotGiven = await first(flat(200, 40, 40), masked);
             const doc = { color: '1 - rgb' };
             await first(flat(200, 40, 40), doc, {});
             doc.color = 'rgb';
@@ -241,7 +247,7 @@ const CHECK = `(async () => {
             out.elementAgain = p[0] === p[1] && p[1] === p[2];
             el.remove();
         } catch (e) { out.error = e.message; }
-        const want = { plain: '200,40,40', floats: '255,0,0', limited: '1000x20 true', changedDoc: '200,40,40', liveKnob: '255,255,255', together: '200,40,40 40,40,200', element: true, elementError: true, elementAgain: true };
+        const want = { plain: '200,40,40', floats: '255,0,0', limited: '1000x20 true', maskGiven: '0,0,0', maskNotGiven: '255,255,255', changedDoc: '200,40,40', liveKnob: '255,255,255', together: '200,40,40 40,40,200', element: true, elementError: true, elementAgain: true };
         results.push({ name: 'applyFilter in the page and <qblur-image>', error: JSON.stringify(out) === JSON.stringify(want) ? '' : JSON.stringify(out), mean: 0, lit: 0 });
     }
     // selecting an object: eight rough clicks around the red disc of the test picture give its outline
