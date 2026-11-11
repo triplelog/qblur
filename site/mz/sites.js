@@ -29,7 +29,9 @@ const placeholder = (name) => `https://${name}.mathzetta.com/`;
 
 export const SITES = [
     {
-        id: 'math', name: 'MathZetta', url: MATHZETTA_URL, tagline: MATHZETTA_TAGLINE,
+        // look: 'shioh': pages that mount the shared chrome (Convert, the CAS pages) get the Shioh frame,
+        // matching the pages with mathzetta-website's own shell.js
+        id: 'math', name: 'MathZetta', url: MATHZETTA_URL, tagline: MATHZETTA_TAGLINE, look: 'shioh',
         pages: [
             { id: 'home', name: 'MathZetta', path: '', what: 'what it reads, what it writes, the API' },
             { id: 'playground', name: 'Playground', path: 'demos/', what: 'type maths and see the postfix, the tree and every output' },
@@ -38,8 +40,8 @@ export const SITES = [
             { id: 'operators', name: 'Operators', path: 'demos/operations.html', what: 'what each operator reads and writes as' },
             { id: 'quiz', name: 'Postfix quiz', path: 'quiz.html', what: 'learn the postfix algorithm: turn an expression into postfix one move at a time, with hints',
                 uses: 'the quiz’s precedences come from the operator table and every answer is checked against parse()' },
-            { id: 'rules', name: 'CAS', path: 'cas/', what: 'MathZetta CAS: derivatives and simplification as rules you can read and change',
-                uses: 'rewriting the postfix with YAML rules: differentiation, simplification, an exact CAS (@mathzetta/cas)' },
+            { id: 'rules', name: 'CAS rules', path: 'cas/', what: 'the rules under MathZetta CAS: simplification and derivatives as YAML rules you can step through, change and test',
+                uses: 'rewriting the postfix with YAML rules: differentiation and simplification, the engine under the exact CAS (@mathzetta/cas)' },
             { id: 'api', name: 'API', path: 'api.html', what: 'the functions, with live examples' },
             { id: 'cdn', name: 'CDN', path: 'cdn.html', what: 'tick the outputs a page needs and get the tag, the imports or an import map from jsDelivr, with the size' },
             { id: 'tests', name: 'Test runner', path: 'demos/test-runner.html', what: 'the checks, run in your browser' },
@@ -52,6 +54,7 @@ export const SITES = [
         pages: [
             { id: 'home', name: 'Inline Math', path: '', what: 'a gallery of drawn maths, each part findable, colourable, animated between steps',
                 uses: 'draws anything MathZetta reads; node ids are postfix positions, so a spoken word or a rule step lights up the part it means' },
+            { id: 'docs', name: 'Get started', path: 'docs.html', what: 'install from npm or a CDN, draw, the live view, every option, Markdown and the CAS' },
             { id: 'markdown', name: 'Markdown', path: 'markdown.html', what: 'Markdown with maths, {{…}} worked out, definitions remembered' },
             { id: 'cas', name: 'CAS', path: 'cas.html', what: 'simplify, solve and differentiate, the steps drawn as maths' },
             { id: 'print', name: 'Print', path: 'print.html', what: 'quizzes, tests and worksheets to print or save as PDF, with answer keys and step-by-step solutions' },

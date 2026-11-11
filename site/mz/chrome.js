@@ -17,10 +17,11 @@
  *                              the element after the header)
  *   mountShowcase(el)          the "what it's used for" list, for MathZetta's home
  *
- * A site whose registry entry says look: 'shioh' (tabdn.com) gets the Shioh frame instead
+ * A site whose registry entry says look: 'shioh' (tabdn.com, and mathzetta.com for the pages that mount
+ * this chrome: Convert and the CAS pages; its other pages have mathzetta-website's shell.js) gets the Shioh frame instead
  * (shioh-style.css, the skill's base unchanged, then shioh-frame.css and shioh.js, all loaded from
  * beside this file): a sticky sidebar with the wordmark and the site's pages, then a cell with
- * "Made with MathZetta", the other sites, privacy and terms; the page's <main> becomes the main
+ * "Made with MathZetta" (on mathzetta.com: "Built on it"), the other sites, privacy and terms; the page's <main> becomes the main
  * column, its content one coloured cell (or the cells it marks itself with .ss-cell). On phones the
  * sidebar is a slim bar with a Menu button and the "Made with" cell comes after the page.
  * shioh.js also gives the page window.ssToast() and window.ssConfirm().
@@ -115,6 +116,14 @@ export function pageCell(siteId, pageId) {
 /** "Made with MathZetta", the other sites, privacy and terms: the sidebar's last cell, and again after the page on phones. */
 function frameFootHtml(s, home, where) {
     const family = listed().filter((x) => x.id !== s.id).map((x) => `<a href="${esc(x.url)}" title="${esc(x.tagline)}">${esc(x.name)}</a>`).join('');
+    if (s.id === 'math') {
+        // MathZetta's own pages: the same cell as mathzetta-website's shell.js (the sites built on it, the source)
+        return `<footer class="ss-cell ss-p4 ss-frame-foot ${where}" role="contentinfo">
+    <p><b>Built on it</b> — sites whose maths MathZetta reads:</p>
+    <p class="ss-family">${family}</p>
+    <p class="ss-family"><a href="${esc(MATHZETTA_URL)}">mathzetta.com</a><a href="${esc(SOURCE_URL)}">Source</a><a href="${esc(home)}privacy.html">Privacy</a><a href="${esc(home)}terms.html">Terms</a></p>
+  </footer>`;
+    }
     return `<footer class="ss-cell ss-p4 ss-frame-foot ${where}" role="contentinfo">
     <p>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE.replace(/\.$/, ''))}. The maths you type here is read by it.</p>
     <p class="ss-family">${family}</p>
@@ -206,7 +215,8 @@ function mountShioh(options) {
     }
     shell.append(fromHtml(phoneFootHtml(options)));
     document.body.prepend(fromHtml(`<a class="mz-skip" href="#${main.id}">Skip to content</a>`));
-    for (const el of main.querySelectorAll('pre, .scroll')) if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
+    // scrolling code reachable by keyboard; not a <pre> hidden from assistive tech (an editor's highlight layer)
+    for (const el of main.querySelectorAll('pre:not([aria-hidden="true"]), .scroll')) if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
     const aside = shell.querySelector('.ss-sidebar');
     menu(aside.querySelector('.ss-navcell'));
     return { header: aside, footer: aside.querySelector('footer') };
