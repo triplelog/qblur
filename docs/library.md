@@ -186,7 +186,7 @@ at one file:
 ```
 
 With classic scripts: `<script src="…/mathzetta@1/build/mathzetta.glsl.min.js">` (the GLSL flavour, which
-is what filters use) and then `…/qblur@0.1/dist/qblur.external.global.min.js`.
+is what filters use) and then `…/@mathzetta/qblur@0.1/dist/qblur.external.global.min.js`.
 
 Pin a version (`@0.1` follows fixes, `@0.1.0` never changes) and, for a fixed version, add an `integrity`
 hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it
