@@ -1,4 +1,4 @@
-# Image filters
+# Writing image filters
 
 A filter is a bit of maths that runs on every pixel of a picture. It reads the pixel — its
 colour `r` `g` `b`, its brightness `gray`, where it is (`x` `y`, or `px` `py` in pixels) — and works

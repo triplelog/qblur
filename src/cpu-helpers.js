@@ -29,6 +29,8 @@ export function smoothstep(e0, e1, x) { const t = Math.min(Math.max((x - e0) / (
 export function factorial(n) { let r = 1; for (let i = 2; i <= 170; i++) { if (i > n) break; r *= i; } return r; }
 export function perm(n, k) { let r = 1; for (let i = 0; i < 170; i++) { if (i >= k) break; r *= n - i; } return r; }
 export function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); for (let i = 0; i < 64; i++) { if (b === 0) break; const t = fmod(a, b); a = b; b = t; } return a; }
+/** Halves go away from zero, as the shader's mz_round and every other MathZetta output round. */
+export function round(x, digits) { const p = Math.pow(10, digits); return Math.sign(x) * Math.floor(Math.abs(x) * p + 0.5) / p; }
 export function root(n, x) { return n === 2 ? Math.sqrt(x) : n === 3 ? Math.sign(x) * Math.pow(Math.abs(x), 1 / 3) : Math.pow(x, 1 / n); }
 /** The shader's hash: a new value per pixel and per call, seeded with t. (A GPU's float sin differs, so the values do too.) */
 export function random(px, py, h, seed) {

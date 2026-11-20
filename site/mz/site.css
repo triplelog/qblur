@@ -1,6 +1,6 @@
 /* The MathZetta sites' shared look.
  *
- *   tokens      --mz-* colours (light and dark), fonts, radius. The chrome and body.mz use only
+ *   tokens      --mz-* colors (light and dark), fonts, radius. The chrome and body.mz use only
  *               these, so a page's own variables can't restyle them. The unprefixed names many
  *               pages already use (--fg, --bg, --accent, --muted, --line, --soft …) are aliases: a
  *               page that drops its own :root block picks up the shared palette, dark mode included.

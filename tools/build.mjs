@@ -38,6 +38,7 @@ import { cp, mkdir, readFile, writeFile, readdir, access, rm } from 'node:fs/pro
 import { guidePage, forSite } from './markdown.mjs';
 import { AI_MODELS, SHIPPED_MODELS } from '../demo/ai.js';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -64,7 +65,7 @@ async function bundle(input, file, { worker = false } = {}) {
         onwarn: (warning, warn) => { if (warning.code !== 'CIRCULAR_DEPENDENCY') warn(warning); },
     });
     await build.write({ file: join(ROOT, 'site', file), format: 'es', banner: `/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT licence; MathZetta loads from jsDelivr; other people's code ${worker ? 'on this site' : 'in this file (gifenc) and on this site'}: THIRD-PARTY-NOTICES.txt */`,
-        ...(worker ? { paths: (id) => cdnUrl(id, v) ?? id } : {}) });
+        plugins: [minify], ...(worker ? { paths: (id) => cdnUrl(id, v) ?? id } : {}) });
     await build.close();
     if (worker) cdnUsed.push(...cdnUrlsIn(await readFile(join(ROOT, 'site', file), 'utf8')));
 }
@@ -82,7 +83,7 @@ const siteMap = (page, ort) => {
  * replaced (a page's own og:title / og:description are kept), so every page says the same things the same way. Addresses that aren't absolute stay relative to the page
  * (`path` is where it is, as the sitemap writes it), so the site also works under a sub-path.
  */
-function head(page, { path, card, description }) {
+function head(page, { path, card, description, schema }) {
     const up = '../'.repeat(path.split('/').length - 1);
     const attr = (t) => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     const unattr = (t) => t.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
@@ -108,8 +109,50 @@ function head(page, { path, card, description }) {
         `<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">`,
         `<link rel="icon" href="${up}favicon.ico" sizes="32x32">`,
         `<link rel="apple-touch-icon" href="${up}apple-touch-icon.png">`,
+        ...(schema && url ? [`<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', url, description: text, ...schema }).replace(/</g, '\\u003c')}</script>`] : []),
+        LOAD_FAILED,
     ];
     return html.replace(/(<meta name="viewport"[^>]*>\n)/, (m) => m + lines.join('\n') + '\n');
+}
+/** What search engines read about an app page (schema.org): free, in a browser. */
+const webApp = (name) => ({ '@type': 'WebApplication', name, applicationCategory: 'MultimediaApplication', operatingSystem: 'Any (in a web browser)',
+    browserRequirements: 'Requires JavaScript', isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+/**
+ * A script that didn't load (MathZetta's modules come from jsDelivr: a network hiccup, a blocked CDN) leaves a page
+ * that does nothing; this says so, with a Reload button. A module whose graph fails to load fires "error" at its
+ * <script> element, which doesn't bubble: hence the capture. Inline, so it is there before any module.
+ */
+const LOAD_FAILED = `<script>addEventListener('error', function (e) {
+  var s = e.target; if (!s || s.tagName !== 'SCRIPT' || document.getElementById('load-failed')) return;
+  var d = document.createElement('div'); d.id = 'load-failed'; d.setAttribute('role', 'alert');
+  d.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;margin:0 auto;width:fit-content;max-width:36rem;z-index:2000;box-sizing:border-box;display:flex;gap:.8rem;align-items:center;padding:.7rem 1rem;background:#fff;color:#1a1a2e;border:2px solid #000080;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.5);font:15px/1.4 system-ui,sans-serif';
+  d.textContent = 'Part of this page didn\\u2019t load, so it won\\u2019t work yet. Check your connection and reload.';
+  var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Reload'; b.onclick = function () { location.reload(); };
+  b.style.cssText = 'flex:none;padding:.35rem .9rem;font:inherit;font-weight:600;color:#fff;background:#000080;border:0;border-radius:4px;cursor:pointer';
+  d.appendChild(b); (document.body || document.documentElement).appendChild(d);
+}, true);</script>`;
+
+/**
+ * The modules a page will fetch from jsDelivr, found ahead (its bundle's imports through its import map, then each
+ * module's own static imports, fetched now), as <link rel="modulepreload">s after the import map: the browser asks for
+ * them all at once instead of one level at a time. Without the network the page just doesn't get them.
+ */
+async function preloads(page, bundleFile) {
+    const map = JSON.parse(/<script type="importmap">([\s\S]*?)<\/script>/.exec(page)[1]).imports;
+    const importsIn = (code) => [...code.matchAll(/\b(?:from|import)\s*["']([^"']+)["']/g)].map((m) => m[1]);
+    const resolve = (spec, from) => (/^\.{0,2}\//.test(spec) ? new URL(spec, from).href : map[spec]);
+    const seen = new Set();
+    let next = importsIn(await readFile(bundleFile, 'utf8')).map((s) => map[s]).filter((u) => u?.startsWith('https://'));
+    try {
+        while (next.length) {
+            next = next.filter((u) => !seen.has(u));
+            for (const u of next) seen.add(u);
+            const codes = await Promise.all(next.map(async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(`${r.status} ${u}`); return [u, await r.text()]; }));
+            next = codes.flatMap(([u, code]) => importsIn(code).map((s) => resolve(s, u))).filter((u) => u?.startsWith('https://'));
+        }
+    } catch (e) { console.log(`note: no module preloads for ${bundleFile.replace(ROOT, '')} (${e.message})`); return page; }
+    const links = ['<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>', ...[...seen].map((u) => `<link rel="modulepreload" href="${u}">`)];
+    return page.replace(/(<script type="importmap">[\s\S]*?<\/script>\n)/, (m) => m + links.join('\n') + '\n');
 }
 
 // the library: one ES module and one classic script, with MathZetta's GLSL output bundled in
@@ -156,25 +199,26 @@ try {
 await mkdir(join(ROOT, 'site'), { recursive: true });
 await bundle('demo/app.js', 'app.js');
 await bundle('src/cpu-worker.js', 'cpu-worker.js', { worker: true });
-await writeFile(join(ROOT, 'site/index.html'), head(siteMap(html, './ort/ort.wasm.min.mjs')
+await writeFile(join(ROOT, 'site/index.html'), head(await preloads(siteMap(html, './ort/ort.wasm.min.mjs')
     .replaceAll('href="../docs/filters.md"', 'href="guide.html"')
     .replaceAll('href="../docs/library.md"', 'href="library.html"')
     .replaceAll('/node_modules/mathzetta-sites/src/', './mz/')
-    .replace('/node_modules/@mathzetta/inlinemath/inlinemath.css', () => { const url = fileUrl('inlinemath', 'inlinemath.css', v); cdnUsed.push(url); return url; })   // the knobs and notes are drawn by Inline Math
-    , { path: '', card: 'index' }));
+    .replace('/node_modules/@mathzetta/inlinemath/inlinemath.css', () => { const url = fileUrl('inlinemath', 'inlinemath.css', v); cdnUsed.push(url); return url; }),   // the knobs and notes are drawn by Inline Math
+    join(ROOT, 'site/app.js')), { path: '', card: 'index', schema: webApp('qblur') }));
 if (!siteUrl) console.log('note: set SITE_URL (or "homepage" in package.json) for absolute og:image / og:url / canonical in link previews');
 // the two documents, linking each other by their site names
 const siteLinks = (html) => html.replaceAll('href="filters.md', 'href="guide.html').replaceAll('href="library.md', 'href="library.html');
-await writeFile(join(ROOT, 'site/guide.html'), head(siteLinks(guidePage(forSite(await readFile(join(ROOT, 'docs/filters.md'), 'utf8')))),
+await writeFile(join(ROOT, 'site/guide.html'), head(siteLinks(guidePage(forSite(await readFile(join(ROOT, 'docs/filters.md'), 'utf8')), { title: 'How to write an image filter as maths — qblur guide' })),
     { path: 'guide.html', card: 'docs', description: 'How to write an image filter as maths: what an expression can use — the pixel, its neighbours, where it is, time, other pictures — with examples to try in the editor.' }));
-await writeFile(join(ROOT, 'site/library.html'), head(siteLinks(guidePage(await readFile(join(ROOT, 'docs/library.md'), 'utf8'), { title: 'qblur · on your own pages', page: 'library' })),
-    { path: 'library.html', card: 'docs', description: 'qblur on your own pages: one script tag or an ES module from a CDN, filters on the GPU or the CPU (in Node too), knobs, video, text and sharing — with working examples.' }));
+await writeFile(join(ROOT, 'site/library.html'), head(siteLinks(guidePage(await readFile(join(ROOT, 'docs/library.md'), 'utf8'), { title: 'Image filters on your own pages: the JavaScript library — qblur', page: 'library' })),
+    { path: 'library.html', card: 'docs', schema: { '@type': 'SoftwareSourceCode', name: '@mathzetta/qblur', codeRepository: 'https://github.com/triplelog/qblur',
+        programmingLanguage: 'JavaScript', license: 'https://opensource.org/licenses/MIT' }, description: 'qblur on your own pages: one script tag or an ES module from a CDN, filters on the GPU or the CPU (in Node too), knobs, video, text and sharing — with working examples.' }));
 // the site's essentials: privacy and terms (drafts: the owner fills the {{…}}), a 404, robots.txt and a sitemap from the registry
 // The owner's details (legal name, contact, dates…) are written once, in docs/site-details.json (Claude UI's Content
 // page edits it), and fill the {{KEY}}s of both pages; an empty one stays {{KEY}}. When nothing is left to fill, the
 // "Draft" note at the top goes.
 const details = JSON.parse(await readFile(join(ROOT, 'docs/site-details.json'), 'utf8'));
-for (const [name, title] of [['privacy', 'qblur · privacy'], ['terms', 'qblur · terms of use']]) {
+for (const [name, title] of [['privacy', 'Privacy — qblur'], ['terms', 'Terms of use — qblur']]) {
     let md = (await readFile(join(ROOT, `docs/${name}.md`), 'utf8')).replace(/\{\{([A-Z_]+)\}\}/g, (all, key) => (details[key] ? String(details[key]) : all));
     const unfilled = [...md.matchAll(/\{\{([A-Z_]+)\}\}/g)].map((m) => m[1]);
     if (!unfilled.length) md = md.replace(/^> \*\*Draft\.\*\*[^\n]*\n(>[^\n]*\n)*\n?/m, '');
@@ -187,9 +231,18 @@ await cp(join(ROOT, 'demo/404.html'), join(ROOT, 'site/404.html'));
 {
     const { SITES } = await import(new URL('../node_modules/mathzetta-sites/src/sites.js', import.meta.url));
     const qblur = SITES.find((s) => s.id === 'qblur');
-    const urls = [...qblur.pages.map((p) => qblur.url + p.path), qblur.url + 'privacy.html', qblur.url + 'terms.html'];
+    const SOURCES = { '': ['demo/index.html', 'demo/app.js'], 'guide.html': ['docs/filters.md'], 'library.html': ['docs/library.md'],
+        'privacy.html': ['docs/privacy.md', 'docs/site-details.json'], 'terms.html': ['docs/terms.md', 'docs/site-details.json'] };
+    const changed = (path) => {   // the day of the last commit touching the page's sources (uncommitted: today)
+        const files = SOURCES[path] ?? [`demo/${path}`];
+        try {
+            if (execFileSync('git', ['status', '--porcelain', '--', ...files], { cwd: ROOT, encoding: 'utf8' }).trim()) return new Date().toISOString().slice(0, 10);
+            return execFileSync('git', ['log', '-1', '--format=%cs', '--', ...files], { cwd: ROOT, encoding: 'utf8' }).trim() || null;
+        } catch { return null; }
+    };
+    const urls = [...qblur.pages.map((p) => p.path), 'privacy.html', 'terms.html'].map((p) => [qblur.url + p, changed(p)]);
     await writeFile(join(ROOT, 'site/robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${qblur.url}sitemap.xml\n`);
-    await writeFile(join(ROOT, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
+    await writeFile(join(ROOT, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, day]) => `  <url><loc>${u}</loc>${day ? `<lastmod>${day}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 }
 // the small apps: a folder each, one level down, so their paths to photos/, models/ and ort/ start with ../
 export const APPS = ['avatar', 'splash', 'move', 'text'];
@@ -197,8 +250,9 @@ for (const app of APPS) {
     await mkdir(join(ROOT, 'site', app), { recursive: true });
     await bundle(`demo/${app}/app.js`, `${app}/app.js`);
     const page = await readFile(join(ROOT, 'demo', app, 'index.html'), 'utf8');
-    await writeFile(join(ROOT, 'site', app, 'index.html'), head(siteMap(page, '../ort/ort.wasm.min.mjs')
-        .replaceAll('/node_modules/mathzetta-sites/src/', '../mz/'), { path: `${app}/`, card: app }));
+    await writeFile(join(ROOT, 'site', app, 'index.html'), head(await preloads(siteMap(page, '../ort/ort.wasm.min.mjs')
+        .replaceAll('/node_modules/mathzetta-sites/src/', '../mz/'), join(ROOT, 'site', app, 'app.js')),
+        { path: `${app}/`, card: app, schema: webApp(/<title>([^<]*?) — qblur<\/title>/.exec(page)?.[1] ?? app) }));
 }
 await cp(join(ROOT, 'demo/apps.css'), join(ROOT, 'site/apps.css'));
 // the link-preview cards and the icons (tools/share-cards.mjs makes them)

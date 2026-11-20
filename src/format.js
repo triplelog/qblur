@@ -40,6 +40,9 @@ export const FILTER_FORMAT = 'mathzetta-filter/1';
 
 const CHANNELS = ['r', 'g', 'b', 'a', 'rgb', 'rgba'];
 const NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
+/** More than any real filter has; a document built to exhaust the page (thousands of shaders or frame-sized pictures) is refused. */
+const MAX_PASSES = 256;
+const MAX_GRAPHICS = 64;
 
 /** Names a parameter can't take: what every expression already has, and GLSL's own words. */
 const RESERVED = new Set([
@@ -105,7 +108,7 @@ function normalizeNotes(notes, params) {
     return notes.map((block) => {
         if (typeof block === 'string') return block;
         if (!isObject(block) || typeof block.param !== 'string' || Object.keys(block).length !== 1) throw new Error('"notes": each entry is a Markdown text or { "param": name }');
-        if (!(block.param in params)) throw new Error(`"notes" places "${block.param}", but there is no parameter called that`);
+        if (!Object.hasOwn(params, block.param)) throw new Error(`"notes" places "${block.param}", but there is no parameter called that`);
         return { param: block.param };
     });
 }
@@ -125,11 +128,12 @@ function normalizeSpace(space) {
 /** `{ "title": { "type": "text", "text": "Hello", … } }` → each spec in full (src/graphics.js). */
 function normalizeGraphics(graphics, params, images) {
     if (!isObject(graphics)) throw new Error('"graphics" is an object of name → { "type": "text" | "rect" | "ellipse", … }');
+    if (Object.keys(graphics).length > MAX_GRAPHICS) throw new Error(`A filter has at most ${MAX_GRAPHICS} graphics`);
     const out = {};
     for (const [name, spec] of Object.entries(graphics)) {
         if (!NAME.test(name) || name.startsWith('mz_')) throw new Error(`Graphic name "${name}" must be letters, digits and _, starting with a letter`);
         if (RESERVED.has(name) || name === 'source' || name === 'selection') throw new Error(`"${name}" is already defined in every filter; pick another graphic name`);
-        if (name in params || name in images) throw new Error(`"${name}" is both a graphic and a parameter or picture`);
+        if (Object.hasOwn(params, name) || Object.hasOwn(images, name)) throw new Error(`"${name}" is both a graphic and a parameter or picture`);
         out[name] = normalizeGraphic(name, spec);
     }
     // name_shadow1… are the pictures of its shadow layers: no other name may be one
@@ -145,7 +149,7 @@ export function filterGraphics(filter) {
     if (filter.color) return { ...(filter.graphics ?? {}) };
     const out = {};
     for (const step of filter.steps) {
-        for (const [name, g] of Object.entries(filterGraphics(step.filter))) if (!(name in out)) out[name] = g;
+        for (const [name, g] of Object.entries(filterGraphics(step.filter))) if (!Object.hasOwn(out, name)) out[name] = g;
     }
     return out;
 }
@@ -159,7 +163,7 @@ function normalizeImages(images, params) {
         if (!NAME.test(name) || name.startsWith('mz_')) throw new Error(`Image name "${name}" must be letters, digits and _, starting with a letter`);
         if (name === 'source') throw new Error('"source" is always available: the picture the chain started from');
         if (RESERVED.has(name)) throw new Error(`"${name}" is already defined in every filter; pick another image name`);
-        if (name in params) throw new Error(`"${name}" is both a parameter and an image`);
+        if (Object.hasOwn(params, name)) throw new Error(`"${name}" is both a parameter and an image`);
         out[name] = normalizeImage(name, spec);
     }
     return out;
@@ -237,8 +241,8 @@ function normalizeParam(name, spec) {
     const value = Number(spec.default ?? (options ? options[0] : 0));
     if (!Number.isFinite(value)) throw new Error(`Parameter "${name}" needs a numeric default`);
     out.default = value;
-    out.min = spec.min !== undefined ? Number(spec.min) : options ? Math.min(...options, value) : Math.min(0, value * 2);
-    out.max = spec.max !== undefined ? Number(spec.max) : options ? Math.max(...options, value) : Math.max(1, value * 2);
+    out.min = spec.min !== undefined ? Number(spec.min) : options ? options.reduce((a, b) => Math.min(a, b), value) : Math.min(0, value * 2);
+    out.max = spec.max !== undefined ? Number(spec.max) : options ? options.reduce((a, b) => Math.max(a, b), value) : Math.max(1, value * 2);
     if (spec.step !== undefined) out.step = Number(spec.step);
     if (options) out.options = options;
     if (spec.input === 'box' && !options) out.input = 'box';
@@ -267,7 +271,7 @@ export function filterImages(filter) {
     if (filter.color) return { ...(filter.images ?? {}) };
     const out = {};
     for (const step of filter.steps) {
-        for (const [name, image] of Object.entries(filterImages(step.filter))) if (!(name in out)) out[name] = image;
+        for (const [name, image] of Object.entries(filterImages(step.filter))) if (!Object.hasOwn(out, name)) out[name] = image;
     }
     return out;
 }
@@ -277,7 +281,7 @@ export function filterParams(filter) {
     if (filter.color) return { ...(filter.params ?? {}) };
     const out = {};
     for (const step of filter.steps) {
-        for (const [name, param] of Object.entries(filterParams(step.filter))) if (!(name in out)) out[name] = param;
+        for (const [name, param] of Object.entries(filterParams(step.filter))) if (!Object.hasOwn(out, name)) out[name] = param;
     }
     return out;
 }
@@ -301,16 +305,16 @@ function check(step, path, problems, shaders) {
     const images = filterImages(filter);
     const graphics = filterGraphics(filter);
     for (const [name, value] of Object.entries(step.with)) {
-        if (name in graphics) {                                 // changing a graphic: { text, x, color, … }
+        if (Object.hasOwn(graphics, name)) {                                 // changing a graphic: { text, x, color, … }
             if (!isObject(value)) problems.push(`${where}: "with" for the graphic "${name}" is an object of its settings`);
             else try { normalizeGraphic(name, { ...graphics[name], ...value }); } catch (e) { problems.push(`${where}: ${e.message}`); }
             continue;
         }
-        if (name in images) {                                   // placing a picture: { place, zoom, x, y, angle }
+        if (Object.hasOwn(images, name)) {                                   // placing a picture: { place, zoom, x, y, angle }
             try { normalizeImage(name, value); } catch (e) { problems.push(`${where}: ${e.message}`); }
             continue;
         }
-        const param = params[name];
+        const param = Object.hasOwn(params, name) ? params[name] : null;
         if (!param) problems.push(`${where}: "with" sets "${name}", but there is no parameter called that`);
         else if (param.type === 'color' ? !isColor(value) : !Number.isFinite(Number(value))) {
             problems.push(`${where}: "${name}" should be a ${param.type === 'color' ? 'colour: three numbers, 0–1' : 'number'}`);
@@ -320,7 +324,7 @@ function check(step, path, problems, shaders) {
         filter.steps.forEach((inner, i) => check(inner, [...path, i], problems, shaders));
         return;
     }
-    if (shaders) try { makePass(filter, Object.fromEntries(Object.entries(step.with).filter(([k]) => k in (filter.graphics ?? {}))), 1, path, 100); } catch (e) { problems.push(`${where}: ${e.message}`); }   // with its settings: a "with" may add shadow layers
+    if (shaders) try { makePass(filter, Object.fromEntries(Object.entries(step.with).filter(([k]) => Object.hasOwn(filter.graphics ?? {}, k))), 1, path, 100); } catch (e) { problems.push(`${where}: ${e.message}`); }   // with its settings: a "with" may add shadow layers
 }
 
 function describe(filter, path) {
@@ -368,6 +372,11 @@ export function compileFilter(def, options = {}) {
 
 function flatten(step, path, outer, context) {
     if (step.skip) return;                                       // switched off: no passes, no credit
+    if (context.passes.length > MAX_PASSES) {
+        const problem = `A filter has at most ${MAX_PASSES} passes`;
+        if (!context.problems.includes(problem)) context.problems.push(problem);
+        return;
+    }
     const rewritten = inColourSpace(step.filter) ?? separableBlur(step.filter);
     if (rewritten) {
         if (step.filter === context.top) context.top = rewritten;     // still the filter itself, not something it uses
@@ -467,7 +476,7 @@ function makePass(filter, settings, opacity, path, version) {
     const params = filter.params ?? {};
     const values = {};
     for (const [name, param] of Object.entries(params)) {
-        if (!(name in settings)) values[name] = param.default;
+        if (!Object.hasOwn(settings, name)) values[name] = param.default;
         else values[name] = param.type === 'color' ? settings[name].map(Number) : Number(settings[name]);
     }
     const placements = {};

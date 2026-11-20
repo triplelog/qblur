@@ -36,6 +36,7 @@ export function createCpuRunner(compiled, options = {}) {
     const parallelFrom = options.parallelFrom ?? 250000;
     const wanted = options.workers === undefined || options.workers === 'auto' ? defaultWorkers() : Number(options.workers);
     let pool = null;           // created on the first drawAsync() that needs it
+    let starting = null;       // the promise of that pool: every call shares one
     let sent = new Map();      // picture name → the object last sent to the pool
 
     const runner = {
@@ -98,17 +99,22 @@ export function createCpuRunner(compiled, options = {}) {
             if (!source) throw new Error('setImage() first');
             const { width, height } = source;
             if (wanted < 2 || width * height < parallelFrom) return runner.draw({ t, canvas });
-            if (pool === null) pool = await createPool(wanted, compiled.passes, options.workerUrl).catch(() => false);   // false: workers can't start here
-            if (!pool) return runner.draw({ t, canvas });
+            // one pool, however many calls arrive before it is ready; false: workers can't start here
+            starting ??= createPool(wanted, compiled.passes, options.workerUrl).catch(() => false);
+            const mine = starting;
+            const ready = await mine;
+            if (mine !== starting) throw new Error('The runner was disposed of while drawing');
+            pool = ready;
+            if (!ready) return runner.draw({ t, canvas });
             const n = width * height * 4;
-            const alloc = () => (pool.shared ? new Float32Array(new SharedArrayBuffer(n * 4)) : new Float32Array(n));
+            const alloc = () => (ready.shared ? new Float32Array(new SharedArrayBuffer(n * 4)) : new Float32Array(n));
             // pictures the workers haven't seen (as shared copies when we can share)
             for (const [name, picture] of [['source', source], ...Object.entries(pictures)]) {
                 if (sent.get(name) === picture) continue;
-                await pool.broadcast({ type: 'picture', name, picture: pool.shared ? sharedPicture(picture) : picture });
+                await ready.broadcast({ type: 'picture', name, picture: ready.shared ? sharedPicture(picture) : picture });
                 sent.set(name, picture);
             }
-            let input = pool.shared ? sharedPicture(source).data : source.data;
+            let input = ready.shared ? sharedPicture(source).data : source.data;
             const kept = [];
             for (let i = 0; i < compiled.passes.length; i++) {
                 const pass = compiled.passes[i];
@@ -120,12 +126,12 @@ export function createCpuRunner(compiled, options = {}) {
                     if (precision === 'byte') quantize(output);
                 } else {
                     const params = Object.keys(pass.params ?? {}).map((name) => pass.values[name]);
-                    const bands = splitRows(height, pool.size);
-                    const replies = await Promise.all(bands.map(([y0, y1], k) => pool.ask(k, {
-                        type: 'run', pass: i, input, output: pool.shared ? output : null, width, height, t, params,
+                    const bands = splitRows(height, ready.size);
+                    const replies = await Promise.all(bands.map(([y0, y1], k) => ready.ask(k, {
+                        type: 'run', pass: i, input, output: ready.shared ? output : null, width, height, t, params,
                         opacity: pass.opacity, placements: pass.placements ?? {}, y0, y1, quantize: precision === 'byte',
                     })));
-                    if (!pool.shared) replies.forEach((r, k) => output.set(r.band, bands[k][0] * width * 4));
+                    if (!ready.shared) replies.forEach((r, k) => output.set(r.band, bands[k][0] * width * 4));
                 }
                 input = output;
             }
@@ -146,7 +152,8 @@ export function createCpuRunner(compiled, options = {}) {
         dispose() {
             source = null;
             for (const k of Object.keys(pictures)) delete pictures[k];
-            if (pool) pool.close();
+            if (starting) starting.then((p) => p && p.close());   // also a pool still starting
+            starting = null;
             pool = null;
             sent = new Map();
         },
@@ -205,9 +212,10 @@ const canShare = () => typeof SharedArrayBuffer !== 'undefined' && (typeof cross
 
 function sharedPicture(picture) {
     if (picture.data.buffer instanceof (globalThis.SharedArrayBuffer ?? Object)) return picture;
+    if (picture.shared) return picture.shared;                 // copied once, not on every draw
     const data = new Float32Array(new SharedArrayBuffer(picture.data.byteLength));
     data.set(picture.data);
-    picture.shared ??= { data, width: picture.width, height: picture.height };
+    picture.shared = { data, width: picture.width, height: picture.height };
     return picture.shared;
 }
 
@@ -254,7 +262,13 @@ async function createPool(size, passes, workerUrl) {
     const pool = {
         size, shared: canShare(), ask,
         broadcast: (message) => Promise.all(workers.map((_, k) => ask(k, message))),
-        close: () => workers.forEach((w) => w.close()),
+        close: () => {
+            workers.forEach((w) => w.close());
+            for (const asked of waiting) {                       // nobody waits for an answer that can't come
+                for (const [, cb] of asked) cb.reject(new Error('The runner was disposed of while drawing'));
+                asked.clear();
+            }
+        },
     };
     try {
         await pool.broadcast({ type: 'init', passes: passes.map(({ fragment, ...rest }) => rest) });

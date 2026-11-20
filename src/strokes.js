@@ -139,6 +139,9 @@ function hash(a, b) {
     return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
 }
 
+/** rasterizeStrokes() visits at most this many pixels per pixel of the frame in one call. */
+const WORK_PER_PIXEL = 256;
+
 const buffers = new Map();
 function scratch(n) {
     let b = buffers.get(n);
@@ -163,9 +166,13 @@ export function rasterizeStrokes(spec, w, h, t = Infinity, { mask = null } = {})
     const now = Number.isFinite(t) ? t : total;
     const base = Math.max(0.5, (spec.size * h) / 2);           // brush radius in pixels
     let dabCount = 0;
+    // Work one call may do, in pixels visited: a few hundred frames' worth. A drawing made by hand stays far
+    // under it; one built to stall the page (a huge brush crossing the frame for ever, a point a million frames
+    // away) stops painting when it runs out, and the page stays alive.
+    let budget = Math.max(n, 65536) * WORK_PER_PIXEL;
 
     strokes.forEach((stroke) => {
-        if (stroke.start > now) return;
+        if (stroke.start > now || budget <= 0) return;
         let used = 0;
         const stamp = (x, y, r, f) => {
             const k = dabCount++;
@@ -182,6 +189,7 @@ export function rasterizeStrokes(spec, w, h, t = Infinity, { mask = null } = {})
             const reach = kind === 'marker' ? r : r + 1;
             const x0 = Math.max(0, Math.floor(cx - reach)), x1 = Math.min(w - 1, Math.ceil(cx + reach));
             const y0 = Math.max(0, Math.floor(cy - reach)), y1 = Math.min(h - 1, Math.ceil(cy + reach));
+            budget -= x1 >= x0 && y1 >= y0 ? (x1 - x0 + 1) * (y1 - y0 + 1) : 16;   // off the frame: only the step
             for (let py = y0; py <= y1; py++) {
                 for (let px = x0; px <= x1; px++) {
                     const dx = px + 0.5 - cx, dy = py + 0.5 - cy;
@@ -219,14 +227,14 @@ export function rasterizeStrokes(spec, w, h, t = Infinity, { mask = null } = {})
             if (b.f > now) u1 = (now - a.f) / Math.max(1e-9, b.f - a.f);
             const len = Math.hypot(bx - ax, by - ay);
             let s = j === 1 ? 0 : carry;
-            while (s <= len * u1) {
+            while (s <= len * u1 && budget > 0) {
                 const u = len ? s / len : 0;
                 const r = base * (a.wf + (b.wf - a.wf) * u);
                 stamp(ax + (bx - ax) * u, ay + (by - ay) * u, r, a.f + (b.f - a.f) * u);
                 s += Math.max(0.5, spec.spacing * 2 * r);
             }
             carry = s - len;
-            if (u1 < 1) break;
+            if (u1 < 1 || budget <= 0) break;
         }
         // this stroke counts once wherever it went, however often it crossed itself
         for (let k = 0; k < used; k++) {

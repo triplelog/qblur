@@ -27,18 +27,21 @@
 
 import { parseTree } from 'mathzetta';
 import { checkGeneratedJs } from 'mathzetta/formulas';
-import { FILTER_VALUES, FILTER_FUNCTIONS, NEIGHBOURHOOD, COLOUR_FUNCTIONS, filterPictureCalls } from 'mathzetta/glsl';
+import { FILTER_VALUES, FILTER_FUNCTIONS, filterPictureCalls } from 'mathzetta/glsl';
 import * as H from './cpu-helpers.js';
 
 const CUSTOM = '\\:';
 const HELPERS = Object.keys(H).filter((k) => typeof H[k] === 'function');
 
+/** A lookup table with no inherited names: `constructor` and `toString` are a filter's own names, never Object's. */
+const table = (entries) => Object.assign(Object.create(null), entries);
+
 /** Constants and leaves every expression has. */
-const SCALARS = { r: '$r', g: '$g', b: '$b', a: '$a', x: '$x', y: '$y', px: '$px', py: '$py', w: '$w', h: '$h', t: '$t', gray: '$gray' };
-const CONSTANTS = { pi: 'Math.PI', 'π': 'Math.PI', e: 'Math.E', tau: '(2 * Math.PI)', 'τ': '(2 * Math.PI)', '∞': 'Infinity', '-∞': '(-Infinity)' };
+const SCALARS = table({ r: '$r', g: '$g', b: '$b', a: '$a', x: '$x', y: '$y', px: '$px', py: '$py', w: '$w', h: '$h', t: '$t', gray: '$gray' });
+const CONSTANTS = table({ pi: 'Math.PI', 'π': 'Math.PI', e: 'Math.E', tau: '(2 * Math.PI)', 'τ': '(2 * Math.PI)', '∞': 'Infinity', '-∞': '(-Infinity)' });
 
 /** Functions applied to each component: name → (args as JS) => JS. */
-const COMPONENTWISE = {
+const COMPONENTWISE = table({
     sqrt: 1, abs: 1, floor: 1, ceil: 1, ln: 'log', sin: 1, cos: 1, tan: 1, arcsin: 'asin', arccos: 'acos', arctan: 'atan',
     sinh: 1, cosh: 1, tanh: 1, arcsinh: 'asinh', arccosh: 'acosh', arctanh: 'atanh', sign: 1, exp: 1, exp2: (x) => `Math.pow(2, ${x})`,
     log2: 1, expm1: (x) => `(Math.exp(${x}) - 1)`, loglog: (x) => `Math.log(Math.log(${x}))`, logloglog: (x) => `Math.log(Math.log(Math.log(${x})))`,
@@ -51,14 +54,14 @@ const COMPONENTWISE = {
     clamp: (x, lo, hi) => `Math.min(Math.max(${x}, ${lo}), ${hi})`,
     mix: (a, b, k) => `(${a} + (${b} - ${a}) * ${k})`,
     smoothstep: (e0, e1, x) => `$h_smoothstep(${e0}, ${e1}, ${x})`,
-};
-const FIXED_ARITY = { atan2: 2, pow: 2, mod: 2, step: 2, clamp: 3, mix: 3, smoothstep: 3 };
+});
+const FIXED_ARITY = table({ atan2: 2, pow: 2, mod: 2, step: 2, clamp: 3, mix: 3, smoothstep: 3 });
 
 /** Neighbourhood functions: the result kind, and whether the per-pass plane is computed once for a constant argument. */
-const PLANES = {
+const PLANES = table({
     blur: 3, blurx: 3, blury: 3, gaussian: 3, gaussianx: 3, gaussiany: 3, dilate: 3, erode: 3, sharpen: 3,
     sobel: 1, sobelx: 1, sobely: 1, laplacian: 1, emboss: 1,
-};
+});
 
 /** A value: a kind ('f' number, 'b' true/false, 'v' vector) and one JS expression per component. */
 const val = (kind, c) => ({ kind, c });
@@ -81,7 +84,7 @@ export function compileCpuPass(pass) {
     const pictures = new Set([...Object.keys(pass.placements ?? {}), 'source', 'selection']);
     const g = new Generator(params, pictures, pass.space ?? 'srgb');
     g.graphics = new Set(Object.keys(pass.graphics ?? {}));        // drawn by the caller; transparent until they are
-    g.bind = pass.bind ?? {};                                         // a graphic's name here → the key its picture is bound under
+    g.bind = table(pass.bind ?? {});                                         // a graphic's name here → the key its picture is bound under
     const channels = typeof pass.color === 'string' ? { rgba: pass.color } : pass.color;
     const parse = (text, whole) => {
         const names = [...FILTER_FUNCTIONS, ...Object.keys(pass.placements ?? {})];
@@ -140,6 +143,8 @@ class Generator {
         if (node.type === 'number') return f(`(${node.value.replace(/\.+$/, '')})`);
         if (node.type === 'string') this.fail('a filter has no text: numbers and colours only');
         const v = node.value;
+        const percent = /^(-?(?:\d+\.?\d*|\.\d+))%$/.exec(v);
+        if (percent) return f(`(${percent[1]} / 100)`);   // 50% is 0.5, as in the shader
         if (v === 't') this.uses.add('t');           // the filter animates (the page hides time for a still one)
         if (SCALARS[v]) return f(SCALARS[v]);
         if (v === 'rgb') return vec(['$r', '$g', '$b']);
@@ -238,7 +243,7 @@ class Generator {
             case 'gcd': return this.componentwise(A(), (...xs) => xs.reduce((acc, x) => `$h_gcd(${acc}, ${x})`));
             case 'round': {
                 const [v, d] = A();
-                return this.componentwise([v, d], (x, digits) => `(Math.floor(${x} * Math.pow(10, ${digits}) + 0.5) / Math.pow(10, ${digits}))`);
+                return this.componentwise([v, d], (x, digits) => `$h_round(${x}, ${digits})`);
             }
             case 'log': { const [base, x] = A(); return this.componentwise([base, x], (b, xx) => `(Math.log(${xx}) / Math.log(${b}))`); }
             case 'root': { const [n, x] = A(); return this.componentwise([n, x], (nn, xx) => `$h_root(${nn}, ${xx})`); }

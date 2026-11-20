@@ -151,3 +151,73 @@ suite('CPU selection', () => {
         eq([out[0], out[4]], [255, 0]);
     });
 });
+
+suite('Names every object has are a filter\'s own names', () => {
+    test('a knob called constructor or toString has its default, and its "with" value', () => {
+        for (const name of ['constructor', 'toString', 'valueOf']) {
+            const pass = compileFilter({ params: { [name]: { default: 0.25 } }, color: `rgb * ${name}` }).passes[0];
+            eq(pass.values[name], 0.25);
+        }
+        const chained = compileFilter({ steps: [{ filter: { params: { constructor: { default: 0.25 } }, color: 'rgb * constructor' }, with: { constructor: 0.5 } }] });
+        eq(chained.passes[0].values.constructor, 0.5);
+        eq(compileFilter({ params: { toString: { type: 'color', default: [1, 0, 0] } }, color: 'toString' }).passes[0].values.toString, [1, 0, 0]);
+    });
+    test('an unknown name or function is refused as one, whatever it is called', () => {
+        for (const text of ['rgb * constructor', 'constructor(1)', 'toString(r)', 'rgb * valueOf', 'hasOwnProperty(r)']) {
+            throws(() => compileCpuPass(compileFilter(text).passes[0]), /unknown (name|function)/);
+        }
+    });
+    test('a picture can be called constructor', () => {
+        const compiled = compileFilter({ images: { constructor: {} }, color: 'constructor' });
+        const runner = createCpuRunner(compiled).setImage({ data: new Uint8ClampedArray([0, 0, 0, 255]), width: 1, height: 1 });
+        runner.setImage('constructor', { data: new Uint8ClampedArray([255, 0, 0, 255]), width: 1, height: 1 });
+        eq(Array.from(runner.draw().data), [255, 0, 0, 255]);
+    });
+});
+
+suite('The CPU reads what the shader reads', () => {
+    const one = (text) => createCpuRunner(compileFilter(text)).setImage({ data: new Uint8ClampedArray([255, 255, 255, 255]), width: 1, height: 1 }).draw().data[0];
+    test('round takes a half away from zero, as mz_round does', () => {
+        eq(one('round(-2.5) + 3'), 0);
+        eq(one('round(2.5) - 2'), 255);
+        eq(one('round(-0.25, 1) + 0.3'), 0);
+        eq(H.round(-2.5, 0), -3);
+        eq(H.round(0.125, 2), 0.13);
+    });
+    test('50% is 0.5', () => {
+        eq(one('rgb * 50%'), 128);
+        eq(one('12.5% * 8'), 255);
+    });
+});
+
+suite('A filter built to exhaust the page is refused', () => {
+    test('more passes or graphics than any filter has', () => {
+        throws(() => compileFilter({ steps: Array.from({ length: 2000 }, () => ({ filter: '1 - rgb' })) }), /at most 256 passes/);
+        eq(compileFilter({ steps: Array.from({ length: 200 }, () => ({ filter: '1 - rgb' })) }).passes.length, 200);
+        const graphics = Object.fromEntries(Array.from({ length: 65 }, (_, k) => [`g${k}`, { type: 'rect' }]));
+        throws(() => compileFilter({ graphics, color: 'rgb' }), /at most 64 graphics/);
+    });
+    test('a long list of options is a list, not a stack overflow', () => {
+        const options = Array.from({ length: 200000 }, (_, k) => k);
+        const p = compileFilter({ params: { n: { options } }, color: 'rgb * n' }).passes[0].params.n;
+        eq([p.min, p.max], [0, 199999]);
+    });
+});
+
+export async function poolTests() {
+    const source = { data: new Uint8ClampedArray(64 * 64 * 4).fill(100), width: 64, height: 64 };
+    // two calls before the workers are up share one pool
+    const runner = createCpuRunner(compileFilter('1 - rgb'), { workers: 3, parallelFrom: 1 }).setImage(source);
+    const both = await Promise.all([runner.drawAsync(), runner.drawAsync()]);
+    eq(both.map((r) => r.data[0]), [155, 155]);
+    eq(runner.workers, 3);
+    // dispose() while a draw is running: the draw ends (rejected), it doesn't wait for ever
+    const running = runner.drawAsync();
+    runner.dispose();
+    eq(await running.then(() => 'drawn', () => 'rejected'), 'rejected');
+    // …and while the workers are still starting
+    const early = createCpuRunner(compileFilter('1 - rgb'), { workers: 3, parallelFrom: 1 }).setImage(source);
+    const first = early.drawAsync();
+    early.dispose();
+    eq(await first.then(() => 'drawn', () => 'rejected'), 'rejected');
+}

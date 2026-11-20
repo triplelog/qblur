@@ -63,7 +63,12 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   (shell.js's registry import → ./mz/).
 - Head tags: `head()` in tools/build.mjs gives every built page its canonical address, og:/twitter: tags with its card
   (`demo/share/<page>.jpg`, 1200 × 630) and the icons (`demo/favicon.svg`, `favicon.ico`, `apple-touch-icon.png`), from the page's
-  own <title> and description (the guide pages' descriptions are in build.mjs). `node tools/share-cards.mjs` remakes the cards
+  own <title> and description (the guide pages' descriptions are in build.mjs). It also adds schema.org JSON-LD (`schema`:
+  `webApp()` for the editor and the apps, SoftwareSourceCode for library.html) and `LOAD_FAILED`, an inline script that shows a
+  "Reload" notice when a <script> fails to load (a module whose jsDelivr import fails fires "error" at its element). `preloads()`
+  crawls each bundle's CDN imports at build time and writes them as `<link rel="modulepreload">` after the import map. The site's
+  bundles are minified like dist/. Titles put the topic first ("Privacy — qblur"); the sitemap's `<lastmod>` is each page's last
+  git change. On phones the editor's result floats in a corner (`#output.pip`, app.js) once scrolled past, so the knobs show their effect. `node tools/share-cards.mjs` remakes the cards
   (each page's result, captured) and the icons. `site/_headers` keeps models/, ort/, photos/ and share/ cached (Cloudflare Pages).
 - The guide on the site is docs/filters.md without its `<!-- dev -->…<!-- /dev -->` parts (`forSite` in tools/markdown.mjs):
   repo paths, npm scripts and the API stay on GitHub. Keep new developer-only paragraphs inside such markers.

@@ -1,11 +1,34 @@
 # Changelog
 
+## 0.1.2
+
+Fixes from a review before this release. Needs MathZetta 1.2 (the peer range is `^1.2.0`).
+
+- **The CPU gives the shader's pixels again.** `round` takes a half away from zero (`round(-2.5)` is −3, as
+  MathZetta 1.2's shaders round), and `50%` is 0.5 on the CPU too (it was "unknown name").
+- **Names every object has are ordinary names.** A knob, picture or graphic called `constructor`, `toString` or
+  `valueOf` works (a knob so named had the value NaN, and a picture was refused); an unknown name or function
+  so called is refused as unknown, not by a later error.
+- **Text is not maths.** A quoted string in a filter is refused on the GPU as it was on the CPU (it was
+  written into the shader, which then failed to compile).
+- **A filter built to stall the page is stopped.** At most 256 passes and 64 graphics; brush strokes stop
+  painting after a few hundred frames' worth of work in one call (a point far outside the frame, or the
+  largest brush crossing it thousands of times, froze the page for minutes); a very long `options` list no
+  longer overflows the stack.
+- **`drawAsync`:** calls made before the workers are up share one pool (two pools were started, one was never
+  closed, and a call could fail); `dispose()` during a draw ends that draw with an error instead of leaving
+  it waiting for ever; a picture is copied to shared memory once, not on every draw.
+- **WebGL:** shaders are freed once their program is linked, and when a pass does not compile the passes
+  compiled before it are freed too (each filter left two shader objects per pass behind).
+- A font's CSS is fetched without cookies or a referrer. `encodePng` refuses a size that isn't whole pixels
+  or data too short for it.
+- More npm keywords (image-processing, canvas, gif, web-component …).
+
 ## 0.1.1
 
 No change to the code. The licence names its holder (`Copyright (c) 2025-2026 Robert Wilcox`; 0.1.0's said
 "MathZetta Contributors"), and every bundle's banner says whose it is and its licence, MathZetta's too.
 The README has a Licence section, and it and docs/library.md no longer say the package isn't on npm yet.
-
 ## 0.1.0 — first release
 
 The filter format, its compiler and two runners that give the same pixels.

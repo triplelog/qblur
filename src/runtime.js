@@ -25,7 +25,15 @@ export function createFilterRunner(gl, compiled, options = {}) {
     if (gl.isContextLost()) throw new Error('The WebGL context is lost');
     const precision = texturePrecision(gl, options.precision);
     const vertex = filterVertexShader({ version: compiled.version });
-    const programs = compiled.passes.map((pass) => link(gl, vertex, pass.fragment, pass.name));
+    const programs = [];
+    try {
+        for (const pass of compiled.passes) programs.push(link(gl, vertex, pass.fragment, pass.name));
+    } catch (error) {
+        for (const program of programs) gl.deleteProgram(program);   // a later pass refused: the earlier ones go too
+        throw error;
+    }
+    /** The key a pass's picture is bound under (a graphic's own key; a picture's name). */
+    const bound = (pass, name) => (pass.bind && Object.hasOwn(pass.bind, name) ? pass.bind[name] : name);
     const locations = programs.map(() => new Map());
     const location = (i, name) => {
         if (!locations[i].has(name)) locations[i].set(name, gl.getUniformLocation(programs[i], name));
@@ -147,10 +155,10 @@ export function createFilterRunner(gl, compiled, options = {}) {
                 if (pass.blendKept) gl.uniform1i(location(i, 'base'), 1);
                 pass.images.forEach((name, k) => {
                     gl.activeTexture(gl.TEXTURE2 + k);
-                    gl.bindTexture(gl.TEXTURE_2D, name === 'source' ? source.texture : (pictures.get(pass.bind?.[name] ?? name) ?? (pass.graphics?.[name] ? clear : blank)));
+                    gl.bindTexture(gl.TEXTURE_2D, name === 'source' ? source.texture : (pictures.get(bound(pass, name)) ?? (pass.graphics?.[name] ? clear : blank)));
                     gl.uniform1i(location(i, `mz_img_${name}`), 2 + k);
                     if (!pass.placements[name]) return;                              // source, selection: the frame's size, no placement
-                    const size = sizes.get(pass.bind?.[name] ?? name) ?? [1, 1];
+                    const size = sizes.get(bound(pass, name)) ?? [1, 1];
                     const place = pass.placements[name];
                     gl.uniform2f(location(i, `mz_size_${name}`), size[0], size[1]);
                     gl.uniform4f(location(i, `mz_place_${name}`), Number(place.zoom), Number(place.x), Number(place.y), Number(place.angle));
@@ -214,16 +222,27 @@ function texturePrecision(gl, wanted = 'byte') {
 
 function link(gl, vertex, fragment, name) {
     const program = gl.createProgram();
+    const shaders = [];
+    let problem = null;
     for (const [type, source] of [[gl.VERTEX_SHADER, vertex], [gl.FRAGMENT_SHADER, fragment]]) {
         const shader = gl.createShader(type);
+        shaders.push(shader);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            throw new Error(`${name || 'The filter'} does not compile: ${gl.getShaderInfoLog(shader).trim()}`);
+            problem = `${name || 'The filter'} does not compile: ${(gl.getShaderInfoLog(shader) ?? '').trim()}`;
+            break;
         }
         gl.attachShader(program, shader);
     }
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(`${name || 'The filter'} does not link: ${gl.getProgramInfoLog(program).trim()}`);
+    if (!problem) {
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) problem = `${name || 'The filter'} does not link: ${(gl.getProgramInfoLog(program) ?? '').trim()}`;
+    }
+    for (const shader of shaders) gl.deleteShader(shader);          // a linked program keeps what it needs of them
+    if (problem) {
+        gl.deleteProgram(program);
+        throw new Error(problem);
+    }
     return program;
 }

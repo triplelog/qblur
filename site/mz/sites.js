@@ -21,7 +21,7 @@
 
 import { MATHZETTA_URL, SITE_URLS, EXTERNAL_URLS, DATA_URL } from './urls.js';
 export { MATHZETTA_URL, SITE_URLS };
-export const MATHZETTA_TAGLINE = 'Maths written any way, read into one form, written out every way.';
+export const MATHZETTA_TAGLINE = 'Math written any way, read into one form, written out every way.';
 export const SOURCE_URL = 'https://github.com/triplelog/mathzetta';
 
 // a stand-in for a site whose domain isn't chosen: change the URL here, nothing else
@@ -32,10 +32,11 @@ export const SITES = [
         // look: 'shioh': pages that mount the shared chrome (Convert, the CAS pages) get the Shioh frame,
         // matching the pages with mathzetta-website's own shell.js
         id: 'math', name: 'MathZetta', url: MATHZETTA_URL, tagline: MATHZETTA_TAGLINE, look: 'shioh',
+        logo: { src: 'logos/mathzetta.png', width: 595, height: 105 },   // beside chrome.js (from the portfolio's branding/final/mathzetta/logo.png); Convert's and the CAS pages' sidebar
         pages: [
             { id: 'home', name: 'MathZetta', path: '', what: 'what it reads, what it writes, the API' },
-            { id: 'playground', name: 'Playground', path: 'demos/', what: 'type maths and see the postfix, the tree and every output' },
-            { id: 'convert', name: 'Convert', path: 'convert/', what: 'maths in any notation — text, LaTeX, JavaScript, Python, SQL, GLSL — to every format, copyable',
+            { id: 'playground', name: 'Playground', path: 'demos/', what: 'type math and see the postfix, the tree and every output' },
+            { id: 'convert', name: 'Convert', path: 'convert/', what: 'math in any notation — text, LaTeX, JavaScript, Python, SQL, GLSL — to every format, copyable',
                 uses: 'every outputter at once, and each output read back to check it means the same' },
             { id: 'operators', name: 'Operators', path: 'demos/operations.html', what: 'what each operator reads and writes as' },
             { id: 'quiz', name: 'Postfix quiz', path: 'quiz.html', what: 'learn the postfix algorithm: turn an expression into postfix one move at a time, with hints',
@@ -50,13 +51,13 @@ export const SITES = [
     {
         // the Inline Math library's site
         id: 'inlinemath', name: 'Inline Math', url: SITE_URLS.inlinemath,
-        tagline: 'Maths drawn as HTML and CSS, every part of it addressable.',
+        tagline: 'Math drawn as HTML and CSS, every part of it addressable.',
         pages: [
-            { id: 'home', name: 'Inline Math', path: '', what: 'a gallery of drawn maths, each part findable, colourable, animated between steps',
+            { id: 'home', name: 'Inline Math', path: '', what: 'a gallery of drawn math, each part findable, colorable, animated between steps',
                 uses: 'draws anything MathZetta reads; node ids are postfix positions, so a spoken word or a rule step lights up the part it means' },
             { id: 'docs', name: 'Get started', path: 'docs.html', what: 'install from npm or a CDN, draw, the live view, every option, Markdown and the CAS' },
-            { id: 'markdown', name: 'Markdown', path: 'markdown.html', what: 'Markdown with maths, {{…}} worked out, definitions remembered' },
-            { id: 'cas', name: 'CAS', path: 'cas.html', what: 'simplify, solve and differentiate, the steps drawn as maths' },
+            { id: 'markdown', name: 'Markdown', path: 'markdown.html', what: 'Markdown with math, {{…}} worked out, definitions remembered' },
+            { id: 'cas', name: 'CAS', path: 'cas.html', what: 'simplify, solve and differentiate, the steps drawn as math' },
             { id: 'print', name: 'Print', path: 'print.html', what: 'quizzes, tests and worksheets to print or save as PDF, with answer keys and step-by-step solutions' },
         ],
     },
@@ -65,30 +66,34 @@ export const SITES = [
         // the examples. sqldn, pyslots and the Sheets sidebar are kept in their repos but are off this site
         // (pyslots' charts are on Ball Monitor, below).
         id: 'code', name: 'tabdn', url: SITE_URLS.code, look: 'shioh',
-        tagline: 'Data tables of any size: a CSV becomes one file that serves it, or a table that runs in the page — filters written as maths.',
+        logo: { src: 'logos/tabdn.png', width: 340, height: 95 },   // beside chrome.js (from the portfolio's branding/final/tabdn/logo.png); the sidebar shows it instead of the name
+        tagline: 'Data tables of any size: a CSV becomes one file that serves it, or a table that runs in the page — filters written as math.',
         pages: [
             { id: 'home', name: 'tabdn', path: '', what: 'everything here' },
             { id: 'tabc', name: 'Build a table server', path: 'tabc/', what: 'a CSV becomes one file that serves it: filter, sort, group and pivot millions of rows; built in your browser',
-                uses: 'a filter typed as maths becomes tabc’s query grammar (mathzetta/formulas)' },
+                uses: 'a filter typed as math becomes tabc’s query grammar (mathzetta/formulas)' },
             { id: 'tables', name: 'Hosted tables', path: DATA_URL, what: 'tables served by tabc: every Retrosheet batting and pitching line, and more' },
             { id: 'examples', name: 'Tables in a web page', path: 'examples/', what: '2025 batting and pitching, running entirely in the browser' },
-            { id: 'weather', name: 'Population and weather', path: 'examples/population-and-weather/', what: 'a world map coloured by your formulas over each place’s climate, similar climates, and the outlines of regions that match your criteria',
+            { id: 'weather', name: 'Population and weather', path: 'examples/population-and-weather/', what: 'a world map colored by your formulas over each place’s climate, similar climates, and the outlines of regions that match your criteria',
                 uses: 'each formula becomes a checked JavaScript function (tabview’s compiler) run over 41,141 cells; the cells are also a tabview table' },
+            { id: 'grocery', name: 'A grocery aisle', path: 'examples/grocery/', what: '3,000 US groceries from Open Food Facts as cards you pick with a formula, sliders for its letters, sorted any way',
+                uses: 'tabview’s card option: the table’s filter, variables, sort and pages, each row drawn as a card' },
             { id: 'generator', name: 'Make an embeddable table', path: 'tabview/generator/', what: 'a CSV becomes a table you paste into any page',
                 uses: 'formulas compiled to JavaScript loops over the columns, in the visitor’s browser' },
             { id: 'tabview', name: 'Table demo', path: 'tabview/demo/', what: 'batting data in the browser: filter, add columns, group, pivot, export to .xlsx with live formulas' },
             { id: 'help', name: 'Help', path: 'help.html', what: 'how to write a filter, add and arrange columns, group and export; running and hosting your own table server' },
+            { id: 'hosting', name: 'Host your table', path: 'hosting.html', what: 'join the waitlist to have your table hosted on our servers' },
         ],
     },
     {
         // qblur' site
         id: 'qblur', name: 'qblur', url: SITE_URLS.qblur,
-        tagline: 'Image filters written as maths.',
+        tagline: 'Image filters written as math.',
         pages: [
             { id: 'home', name: 'qblur', path: '', what: 'write a filter as a formula, see it on a picture, share it',
                 uses: 'a formula over pixel values compiled to a WebGL shader (mathzetta/glsl), with a CPU fallback from the same formula' },
-            { id: 'avatar', name: 'Profile picture', path: 'avatar/', what: 'a profile picture from any photo: centred on you, in a style, the background blurred, replaced or removed (a cut-out sticker)' },
-            { id: 'splash', name: 'Colour splash', path: 'splash/', what: 'click a colour to keep it; the rest of the photo turns grey' },
+            { id: 'avatar', name: 'Profile picture', path: 'avatar/', what: 'a profile picture from any photo: centered on you, in a style, the background blurred, replaced or removed (a cut-out sticker)' },
+            { id: 'splash', name: 'Color splash', path: 'splash/', what: 'click a color to keep it; the rest of the photo turns gray' },
             { id: 'move', name: 'Make it move', path: 'move/', what: 'a photo with a wave, a ripple, a slow zoom or a glitch, saved as a GIF or a video' },
             { id: 'text', name: 'Fancy text', path: 'text/', what: 'words as a picture: gold, chrome, fire, a photo inside the letters, or any formula for the letters and their border' },
             { id: 'guide', name: 'Guide', path: 'guide.html', what: 'how filters are written' },
@@ -104,7 +109,7 @@ export const SITES = [
             { id: 'practice', name: 'Practice', path: '', what: 'algebra practice that names the mistake, with classes and reports for teachers',
                 uses: 'every step a student types is read by MathZetta and matched against the course’s rules; mastered steps are done for them' },
             { id: 'videos', name: 'Videos', path: 'videos/', what: 'a derivative worked out step by step, narrated',
-                uses: 'the narration comes from mathzetta/speech, each spoken word tied to the part of the maths it describes' },
+                uses: 'the narration comes from mathzetta/speech, each spoken word tied to the part of the math it describes' },
         ],
     },
     {
@@ -113,7 +118,7 @@ export const SITES = [
         tagline: 'A train-network game on a real map.',
         pages: [
             { id: 'home', name: 'One More Station', path: '', what: 'build a network, run the trains',
-                uses: 'the game’s numbers come from formulas written as maths, read and evaluated by MathZetta' },
+                uses: 'the game’s numbers come from formulas written as math, read and evaluated by MathZetta' },
             { id: 'help', name: 'How to play', path: 'help.html', what: 'the rules' },
         ],
     },
@@ -124,7 +129,7 @@ export const SITES = [
         tagline: 'Sports odds in plain numbers.',
         pages: [
             { id: 'charts', name: 'Baseball charts', path: '#/charts', what: 'charts of 150 years of baseball seasons, from formulas you write; Python runs in your browser',
-                uses: 'each formula fills a slot of a Python (matplotlib) program as a checked Python function (mathzetta/python), drawn as maths while you type' },
+                uses: 'each formula fills a slot of a Python (matplotlib) program as a checked Python function (mathzetta/python), drawn as math while you type' },
         ],
     },
 ];

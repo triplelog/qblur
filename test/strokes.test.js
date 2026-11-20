@@ -64,3 +64,18 @@ suite('brush strokes', () => {
         eq(validateFilter({ graphics: { brush: { type: 'strokes', timing: 'even' } }, color: 'alpha(brush)' }), []);
     });
 });
+
+suite('strokes: a drawing built to stall the page', () => {
+    test('a point a billion frames away, or a huge brush crossing the frame for ever, ends in seconds', () => {
+        const far = normalizeStrokes('br', { type: 'strokes', size: 0.001, spacing: 0.02, strokes: [[[0, 0.5], [1e9, 0.5]]] });
+        let start = Date.now();
+        const drawn = rasterizeStrokes(far, 200, 200);
+        eq(Date.now() - start < 5000, true);
+        eq(drawn.data[(100 * 200 + 50) * 4 + 3] > 0, true);           // what is in the frame is painted
+        const zigzag = Array.from({ length: 400 }, (_, i) => [i % 2, i / 400]);
+        const big = normalizeStrokes('br', { type: 'strokes', size: 0.5, brush: 'soft', spacing: 0.02, strokes: [zigzag] });
+        start = Date.now();
+        rasterizeStrokes(big, 256, 256);
+        eq(Date.now() - start < 5000, true);
+    });
+});

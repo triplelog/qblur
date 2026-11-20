@@ -2030,6 +2030,36 @@ $('export').addEventListener('toggle', () => document.body.classList.toggle('cro
   $('show-original').onclick = () => show(document.body.classList.contains('hide-original'));
   for (const id of drawsOnOriginal) $(id).addEventListener('toggle', () => { if ($(id).open) show(true); });
 }
+// On a phone the knobs are a screen or two below the result: once the result has scrolled off the top, it floats in a
+// corner (the same canvas, so nothing is copied), and a tap on it scrolls back. A spacer keeps its place, so the page
+// doesn't jump. Not while cropping (a drag on the result) or painting.
+{
+  const output = $('output');
+  const spacer = Object.assign(document.createElement('div'), { id: 'output-spacer', hidden: true });
+  output.after(spacer);
+  const phone = matchMedia('(max-width: 700px)');
+  let floating = false, queued = false;
+  const set = (on) => {
+    if (on === floating) return;
+    if (on) { spacer.style.height = `${output.offsetHeight}px`; spacer.style.marginBottom = getComputedStyle(output).marginBottom; }
+    floating = on;
+    spacer.hidden = !on;
+    output.classList.toggle('pip', on);
+    output.title = on ? 'back to the picture' : '';
+  };
+  const update = () => {
+    queued = false;
+    const place = (floating ? spacer : output).getBoundingClientRect();
+    set(phone.matches && place.bottom < 0 && !document.body.classList.contains('cropping') && !brushTarget);
+  };
+  const later = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+  addEventListener('scroll', later, { passive: true });
+  addEventListener('resize', later);
+  phone.addEventListener('change', later);
+  // a tap on the floating result goes back to it, and nothing else sees the tap (no crop, no brush)
+  const back = (e) => { if (!floating) return; e.stopPropagation(); e.preventDefault(); if (e.type === 'click') { set(false); output.scrollIntoView({ block: 'center', behavior: 'smooth' }); } };
+  for (const type of ['pointerdown', 'pointermove', 'pointerup', 'click']) output.addEventListener(type, back, true);
+}
 $('quick-download').onclick = () => exporter.save();
 $('quick-link').onclick = async () => {
   try { await navigator.clipboard.writeText(MZ.filterToLink(shareable(), base())); $('export-msg').textContent = ''; toast('Link copied — it carries the filter, not the picture.'); }

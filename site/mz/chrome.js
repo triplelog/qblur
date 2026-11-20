@@ -22,7 +22,7 @@
  * (shioh-style.css, the skill's base unchanged, then shioh-frame.css and shioh.js, all loaded from
  * beside this file): a sticky sidebar with the wordmark and the site's pages, then a cell with
  * "Made with MathZetta" (on mathzetta.com: "Built on it"), the other sites, privacy and terms; the page's <main> becomes the main
- * column, its content one coloured cell (or the cells it marks itself with .ss-cell). On phones the
+ * column, its content one colored cell (or the cells it marks itself with .ss-cell). On phones the
  * sidebar is a slim bar with a Menu button and the "Made with" cell comes after the page.
  * shioh.js also gives the page window.ssToast() and window.ssConfirm().
  *
@@ -59,7 +59,7 @@ export function footerHtml({ site: siteId = 'math' } = {}) {
     const s = site(siteId) || site('math');
     const made = s.id === 'math'
         ? `<p><a class="mz-brand" href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE)} <a href="${esc(SOURCE_URL)}">Source</a>.</p>`
-        : `<p>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE.replace(/\.$/, ''))}. The maths you type here is read by it.</p>`;
+        : `<p>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE.replace(/\.$/, ''))}. The math you type here is read by it.</p>`;
     const links = listed().map((x) => `<a href="${esc(x.url)}"${x.id === s.id ? ' aria-current="true"' : ''}>${esc(x.name)}</a>`).join('');
     return `<footer class="mz-foot" role="contentinfo">${made}<nav aria-label="MathZetta sites">${links}</nav></footer>`;
 }
@@ -106,7 +106,7 @@ const FONTS = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;
 /** The Shioh stylesheets beside this file, in order: the base (the shioh-style skill's, unchanged), then the frame's own rules. */
 const SHIOH_CSS = ['shioh-style.css', 'shioh-frame.css'];
 
-/** Each page of a site keeps one cell colour (its place in the registry), so people know where they are. */
+/** Each page of a site keeps one cell color (its place in the registry), so people know where they are. */
 export function pageCell(siteId, pageId) {
     const s = site(siteId);
     const i = Math.max(0, s?.pages.findIndex((p) => p.id === pageId) ?? 0);
@@ -119,13 +119,13 @@ function frameFootHtml(s, home, where) {
     if (s.id === 'math') {
         // MathZetta's own pages: the same cell as mathzetta-website's shell.js (the sites built on it, the source)
         return `<footer class="ss-cell ss-p4 ss-frame-foot ${where}" role="contentinfo">
-    <p><b>Built on it</b> — sites whose maths MathZetta reads:</p>
+    <p><b>Built on it</b> — sites whose math MathZetta reads:</p>
     <p class="ss-family">${family}</p>
     <p class="ss-family"><a href="${esc(MATHZETTA_URL)}">mathzetta.com</a><a href="${esc(SOURCE_URL)}">Source</a><a href="${esc(home)}privacy.html">Privacy</a><a href="${esc(home)}terms.html">Terms</a></p>
   </footer>`;
     }
     return `<footer class="ss-cell ss-p4 ss-frame-foot ${where}" role="contentinfo">
-    <p>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE.replace(/\.$/, ''))}. The maths you type here is read by it.</p>
+    <p>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a> — ${esc(MATHZETTA_TAGLINE.replace(/\.$/, ''))}. The math you type here is read by it.</p>
     <p class="ss-family">${family}</p>
     <p class="ss-family"><a href="${esc(home)}privacy.html">Privacy</a><a href="${esc(home)}terms.html">Terms</a></p>
   </footer>`;
@@ -138,8 +138,13 @@ export function sidebarHtml({ site: siteId = 'math', page: pageId = null, base =
     const current = (id) => (id === pageId ? ' aria-current="page"' : '');
     const nav = [`<a href="${esc(home)}"${current('home')}>Home</a>`,
         ...s.pages.filter((p) => p.path !== '').map((p) => `<a href="${esc(pageHref(home, p))}"${current(p.id)} title="${esc(p.what)}">${esc(p.name)}</a>`)].join('');
+    // a site with a logo (the registry's `logo`, a file beside this one) shows it; the others their name. In a page the
+    // address is worked out from this file's (so it holds on the site, inside a table server and on localhost); a build
+    // script writes the site's copy of this folder, mz/
+    const logoSrc = s.logo && (typeof document === 'undefined' ? `${home}mz/${s.logo.src}` : new URL(s.logo.src, import.meta.url).href);
+    const logo = s.logo ? `<img src="${esc(logoSrc)}" alt="${esc(s.name)}" width="${s.logo.width}" height="${s.logo.height}">` : esc(s.name);
     return `<aside class="ss-sidebar" aria-label="${esc(s.name)}">
-  <section class="ss-cell ss-p1 ss-navcell"><a class="ss-logo" href="${esc(home)}">${esc(s.name)}</a><button class="ss-btn ss-menu-btn" type="button" aria-controls="ss-site-nav" aria-expanded="false">Menu</button><nav class="ss-nav" id="ss-site-nav" aria-label="${esc(s.name)} pages">${nav}</nav></section>
+  <section class="ss-cell ss-p1 ss-navcell"><a class="ss-logo" href="${esc(home)}">${logo}</a><button class="ss-btn ss-menu-btn" type="button" aria-controls="ss-site-nav" aria-expanded="false">Menu</button><nav class="ss-nav" id="ss-site-nav" aria-label="${esc(s.name)} pages">${nav}</nav></section>
   ${frameFootHtml(s, home, 'ss-desktop-only')}
 </aside>`;
 }
@@ -224,7 +229,7 @@ function mountShioh(options) {
 
 /**
  * The phone menu, wired here so it works however the page loads shioh.js (or before it arrives):
- * the same behaviour as shioh.js's, which skips a button marked data-ss-menu.
+ * the same behavior as shioh.js's, which skips a button marked data-ss-menu.
  */
 function menu(cell) {
     const btn = cell.querySelector('.ss-menu-btn');

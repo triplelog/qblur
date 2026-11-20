@@ -18,27 +18,37 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="icon" href="../favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script type="application/ld+json">{"@context":"https://schema.org","url":"https://qblur.com/text/","description":"Fancy text as a picture: gold, chrome, fire, a photo inside the letters — or any formula you write for the letters and their border. Download a transparent PNG or a GIF.","@type":"WebApplication","name":"Fancy text","applicationCategory":"MultimediaApplication","operatingSystem":"Any (in a web browser)","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<script>addEventListener('error', function (e) {
+  var s = e.target; if (!s || s.tagName !== 'SCRIPT' || document.getElementById('load-failed')) return;
+  var d = document.createElement('div'); d.id = 'load-failed'; d.setAttribute('role', 'alert');
+  d.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;margin:0 auto;width:fit-content;max-width:36rem;z-index:2000;box-sizing:border-box;display:flex;gap:.8rem;align-items:center;padding:.7rem 1rem;background:#fff;color:#1a1a2e;border:2px solid #000080;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.5);font:15px/1.4 system-ui,sans-serif';
+  d.textContent = 'Part of this page didn\u2019t load, so it won\u2019t work yet. Check your connection and reload.';
+  var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Reload'; b.onclick = function () { location.reload(); };
+  b.style.cssText = 'flex:none;padding:.35rem .9rem;font:inherit;font-weight:600;color:#fff;background:#000080;border:0;border-radius:4px;cursor:pointer';
+  d.appendChild(b); (document.body || document.documentElement).appendChild(d);
+}, true);</script>
 <script type="importmap">
 {
   "imports": {
-    "mathzetta": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/core.js",
-    "mathzetta/latex": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/latex.js",
-    "mathzetta/mathml": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/mathml.js",
-    "mathzetta/text": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/text.js",
-    "mathzetta/speech": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/speech.js",
-    "mathzetta/javascript": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/javascript.js",
-    "mathzetta/python": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/python.js",
-    "mathzetta/sql": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/sql.js",
-    "mathzetta/excel": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/excel.js",
-    "mathzetta/glsl": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/glsl.js",
-    "mathzetta/evaluate": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/evaluate.js",
-    "mathzetta/calculate": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/calculate.js",
-    "mathzetta/formulas": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/esm/formulas.js",
-    "mathzetta/all": "https://cdn.jsdelivr.net/npm/mathzetta@1.1.0/build/mathzetta.esm.min.js",
-    "@mathzetta/inlinemath": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/inlinemath.external.js",
-    "@mathzetta/inlinemath/lite": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/lite.external.js",
-    "@mathzetta/inlinemath/markdown": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/markdown.external.js",
-    "@mathzetta/inlinemath/cas": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.2.0/dist/cas.external.js",
+    "mathzetta": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/core.js",
+    "mathzetta/latex": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/latex.js",
+    "mathzetta/mathml": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/mathml.js",
+    "mathzetta/text": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/text.js",
+    "mathzetta/speech": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/speech.js",
+    "mathzetta/javascript": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/javascript.js",
+    "mathzetta/python": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/python.js",
+    "mathzetta/sql": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/sql.js",
+    "mathzetta/excel": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/excel.js",
+    "mathzetta/glsl": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/glsl.js",
+    "mathzetta/evaluate": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/evaluate.js",
+    "mathzetta/calculate": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/calculate.js",
+    "mathzetta/formulas": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/esm/formulas.js",
+    "mathzetta/all": "https://cdn.jsdelivr.net/npm/mathzetta@1.2.0/build/mathzetta.esm.min.js",
+    "@mathzetta/inlinemath": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.3.0/dist/inlinemath.external.js",
+    "@mathzetta/inlinemath/lite": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.3.0/dist/lite.external.js",
+    "@mathzetta/inlinemath/markdown": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.3.0/dist/markdown.external.js",
+    "@mathzetta/inlinemath/cas": "https://cdn.jsdelivr.net/npm/@mathzetta/inlinemath@0.3.0/dist/cas.external.js",
     "onnxruntime-web": "../ort/ort.wasm.min.mjs"
   }
 }

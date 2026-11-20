@@ -119,4 +119,7 @@ body.ss .app .side > .status:empty { padding: 0; border: 0; box-shadow: none; ba
 	/* the cheat sheet's two-column table scrolls in its own box */
 	body.ss #help-body table { display: block; overflow-x: auto; max-width: 100%; }
 	body.ss .example button, body.ss #guide-link, body.ss #help-link { min-height: 1.75rem; }
+	/* the saved filters' and the library's rows (Add, Copy link …), the folds' small headings, the apps' small buttons */
+	body.ss .rows button, body.ss #formulas-reset { min-height: 2rem; padding-inline: .7rem; }
+	body.ss summary.hint, body.ss .app details > summary { padding-block: .3rem; }
 }

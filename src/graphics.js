@@ -219,7 +219,7 @@ async function loadFace(spec, fonts) {
     try {
         let file = spec.fontUrl;
         if (!/\.(woff2?|ttf|otf)(\?|$)/i.test(new URL(file).pathname) || googleFontFamily(file)) {
-            const css = await (await fetch(file)).text();
+            const css = await (await fetch(file, { credentials: 'omit', referrerPolicy: 'no-referrer' })).text();
             file = fontFileFromCss(css, spec);
             if (!file || !file.startsWith('https://')) return null;
         }

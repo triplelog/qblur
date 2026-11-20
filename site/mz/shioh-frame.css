@@ -25,6 +25,9 @@ body.ss .ss-main:focus { outline: none; }
 .ss-family a:hover { background: var(--ss-panel-strong); }
 /* the wordmark keeps the accent; the Menu button keeps the base's look over site.css's buttons */
 body.ss .ss-logo { color: var(--ss-accent); }
+/* a logo image (tabdn's): a little wider than the base's 170px; in the phone's slim bar, as tall as the wordmark was */
+body.ss .ss-logo img { max-width: 200px; display: block; margin: 0 auto; }
+@media (max-width: 800px) { body.ss .ss-navcell .ss-logo img { width: auto; height: 1.9rem; margin: 0; } }
 body.ss .ss-menu-btn { display: none; background: #fff; color: var(--ss-ink); border: 1px solid #222; border-radius: var(--ss-radius-sm); min-height: 36px; }
 @media (max-width: 860px) { .ss-js body.ss .ss-menu-btn { display: block; } }
 

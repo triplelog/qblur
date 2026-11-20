@@ -88,6 +88,9 @@ function paeth(a, b, c) {
  */
 export async function encodePng({ width, height, data, palette = 'auto', colours = 256, dither = true, quantize = null }) {
     if (typeof CompressionStream === 'undefined') return null;
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || !data || data.length < width * height * 4) {
+        throw new Error('encodePng: width and height are whole numbers of pixels, and data holds 4 bytes for each');
+    }
     let indexed = null;
     if (palette === 'auto' || palette === 'force') {
         indexed = exactPalette(data);

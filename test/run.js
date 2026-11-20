@@ -17,7 +17,10 @@ await import('./ai.test.js');
 const cpu = await import('./cpu.test.js');
 let asyncError = null;
 try { await cpu.asyncTests(); } catch (e) { asyncError = e; }
+let poolError = null;
+try { await cpu.poolTests(); } catch (e) { poolError = e; }
 suite('CPU filters: workers', () => {
     test('drawAsync on 3 workers gives draw()\'s pixels', () => { if (asyncError) throw asyncError; });
+    test('one pool per runner, and dispose() ends a running draw', () => { if (poolError) throw poolError; });
 });
 process.exit(report() ? 0 : 1);
