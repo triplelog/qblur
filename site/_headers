@@ -20,6 +20,8 @@
   Cache-Control: public, max-age=604800
 /photos/greenscreen.jpg
   Cache-Control: public, max-age=604800
+/photos/home.jpg
+  Cache-Control: public, max-age=604800
 /photos/minimaldesk.jpg
   Cache-Control: public, max-age=604800
 /photos/mountains.jpg

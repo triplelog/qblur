@@ -1,5 +1,8 @@
 # Default photos
 
+`home.jpg` is the home page's one picture (800 px, ~50 KB: `sips -Z 800 -s format jpeg -s formatOptions 62 mountains.jpg --out home.jpg`;
+its credit is written in demo/index.html) and is not in the list.
+
 Put a photo or two here and list them in `index.json`; the editor then opens
 on the first one (the test picture stays available in the picture chooser),
 and `npm run build` copies the folder to `site/photos/`.
@@ -12,7 +15,7 @@ and `npm run build` copies the folder to `site/photos/`.
 ```
 
 - JPEG, about 1200–1600 px on the long side and under 400 KB each: the
-  preview is at most 480 × 360, and *Download PNG* draws the filter at the
+  preview is at most 1440 × 1080 ("sharpest"), and *Download PNG* draws the filter at the
   photo's own size, so bigger only costs download time.
 - One with a face or clear shapes (for edges, blur, spotlight) and one
   with strong colours (chroma key, tint, posterize) show the library well.

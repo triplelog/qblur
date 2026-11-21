@@ -76,5 +76,5 @@ const js = `(async () => {
 })()`;
 
 const shot = fileURLToPath(new URL('shot.mjs', import.meta.url));
-const run = spawnSync(process.execPath, [shot, '/demo/index.html', js, out], { stdio: 'inherit', env: { ...process.env, SHOT_TIMEOUT: process.env.SHOT_TIMEOUT || '900000' } });
+const run = spawnSync(process.execPath, [shot, '/demo/editor.html?preview=480', js, out], { stdio: 'inherit', env: { ...process.env, SHOT_TIMEOUT: process.env.SHOT_TIMEOUT || '900000' } });
 process.exit(run.status ?? 1);

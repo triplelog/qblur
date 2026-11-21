@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+- The CPU runner reads what the next MathZetta's shaders read: `arcsec`, `arccsc` and `arccot` (as `acos(1/x)`,
+  `asin(1/x)` and `π/2 − atan x`), degrees (`30°`, which the GPU already took and the CPU called an unknown name),
+  and evaluation bars (`\left[F\right]_a^b`, F at b minus F at a).
+- …and `⇒` / `⇔` (`\Rightarrow`, `\iff`), and membership in set-builder notation (`r \in \{x \mid x > 0.4\}`).
+- The site (not the package): the editor has its own page, `editor.html`, laid out as a dashboard — the pictures on a
+  stage that takes the room the window has (Result / Both / Original, **Expand** over the whole window, a sharper
+  preview: up to 960 × 720, or 1440 × 1080 when asked), beside the controls as tabs. The home page is now one small
+  example that opens in the editor; a filter's old link (`qblur.com/#…`) is sent on to the editor.
+- The site: writing filters has its own page, `filters.html` (the steps' maths, knobs and notes, a smaller preview,
+  saving, importing, the library and the cheat sheet), and the editor is for using them: choose one (saved or from
+  the library), tune its knobs, select and draw, download — "Edit this filter" and "Use it in the editor" carry the
+  filter (and the sample picture) between the two. Both pages are the same editor (`demo/app.js`, `data-mode`);
+  `filters.html` is made from `editor.html` by `tools/filters-page.mjs`. They have no sidebar column (the site's nav is
+  a bar across the top), so the pictures get the width. **Expand** fills the window again (the pictures were held to
+  the 200 px minimum: an expanded stage's height was counted as its bars). The home page's example takes your own photo
+  or video (or a file dropped on it), and Download saves a photo's result. New branding: the logo in the sidebar and
+  on the link-preview cards, new icons; the profile-picture sample is a photo now, not a painting.
+
 ## 0.1.2
 
 Fixes from a review before this release. Needs MathZetta 1.2 (the peer range is `^1.2.0`).

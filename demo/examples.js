@@ -246,8 +246,8 @@ export const EXAMPLES = [
         shows: ['selections', 'AI object finding', 'neighbouring pixels'],
         how: [
             'The maths is `mix(gaussian(5) * 0.85, rgb, selected)`: blurred and a little darker where `selected` is 0, the photo where it is 1.',
-            'Nothing changes until something is selected (without a selection `selected` is 1 everywhere). Under the picture, click "find objects (AI)" and then click the man — the object model outlines him — and press Enter. Or use "trace the edge" and click around him.',
-            'Tick "invert" to blur him instead; drag "feather" to soften the edge of the selection.',
+            'Nothing changes until something is selected (without a selection `selected` is 1 everywhere). Under the picture, click "find objects (AI)" and then click the woman — the object model outlines her — and press Enter. Or use "trace the edge" and click around her.',
+            'Tick "invert" to blur her instead; drag "feather" to soften the edge of the selection.',
         ],
         filter: { name: 'Background blur', steps: ['mix(gaussian(5) * 0.85, rgb, selected)'] },
     },

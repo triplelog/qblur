@@ -5,7 +5,9 @@
  *
  *   demo/share/<page>.jpg   a Shioh card: the page's name and line on a pastel cell, beside what the page makes
  *                           (its result, captured from the dev page)
- *   demo/favicon.svg        the icon (written by hand), and from it favicon.ico (32 px) and apple-touch-icon.png (180 px)
+ *
+ * The icons (demo/favicon.svg, favicon.ico, apple-touch-icon.png) and the logo on the cards (demo/logo.png) are the
+ * portfolio's branding/final/qblur, copied as they are; this script doesn't make them.
  *
  * Run it again after changing a page's look or result; it needs Chrome (CHROME=… to point elsewhere) and ImageMagick (`magick`).
  */
@@ -23,7 +25,7 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/ja
 
 /** Each card: the page, what to wait for, the element whose picture goes on the card, and its words. */
 export const CARDS = [
-    { name: 'index', path: '/demo/index.html', ready: 'Boolean(window.mzDemo && mzDemo.compiled)', shot: '#out', colour: '#a4b6dd',
+    { name: 'index', path: '/demo/editor.html', ready: 'Boolean(window.mzDemo && mzDemo.compiled)', shot: '#out', colour: '#a4b6dd',
         title: 'Image filters written as maths', line: 'Chain them, tune their knobs, share them as a link. In your browser.' },
     { name: 'avatar', path: '/demo/avatar/index.html', ready: 'Boolean(window.qblurApp && qblurApp.state.person)', shot: '#frame canvas:not(#marks)', colour: '#a2d0c0',
         before: "document.getElementById('show-marks').click()",
@@ -45,18 +47,16 @@ const card = (c, img) => `<!DOCTYPE html><html><head><meta charset="utf-8">
   * { box-sizing: border-box; margin: 0; }
   body { width: 1200px; height: 630px; background: #000; padding: 28px; display: flex; gap: 24px; font-family: 'Open Sans', sans-serif; }
   .words { flex: 1; background: ${c.colour}; border-radius: 3px; padding: 44px 44px 36px; display: flex; flex-direction: column; color: #222; }
-  .mark { font: 800 44px Montserrat, sans-serif; color: #000080; letter-spacing: -1px; }
+  .mark { display: block; height: 72px; width: auto; align-self: flex-start; }
   h1 { font: 800 ${c.title.length > 24 ? 56 : 64}px/1.05 Montserrat, sans-serif; margin-top: auto; }
   p { font-size: 27px; line-height: 1.35; margin-top: 22px; }
   .url { margin-top: 28px; font: 700 22px Montserrat, sans-serif; color: #000080; }
   .pic { width: ${img ? 520 : 0}px; display: ${img ? 'flex' : 'none'}; align-items: center; justify-content: center; background: #fff; border-radius: 3px; overflow: hidden; }
   .pic img { max-width: 100%; max-height: 100%; }
 </style></head><body>
-<div class="words"><div class="mark">qblur</div><h1>${esc(c.title)}</h1><p>${esc(c.line)}</p><div class="url">qblur.com</div></div>
+<div class="words"><img class="mark" src="/demo/logo.png" alt="qblur"><h1>${esc(c.title)}</h1><p>${esc(c.line)}</p><div class="url">qblur.com</div></div>
 <div class="pic">${img ? `<img src="${img}">` : ''}</div>
 </body></html>`;
-
-const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#2a6fdb"/><circle cx="16" cy="16" r="8" fill="none" stroke="white" stroke-width="3"/><circle cx="16" cy="16" r="2.5" fill="white"/></svg>\n`;
 
 const server = createServer(async (req, res) => {
     const p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -108,7 +108,7 @@ for (const c of CARDS) {
         img = `data:image/png;base64,${shot.data}`;
     }
     server.card = card(c, img);
-    await open(`${base}/card.html`, "document.fonts.status === 'loaded'", 1200, 630);
+    await open(`${base}/card.html`, "document.fonts.status === 'loaded' && document.querySelector('.mark').complete", 1200, 630);
     const shot = await send('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width: 1200, height: 630, scale: 1 } });
     const png = join(tmpdir(), `qblur-card-${c.name}.png`);
     await writeFile(png, Buffer.from(shot.data, 'base64'));
@@ -117,16 +117,5 @@ for (const c of CARDS) {
     console.log(`demo/share/${c.name}.jpg`);
 }
 
-// the icons: the SVG as written, and PNGs drawn from it
-await writeFile(join(ROOT, 'demo/favicon.svg'), FAVICON);
-// square corners for the touch icon: iOS rounds them itself, and would fill transparent ones with black
-server.card = `<!DOCTYPE html><style>body{margin:0;background:transparent}</style><img id="i" width="180" height="180" src="data:image/svg+xml,${encodeURIComponent(FAVICON.replace('rx="7"', 'rx="0"'))}">`;
-await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
-await open(`${base}/card.html`, "document.getElementById('i')?.complete", 180, 180);
-const icon = await send('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width: 180, height: 180, scale: 1 } });
-const big = join(ROOT, 'demo/apple-touch-icon.png');
-await writeFile(big, Buffer.from(icon.data, 'base64'));
-execFileSync('magick', ['-background', 'none', join(ROOT, 'demo/favicon.svg'), '-define', 'icon:auto-resize=32,16', join(ROOT, 'demo/favicon.ico')]);
-console.log('demo/favicon.svg, demo/favicon.ico, demo/apple-touch-icon.png');
 ws.close();
 await finish(0);

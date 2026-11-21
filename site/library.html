@@ -45,9 +45,9 @@
 <body class="ss">
 <main>
 <article class="ss-cell qb-doc">
-<p><a href="index.html">← the editor</a></p>
+<p><a href="editor.html">← the editor</a></p>
 <h1 id="qblur-on-your-own-pages">qblur on your own pages</h1>
-<p>qblur is the library behind <a href="https://qblur.com/">the editor</a>: image filters written as maths, compiled to WebGL shaders, with the same pixels from plain JavaScript where there is no GPU. Put it on any page with one <code>&lt;script&gt;</code> from a CDN — no build step, no server, nothing uploaded: the pictures stay in the visitor's browser.</p>
+<p>qblur is the library behind <a href="https://qblur.com/editor.html">the editor</a>: image filters written as maths, compiled to WebGL shaders, with the same pixels from plain JavaScript where there is no GPU. Put it on any page with one <code>&lt;script&gt;</code> from a CDN — no build step, no server, nothing uploaded: the pictures stay in the visitor's browser.</p>
 <h2 id="what-you-can-do-with-it">What you can do with it</h2>
 <ul><li><strong>Filters on your pictures, live.</strong> Any <code>&lt;img&gt;</code>, <code>&lt;canvas&gt;</code>, <code>&lt;video&gt;</code> or webcam — sepia, blur, comic, tilt-shift, a colour splash, or one of your own in a line of maths: <code>1 - rgb</code>, <code>if gray &gt; 0.5 then (1, 0, 0) else rgb</code>, <code>mix(rgb, gaussian(4), y)</code>.</li><li><strong>Knobs.</strong> A filter declares its parameters (<code>strength</code>, <code>tint</code>, …) with ranges; your sliders set them and the picture redraws at once, without recompiling.</li><li><strong>79 ready-made filters</strong> in <code>LIBRARY</code>, in seven groups (colour and tone, blur and edges, shape and motion, text, brushes, other pictures, chains) — use them as they are, chain them, or read their maths.</li><li><strong>Chains.</strong> Filters run one after another, each with its own settings and opacity; a chain is a filter too, so published chains nest and keep their authors' names.</li><li><strong>Animation.</strong> <code>t</code> counts frames: <code>pixel(px + 8 sin(py / 10 + t / 5), py)</code> is a wave. On a video, the filter runs on every frame.</li><li><strong>Several pictures.</strong> Masks, overlays, a second photo to blend in, a background for a green screen — each placed (cover, fit, tile, zoomed, turned) and set by name.</li><li><strong>Text and shapes</strong> drawn into the picture and coloured, shadowed, frosted or animated by the maths.</li><li><strong>Share a filter as a link</strong> or a small JSON document; reading one is safe — a filter is only maths: it can read the picture and write colours, nothing else.</li><li><strong>Save the result</strong> as PNG (in Node too), JPEG, WebP or an animated GIF.</li><li><strong>GPU or CPU, the same pixels.</strong> WebGL when it is there (fast: the shaders are compiled once), plain JavaScript when it isn't — old browsers, locked-down machines, <strong>Node</strong> (thumbnails on a server, tests).</li></ul>
 <p>Some things people build with it: filters on upload in a photo or social app; effects on a <code>&lt;video&gt;</code> or a webcam stream; a product page that recolours an item as the customer picks; generative art and animated backgrounds; previews in a CMS; high-contrast or colour-blindness views for accessibility; a lesson on how pictures are just numbers. The <a href="https://qblur.com/avatar/">small apps</a> on qblur.com — profile picture, colour splash, make it move, fancy text — are each a page of this library and a few controls.</p>
@@ -366,7 +366,7 @@ const png = await toBlob(frames[0]);                                 // PNG in N
 console.log(gif.type, gif.size, png.type);</code></pre>
 <p>Frames can be canvases or pictures, all one size, in an array or an async iterable (each frame drawn as it is needed); <code>repeat: -1</code> plays once. To save at a different size than you show, draw into a second canvas of that size, or with the CPU runner on a picture of that size.</p>
 <h2 id="sharing-filters">Sharing filters</h2>
-<pre><code>const link = filterToLink(def, 'https://qblur.com/');   // https://qblur.com/#eyJmb3Jt… — opens in the editor
+<pre><code>const link = filterToLink(def, 'https://qblur.com/editor.html');   // https://qblur.com/editor.html#eyJmb3Jt… — opens in the editor
 const json = filterToJSON(def);                          // the document, defaults left out
 readFilter(text);                                        // whatever was pasted: a link, JSON, or an expression
 filterFromLink(location.hash);                           // a filter from your own page's address
@@ -377,7 +377,7 @@ validateFilter(readFilter(text));                        // [] when it is fine</
 <pre><code>GROUPS;                                                  // ['Colour &amp; tone', 'Blur &amp; edges', 'Shape &amp; motion', 'Text &amp; shapes', 'Brushes', 'Other pictures', 'Chains']
 LIBRARY.filter((f) =&gt; f.group === 'Blur &amp; edges').map((f) =&gt; f.name);
 const comic = LIBRARY.find((f) =&gt; f.name === 'Comic');   // a chain of four</code></pre>
-<p>The editor's <a href="https://qblur.com/">library</a> shows them all on your own photo, with their maths.</p>
+<p>The editor's <a href="https://qblur.com/editor.html">library</a> shows them all on your own photo, with their maths.</p>
 <h2 id="reference">Reference</h2>
 <p>Everything the package exports — from <code>@mathzetta/qblur/apply</code>, the first seven; from <code>@mathzetta/qblur/element</code>, <code>QBlurImage</code>; from <code>@mathzetta/qblur</code>, the rest:</p>
 <div class="scroll" tabindex="0"><table>

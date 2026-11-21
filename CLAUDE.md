@@ -7,7 +7,7 @@ pictures, chains), its compiler to WebGL passes, and the runner. Depends on
 ```bash
 npm install      # links ../mathzetta/packages/mathzetta (the public library workspace)
 npm test         # format, compiler, sharing — no browser
-npm run serve    # http://localhost:8016/demo/
+npm run serve    # http://localhost:8016/demo/ (the home page; the editor is demo/editor.html)
 npm run check    # every library filter through real WebGL in headless Chrome (SwiftShader); exits 1 on a failure
 npm run check:cpu       # …plus the CPU runner on the same pictures, compared pixel by pixel (≤0.5% of channels off by >4/255)
 npm run check:nowebgl   # Chrome without WebGL: the editor must fall back to the CPU
@@ -21,8 +21,29 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
 
 - `src/format.js` — normalize / validate / compile a filter; JSON and share links.
 - `src/runtime.js` — WebGL runner (textures, passes, live params).
-- `demo/index.html` + `demo/app.js` — the editor; `window.MathZetta` and `window.mzDemo` are set there for `tools/check.mjs`.
-  One mode (writing the maths; there is no Simple mode any more). The controls are one card: the steps (each folds away: name,
+- `demo/index.html` + `demo/home.js` — the home page, light on purpose: one example (the 50 KB `photos/home.jpg`, a line of maths,
+  a few filters to try — `PRESETS`, compiled by test/examples.test.js —, "Show the original", "Expand", "Use your own photo or video"
+  (or a file dropped on the picture: a photo up to 1600 px, which Download saves; a video's frames at 960 px), then links: "Open this
+  filter in the editor" (the maths as a link), the small apps, the library. No Inline Math, no object model, no library list.
+  A filter's old link (`qblur.com/#…`) is sent on to `editor.html#…` by the script in its <head>: keep it. `window.qblurHome` is for the checks.
+- `demo/editor.html` + `demo/app.js` — the editor; `window.MathZetta` and `window.mzDemo` are set there for `tools/check.mjs`.
+  **Two pages, one editor** (decided 2026-11-20): editor.html (`data-mode="use"`) puts filters on a picture — choose one (saved or
+  library: Use / Add), tune its knobs (a step shows knobs and notes, not its maths or Edit), select & draw, download; the picture
+  gets the room. `demo/filters.html` (`data-mode="write"`) writes them — each step opens editing, name/author/Save, JSON and import,
+  "Add a new filter", the cheat sheet, the saved filters (Open/Add/Copy link/Delete), the library — with the controls the wide
+  column, the preview beside them, and no tabs. It is **made from editor.html** by `node tools/filters-page.mjs` (the build runs it;
+  test/pages.test.js fails when it is stale): never edit filters.html. The page's CSS hides `.write-only` / `.use-only`; app.js
+  reads `WRITE`. "Edit this filter" (`.to-filters`) and "Use it in the editor" (`#to-editor`) carry the filter as a link, and the
+  sample picture through sessionStorage (`qblur-handoff`, which also skips the "came from a link" note). Both mount the shell
+  with `wide: true`: no sidebar column, the nav a bar across the top.
+  A dashboard (decided 2026-11-20): the **stage** (`#stage`: the original and the result) beside the controls, which are three tabs
+  (Filter / Select & draw / Download). `demo/workspace.js` runs it: what is shown (Result / Both / Original, `body.view-*`), the
+  pictures' size on screen (`--frame-w` on `#frames`, as large as the stage and the window allow; the stage is sticky from 1180px),
+  **Expand** (`body.stage-expanded`: the stage over the whole window, the rest inert, Esc closes), the tabs (the Download tab holds
+  `#export` open, so a drag on the result crops only there; the tools' tab brings the original back), and `#preview-size` — the
+  preview's own pixels: 480 × 360 "fast" (phones, the CPU), 960 × 720 "sharp" (the default with WebGL), 1440 × 1080; changing it
+  fits the picture again, which clears a selection. `?preview=480` fixes it: tools/check.mjs passes it, so the checks' pixels don't move.
+  The Filter tab is one card: the steps (each folds away: name,
   maths, its page of knobs and notes, opacity, "Save this step" / "Copy its link"), a rule, "Add a new filter" (maths, the saved
   filters, the library — folded, a fold per group, a line per filter; the built-in filters have no author), a rule, the examples.
   A brush's strokes are drawn as lines over the original (`#strokes-overlay`, `drawStrokeOverlay()`) until "hide strokes". A step's knobs are Inline Math variables: each is a line (`cutoff := [[0..1 step
@@ -32,7 +53,7 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   (no DOM, test/knobs.test.js); in the format they are a param's `options` / `input: "box"` and a filter's `notes`.
   A step shows its maths (a textarea that grows; Enter applies), its knobs and its notes; its **Edit** toggle (`editing`, on for a
   step written in "Add a new filter") shows the editing parts: name and author, each knob's line, the add buttons, a note's tools.
-  On phones the original picture is hidden (`body.hide-original`, "show original") until asked for or a panel that draws on it opens.
+  On phones the page opens on the result alone (the Result view) until Both is asked for or a panel that draws on the original opens.
   Saved filters: localStorage "qblur" (a list of filters). A link (#…) opens as a fork, with a note saying whose it was. `still` (no video/GIF, and no pass uses `t`, `random` or brush strokes — `compileCpuPass(p).uses`)
   hides `.when-moving` (time, record, GIF) and stops the redraw loop. Panels are `<details class="panel" data-remember>` (open state kept).
   Keep every element id: app.js, export.js and tools/check.mjs find things by id.
@@ -54,7 +75,7 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   own layer — maps the family's `--mz-*` variables onto the style, so the pages' own CSS follows, and makes each part of a page
   a cell; pictures, code and wide tables on white) and `shioh.js` (the phone menu, `ssToast()`, `ssConfirm()`; loaded `defer`
   AFTER the page's mountShell module, so the Menu button exists when it wires it up; plus the one-line `ss-js` script in
-  <head>). `demo/shell.js` (`mountShell({ page, base })`) builds the frame: the sidebar — a `.ss-navcell` (wordmark, Menu
+  <head>). `demo/shell.js` (`mountShell({ page, base, wide })`; `wide`: the editor and the filters page, the sidebar a bar across the top and the footer cell at every width) builds the frame: the sidebar — a `.ss-navcell` (the logo, Menu
   button, qblur's pages from mathzetta-sites' registry), then a `.ss-desktop-only` cell with "Made with MathZetta", the other
   sites, Privacy · Terms — in place of the family's mountChrome (root CLAUDE.md rule 7 notes the exception); on phones a
   `.ss-phone-only` footer cell at the end of <main> repeats the MathZetta link, privacy and terms (the audit needs that link at
@@ -69,7 +90,8 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   crawls each bundle's CDN imports at build time and writes them as `<link rel="modulepreload">` after the import map. The site's
   bundles are minified like dist/. Titles put the topic first ("Privacy — qblur"); the sitemap's `<lastmod>` is each page's last
   git change. On phones the editor's result floats in a corner (`#output.pip`, app.js) once scrolled past, so the knobs show their effect. `node tools/share-cards.mjs` remakes the cards
-  (each page's result, captured) and the icons. `site/_headers` keeps models/, ort/, photos/ and share/ cached (Cloudflare Pages).
+  (each page's result, captured, with the logo). The icons and `demo/logo.png` (the sidebar's logo, shell.js) are the portfolio's
+  `branding/final/qblur`, copied unchanged — updating the branding is replacing them. `site/_headers` keeps models/, ort/, photos/ and share/ cached (Cloudflare Pages).
 - The guide on the site is docs/filters.md without its `<!-- dev -->…<!-- /dev -->` parts (`forSite` in tools/markdown.mjs):
   repo paths, npm scripts and the API stay on GitHub. Keep new developer-only paragraphs inside such markers.
 - The profile-picture page's opening sample has its outline worked out ahead (`"person"` in demo/photos/index.json,
@@ -82,7 +104,7 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   "Draft" note goes when none is left);
   `demo/404.html` (the shioh-style skill's self-contained 404 with the limerick prompt, filled for qblur: its SITE block lists home, a few pages and the MathZetta link; theme block = the base's colours; absolute addresses: the host serves it at any depth); robots.txt and sitemap.xml generated from the registry.
 - The owner's words are on Claude UI's **Content** page (project qblur): docs/site-details.json (pattern fields, one per key),
-  the editor's intro and "On your own site" blurb and each app's lead (between `<!-- claude-ui:begin/end … -->` lines in
+  the site's intro and "On your own site" blurb (both on the home page now) and each app's lead (between `<!-- claude-ui:begin/end … -->` lines in
   demo/index.html and demo/<app>/index.html — keep the markers), each page's meta description, and privacy.md / terms.md whole.
 - `src/library.js` — `LIBRARY`, the built-in filters (tested by test/library.test.js). The editor opens on "Colour circle" (still, so no redraw loop).
 - The package's three entries, each with its .d.ts (test/types.test.js checks every export is declared): `@mathzetta/qblur` (src/index.js),
@@ -93,7 +115,7 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
 - `src/strokes.js` — brush strokes: a `strokes` graphic re-rasterized per frame by its own dab rasterizer (channels are data: alpha coverage, red age, green passes/4, blue progress), uploaded as ImageData (a canvas would premultiply the channels away). The page calls `updateStrokes()` in draw(), export and GIF frames.
 - `demo/tracker.js` — tracking (no DOM, test/tracker.test.js). The page feeds it frames from a second copy of the video (seeked; videos from the list are loaded as blobs so seeking works on any server) or the GIF's frames. tools/send-file.mjs gives the local servers byte ranges.
 - `demo/examples.js` — the guided examples (data); test/examples.test.js compiles them, tools/check.mjs runs them in the page.
-- `tools/shot.mjs` — `node tools/shot.mjs "/site/index.html" "<js>" out.png` for a look at the page.
+- `tools/shot.mjs` — `node tools/shot.mjs "/site/editor.html" "<js>" out.png` for a look at the page (`SHOT_SIZE=390x800` for a phone, `SHOT_READY` for a page without `mzDemo`).
 - `docs/filters.md` — the guide to what an expression can use (`px py rgb gray`, neighbourhoods, geometry, several pictures).
 - `docs/library.md` — the library on other people's pages: the CDN (jsDelivr: `cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/…`, also in README.md;
   `node tools/check-docs.mjs --cdn` runs the examples from there), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,

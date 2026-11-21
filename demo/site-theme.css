@@ -5,11 +5,11 @@
  *   <link rel="stylesheet" href="site-theme.css">
  *
  * Theme: the base's defaults (the Shioh pastels #a4b6dd #d09292 #c094cc #a2d0c0 #c37892, navy accent
- * #000080, plain black background, the "qblur" Montserrat wordmark), so nothing is overridden here.
+ * #000080, plain black background), with qblur's logo (logo.png, from the portfolio's branding/final/qblur) for the wordmark, so nothing is overridden here.
  *
  * The pages' own CSS reads the family's --mz-* variables (they used to come from
  * mathzetta-sites/site.css); here they take the Shioh values, so every page follows. Each part of a
- * page is a cell: the editor's top and picture column, the controls, every section of the small
+ * page is a cell: the editor's top, its stage and each tab's panels, every section of the small
  * apps, the documents. Sidebar and family links: shell.js.
  */
 :root {
@@ -23,6 +23,9 @@
 }
 /* on the darkest cell, small text takes the full ink (the muted grey is 3.9:1 there) */
 .ss-p5 { --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
+/* the logo: as wide as the sidebar allows; in the phone bar, the bar's height */
+.ss-logo img { max-width: 200px; display: block; margin: 0 auto; }
+@media (max-width: 860px) { .ss-navcell .ss-logo img { width: auto; height: 2.2rem; margin: 0; } }
 body.ss a:not(.ss-btn):not(.button) { color: var(--ss-link); }
 body.ss .ss-cell a:not(.ss-btn):not(.ss-logo):not(.button) { color: inherit; }
 .qb-footer p { margin: .3rem 0; font-size: .85rem; }
@@ -32,29 +35,48 @@ body.ss .ss-cell a:not(.ss-btn):not(.ss-logo):not(.button) { color: inherit; }
 .qb-footer.ss-phone-only .qb-family { gap: .1rem 1rem; }
 .qb-footer.ss-phone-only .qb-family a { display: inline-block; padding: .3rem 0; }
 
-/* ---- the editor (demo/index.html) ---- */
+/* ---- wide pages (shell.js's `wide`: the editor, the filters page): no sidebar column, the nav a bar across the top ---- */
+body.qb-wide .ss-shell { grid-template-columns: minmax(0, 1fr); max-width: 2000px; }
+body.qb-wide .ss-sidebar { position: static; max-height: none; overflow: visible; }
+body.qb-wide .ss-sidebar > .ss-desktop-only { display: none; }
+body.qb-wide .qb-footer.ss-phone-only { display: flex; flex-wrap: wrap; gap: .2rem 1.2rem; align-items: center; padding-bottom: var(--ss-pad-y); }
+@media (min-width: 861px) {
+	body.qb-wide .ss-navcell { display: flex; align-items: center; gap: 1.2rem; padding: .35rem .8rem; }
+	body.qb-wide .ss-navcell .ss-logo { margin: 0; padding: 0; background: none; flex: none; }
+	body.qb-wide .ss-navcell .ss-logo img { width: auto; height: 2.3rem; margin: 0; }
+	body.qb-wide .ss-navcell .ss-nav { flex-direction: row; flex-wrap: wrap; gap: .15rem; }
+	body.qb-wide .ss-navcell .ss-nav a { padding: .3rem .6rem; }
+}
+
+/* ---- the editor (demo/editor.html, and demo/filters.html made from it): the stage beside the tabbed controls ---- */
+body.ss .tabs { margin: 0; }
+body.ss .tabpanel { gap: var(--ss-gap); }
+body.ss .tabs [role=tab] { font-family: var(--ss-font-head); border-color: var(--ss-border); }
 body.ss .page { max-width: none; padding: 0; display: flex; flex-direction: column; gap: var(--ss-gap); }
 body.ss .page > .qb-head { background: var(--ss-p1); }
 body.ss .page .bar { position: static; background: transparent; border-bottom: 1px solid var(--ss-rule); padding-top: 0; }
 body.ss .page .bar h1 { font-family: var(--ss-font-head); font-weight: 800; }
+/* wide pages: the page's bar is one slim cell, so the pictures get the height */
+body.qb-wide .page > .qb-head { padding-top: .5rem; padding-bottom: .5rem; }
+body.qb-wide .page .bar { border-bottom: 0; padding: 0; }
 body.ss .page .intro { color: var(--ss-ink); }
 body.ss .row { margin-top: 0; gap: var(--ss-gap); }
-body.ss .pictures { background: var(--ss-p4); border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); box-sizing: border-box; width: min(100%, 520px); }
+body.ss .pictures { background: var(--ss-p4); border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); box-sizing: border-box; }
 /* the pictures sit on white, the way the style puts previews on a surface */
 body.ss .pictures canvas:not(#overlay):not(#track-overlay):not(#strokes-overlay):not(#select-surface):not(#track-timeline) { background: #fff; border-color: var(--ss-border); border-radius: var(--ss-radius-sm); }
 body.ss .controls { gap: var(--ss-gap); }
-body.ss .controls > .panel { margin-top: 0; border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); }
-body.ss .controls > .panel:nth-of-type(5n + 1) { background: var(--ss-p3); }
-body.ss .controls > .panel:nth-of-type(5n + 2) { background: var(--ss-p1); }
-body.ss .controls > .panel:nth-of-type(5n + 3) { background: var(--ss-p2); }
-body.ss .controls > .panel:nth-of-type(5n + 4) { background: var(--ss-p4); }
-body.ss .controls > .panel:nth-of-type(5n + 5) { background: var(--ss-p5); --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
-body.ss .controls > details.panel > summary { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) 0; padding: .6rem var(--ss-pad-x); }
-body.ss .controls > details.panel[open] > summary { background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; margin-bottom: .6rem; }
-body.ss .controls > details.panel > .body { padding: 0; }
+body.ss .tabpanel > .panel { margin-top: 0; border: 1px solid var(--ss-border); border-radius: var(--ss-radius); box-shadow: 0 2px 12px rgb(0 0 0 / .28); padding: var(--ss-pad-y) var(--ss-pad-x); }
+body.ss .tabpanel > .panel:nth-of-type(5n + 1) { background: var(--ss-p3); }
+body.ss .tabpanel > .panel:nth-of-type(5n + 2) { background: var(--ss-p1); }
+body.ss .tabpanel > .panel:nth-of-type(5n + 3) { background: var(--ss-p2); }
+body.ss .tabpanel > .panel:nth-of-type(5n + 4) { background: var(--ss-p4); }
+body.ss .tabpanel > .panel:nth-of-type(5n + 5) { background: var(--ss-p5); --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
+body.ss .tabpanel > details.panel > summary { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) 0; padding: .6rem var(--ss-pad-x); }
+body.ss .tabpanel > details.panel[open] > summary { background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; margin-bottom: .6rem; }
+body.ss .tabpanel > details.panel > .body { padding: 0; }
 body.ss .controls h2, body.ss .pictures summary, body.ss .controls summary { font-family: var(--ss-font-head); font-weight: 700; }
-body.ss .controls > section.panel > h2:first-child { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .6rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; }
-body.ss .pictures details.panel { background: var(--ss-panel); border-color: var(--ss-rule); }
+body.ss .tabpanel > section.panel > h2:first-child { margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .6rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; }
+body.ss .panel details.panel { background: var(--ss-panel); border-color: var(--ss-rule); }
 body.ss .card, body.ss ol#steps li, body.ss .example-how { background: var(--ss-panel); border-color: var(--ss-rule); }
 body.ss .card.tile:hover, body.ss .card.tile.current { background: var(--ss-panel-strong); }
 body.ss .empty-steps { border-color: var(--ss-rule); color: var(--ss-ink); }

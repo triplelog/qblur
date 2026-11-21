@@ -4,6 +4,7 @@ await import('./filters.test.js');
 await import('./knobs.test.js');
 await import('./library.test.js');
 await import('./help.test.js');
+await import('./pages.test.js');
 await import('./gif.test.js');
 await import('./png.test.js');
 await import('./apply.test.js');

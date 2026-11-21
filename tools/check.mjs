@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Runs every library filter of demo/index.html through real WebGL
+ * Runs every library filter of demo/editor.html through real WebGL
  * (headless Chrome with SwiftShader, so no GPU is needed) and reports the
  * ones that do not compile or render.
  *
@@ -550,7 +550,7 @@ const server = createServer(async (req, res) => {
     }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-const url = `http://127.0.0.1:${server.address().port}/${SITE ? 'site' : 'demo'}/index.html?picture=test&engine=${NO_WEBGL ? 'auto' : ENGINE}&precision=${PRECISION}${WEBGL2 ? '&webgl2' : ''}`;
+const url = `http://127.0.0.1:${server.address().port}/${SITE ? 'site' : 'demo'}/editor.html?picture=test&preview=480&engine=${NO_WEBGL ? 'auto' : ENGINE}&precision=${PRECISION}${WEBGL2 ? '&webgl2' : ''}`;
 
 const debugPort = 9300 + Math.floor(Math.random() * 500);
 const profile = join(tmpdir(), `mathzetta-check-${process.pid}`);

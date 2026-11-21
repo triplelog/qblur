@@ -90,8 +90,10 @@ export const SITES = [
         id: 'qblur', name: 'qblur', url: SITE_URLS.qblur,
         tagline: 'Image filters written as math.',
         pages: [
-            { id: 'home', name: 'qblur', path: '', what: 'write a filter as a formula, see it on a picture, share it',
+            { id: 'home', name: 'qblur', path: '', what: 'a filter is a formula: try one on a picture, then take it to the editor',
                 uses: 'a formula over pixel values compiled to a WebGL shader (mathzetta/glsl), with a CPU fallback from the same formula' },
+            { id: 'editor', name: 'Editor', path: 'editor.html', what: 'filters on your picture: choose and chain them, tune their knobs on a large preview, select and draw on the picture, download or share a link' },
+            { id: 'filters', name: 'Filters', path: 'filters.html', what: 'write a filter as maths, with knobs and notes and a live preview; save it in your browser or share it as a link' },
             { id: 'avatar', name: 'Profile picture', path: 'avatar/', what: 'a profile picture from any photo: centered on you, in a style, the background blurred, replaced or removed (a cut-out sticker)' },
             { id: 'splash', name: 'Color splash', path: 'splash/', what: 'click a color to keep it; the rest of the photo turns gray' },
             { id: 'move', name: 'Make it move', path: 'move/', what: 'a photo with a wave, a ripple, a slow zoom or a glitch, saved as a GIF or a video' },

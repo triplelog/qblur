@@ -44,7 +44,7 @@ filterShader('if gray > 0.5 then 1 else 0')              // threshold
 filterShader('pixel(px + 8 sin(py / 10 + t / 5), py)')   // a wave that moves with t
 ```
 
-`demo/index.html` is the editor; `LIBRARY` (exported by the package) is the built-in catalogue it
+`demo/editor.html` is the editor; `LIBRARY` (exported by the package) is the built-in catalogue it
 shows. [qblur on your own pages](library.md) is how to use the package.
 <!-- /dev -->
 

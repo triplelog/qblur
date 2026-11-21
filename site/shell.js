@@ -9,6 +9,11 @@
  *
  *   import { mountShell } from './shell.js';
  *   mountShell({ page: 'avatar', base: '../' });     // base: from this page to the site's root
+ *   mountShell({ page: 'editor', base: './', wide: true });
+ *
+ * `wide` (the editor and the filters page, which need the whole width): no sidebar column — the first cell is a
+ * bar across the top (the logo and the pages in a row; the phone's Menu bar on phones), and the footer cell
+ * at the end of <main> is shown at every width (body.qb-wide, site-theme.css).
  *
  * The registry import is the dev address; the build copies this file to site/shell.js with it
  * pointed at site/mz/ (tools/build.mjs).
@@ -17,19 +22,20 @@ import { SITES, MATHZETTA_URL } from './mz/sites.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function mountShell({ page = 'home', base = './' } = {}) {
+export function mountShell({ page = 'home', base = './', wide = false } = {}) {
     const qblur = SITES.find((s) => s.id === 'qblur');
     const family = SITES.filter((s) => s.id !== 'qblur' && !s.external && !s.unlisted);
     const href = (p) => base + p.path;
-    const nav = qblur.pages.map((p) => `<a href="${esc(href(p))}"${p.id === page ? ' aria-current="page"' : ''} title="${esc(p.what)}">${esc(p.id === 'home' ? 'Editor' : p.name)}</a>`).join('');
+    const nav = qblur.pages.map((p) => `<a href="${esc(href(p))}"${p.id === page ? ' aria-current="page"' : ''} title="${esc(p.what)}">${esc(p.id === 'home' ? 'Home' : p.name)}</a>`).join('');
 
     document.body.classList.add('ss');
+    if (wide) document.body.classList.add('qb-wide');
     const main = document.querySelector('main');
     const shell = document.createElement('div');
     shell.className = 'ss-shell';
     shell.innerHTML = `<aside class="ss-sidebar" aria-label="qblur">
   <section class="ss-cell ss-p1 ss-navcell">
-    <a class="ss-logo" href="${esc(base)}">qblur</a>
+    <a class="ss-logo" href="${esc(base)}"><img src="${esc(base)}logo.png" alt="qblur" width="279" height="122"></a>
     <button class="ss-btn ss-menu-btn" type="button" aria-controls="qb-nav">Menu</button>
     <nav class="ss-nav" id="qb-nav" aria-label="qblur's pages">${nav}</nav>
   </section>

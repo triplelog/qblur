@@ -50,7 +50,7 @@ CPU without it — both give the same pixels. See "Running it" in the guide.
 ```bash
 npm install        # links ../mathzetta/packages/mathzetta (the public repo, checked out beside this one) for development
 npm test           # format, compiler, sharing, the CPU runner (pixels, bands, workers, safety) — no browser
-npm run serve      # http://localhost:8016/demo/  — the editor and library ("runs on": auto / GPU / CPU)
+npm run serve      # http://localhost:8016/demo/  — the home page; the editor and library are demo/editor.html ("runs on": auto / GPU / CPU)
 npm run check      # every library filter through real WebGL in headless Chrome
 npm run check:cpu  # …and the CPU runner on the same pictures, compared pixel by pixel
 npm run check:nowebgl   # Chrome without WebGL: the editor must fall back to the CPU
@@ -62,8 +62,8 @@ Before building for a real address, set `SITE_URL=https://…/` (or
 `"homepage"` in package.json) so pages get absolute canonical, `og:url` and
 `og:image` addresses; the preview cards are `demo/share/*.jpg` (`node tools/share-cards.mjs` remakes them).
 
-`site/` is the deployable editor: `index.html`, `app.js` (the page with
-MathZetta and this package bundled in), `cpu-worker.js`, `guide.html` (the
+`site/` is the deployable site: `index.html` and `home.js` (the home page, one small example), `editor.html`,
+`filters.html` and `app.js` (the editor and the filters page, one bundle with this package in it; MathZetta loads from jsDelivr), `cpu-worker.js`, `guide.html` (the
 guide rendered, heading ids as on GitHub) and `photos/`. Default photos go
 in `demo/photos/` with an `index.json` — see the README there.
 Serve the folder from anywhere (GitHub Pages, S3, a CDN); share links are
@@ -132,7 +132,10 @@ Publishing is `npm publish` (`prepublishOnly` runs the tests and the build).
 | `demo/help.js` | the in-page cheat sheet, and `explain()`: an error → a hint and the help section / guide heading for it |
 | `demo/photos/` | default photos (`index.json` lists them); the editor opens on the first |
 | `tools/markdown.mjs` | the small Markdown renderer behind `site/guide.html` |
-| `demo/index.html` | editor, library, share links; what `npm run check` drives |
+| `demo/editor.html` | the editor — filters on your picture: choosing one, its knobs, selecting and drawing, downloads — a dashboard: the stage — original and result as large as the window allows, expandable — beside the tabbed controls; what `npm run check` drives |
+| `demo/workspace.js` | the editor's stage and tabs: what is shown (Result / Both / Original), the pictures' size on screen, Expand, the preview's sharpness |
+| `demo/filters.html` | the filters page — writing, changing and saving filters beside a smaller preview: the same editor (`data-mode="write"`), made from editor.html by `tools/filters-page.mjs` (don't edit it) |
+| `demo/index.html`, `demo/home.js` | the home page: one small example (a 50 KB photo — or your own photo or video —, a line of maths, a few filters to try) that opens in the editor |
 | `docs/filters.md` | the guide |
 
 This was `src/filters/` and `demos/filters.html` in MathZetta until

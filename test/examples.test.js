@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { suite, test, eq } from './harness.js';
 import { EXAMPLES, resolveExample } from '../demo/examples.js';
-import { LIBRARY, validateFilter, compileFilter } from '../src/index.js';
+import { LIBRARY, validateFilter, compileFilter, filterFromLink, filterToLink } from '../src/index.js';
 
 const photos = JSON.parse(await readFile(new URL('../demo/photos/index.json', import.meta.url), 'utf8')).map((p) => p.file);
 
@@ -14,6 +14,18 @@ suite('the examples', () => {
             compileFilter(def);
             if (example.picture !== 'test' && !photos.includes(example.picture)) throw new Error(`${example.title}: no photo ${example.picture}`);
             if (!example.how.length || !example.shows.length) throw new Error(`${example.title}: not explained`);
+        }
+    });
+    test('the home page\'s filters to try compile, and travel to the editor as a link', async () => {
+        const home = await readFile(new URL('../demo/home.js', import.meta.url), 'utf8');
+        const presets = [...home.matchAll(/^    \['([^']+)', '([^']+)'\],$/gm)].map((m) => m[2]);
+        if (presets.length < 5) throw new Error(`found ${presets.length} presets in demo/home.js`);
+        const page = await readFile(new URL('../demo/index.html', import.meta.url), 'utf8');
+        const first = /<textarea id="maths"[^>]*>([^<]*)<\/textarea>/.exec(page)[1];
+        eq(first, presets[0]);                            // the page opens on the first one
+        for (const maths of presets) {
+            compileFilter(maths);
+            eq(compileFilter(filterFromLink(filterToLink(maths, 'editor.html'))).passes.length, compileFilter(maths).passes.length);
         }
     });
     test('ids are unique, and explanations\' code spans close', () => {

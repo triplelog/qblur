@@ -7,6 +7,7 @@ import { setupExport } from './export.js';
 import { setupSelection } from './livewire.js';
 import { setupAI, AI_MODELS, DEFAULT_MODEL, SHIPPED_MODELS } from './ai.js';
 import { createTracker, resample } from './tracker.js';
+import { setupWorkspace, PREVIEW_SIZES } from './workspace.js';
 import { renderMarkdownInto, markdownToHTML, createVariables } from '@mathzetta/inlinemath/markdown';
 import {
   HOW, definitionOf, inlineDefinition, parseDefinition, numberOf, sliderStep, blocksOf, notesOf, freeName, renameInMaths, bakeStep, trim, toHex, fromHex,
@@ -32,10 +33,23 @@ let runner = null;
 let currentT = 0;
 let video = null;
 let media = { kind: 'test', source: null, width: 320, height: 240 };   // the picture, at its own size
+let workspace = null;                    // the stage and the tabs (workspace.js), set up with the page's panels
 const toStep = (stepLike) => MZ.normalizeFilter({ steps: [stepLike] }).steps[0];
 const base = () => location.href.split('#')[0];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const GUIDE = $('guide-link').getAttribute('href');   // ../docs/filters.md here, guide.html on the site
+// Two pages run this: editor.html uses filters (the picture large: knobs, choosing a filter, selecting and drawing,
+// downloads) and filters.html writes them (maths, knobs and notes, saving, importing; made from editor.html by
+// tools/filters-page.mjs). The markup is the same; the page's CSS shows each its parts (.use-only, .write-only).
+const WRITE = document.body.dataset.mode === 'write';
+const PAGE_URL = { editor: new URL('editor.html', location.href).href.split('?')[0], filters: new URL('filters.html', location.href).href.split('?')[0] };
+// Going from one page to the other carries the filter (in the link) and the sample picture on screen (here): it is
+// the same filter, not someone else's, so it opens without the "came from a link" note.
+const HANDOFF = 'qblur-handoff';
+const handoff = (() => { try { const h = JSON.parse(sessionStorage.getItem(HANDOFF)); sessionStorage.removeItem(HANDOFF); return h; } catch { return null; } })();
+for (const a of document.querySelectorAll('#to-editor, .to-filters')) {
+  a.addEventListener('click', () => { try { sessionStorage.setItem(HANDOFF, JSON.stringify({ picture: $('photo').value })); } catch { /* private mode */ } });
+}
 
 // ---- help, and errors that say where to look ------------------------------
 function renderHelp() {
@@ -60,6 +74,7 @@ function renderHelp() {
 }
 
 function showHelp(id) {
+  workspace?.showTab('filter');
   $('help').open = true;
   const section = document.getElementById(`help-${id}`) ?? $('help');
   section.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -76,7 +91,7 @@ function showError(message) {
   const line = document.createElement('div');
   line.className = 'hint';
   line.append(hint + ' ');
-  if (id) {
+  if (id && WRITE) {                                                  // the cheat sheet is on the filters page
     const a = Object.assign(document.createElement('a'), { href: '#help', textContent: 'help' });
     a.onclick = (e) => { e.preventDefault(); showHelp(id); };
     line.append(a, ' · ');
@@ -312,8 +327,11 @@ function renderSteps() {
   chain.steps.forEach((step, i) => list.append(stepItem(step, i)));
 }
 
+const seen = new WeakSet();               // steps shown before: on the filters page a new one opens with its editing parts
 function stepItem(step, i) {
   const f = step.filter;
+  if (WRITE && !seen.has(step)) editing.add(step);
+  seen.add(step);
   const li = document.createElement('li');
   li.className = 'step';
   const open = !folded.has(step);
@@ -631,8 +649,11 @@ function shareable() {
 }
 
 function updateShare() {
-  if (!chain.steps.length) { $('json').value = ''; history.replaceState(null, '', location.pathname + location.search); return; }
-  const def = shareable();
+  const def = chain.steps.length ? shareable() : null;
+  // the other page, with this filter
+  $('to-editor').href = def ? MZ.filterToLink(def, PAGE_URL.editor) : PAGE_URL.editor;
+  for (const a of document.querySelectorAll('.to-filters')) a.href = def ? MZ.filterToLink(def, PAGE_URL.filters) : PAGE_URL.filters;
+  if (!def) { $('json').value = ''; history.replaceState(null, '', location.pathname + location.search); return; }
   $('json').value = MZ.filterToJSON(def);
   history.replaceState(null, '', MZ.filterToLink(def, base()));
 }
@@ -685,12 +706,22 @@ function renderSaved() {
   box.textContent = '';
   const list = saved();
   if (!list.length) {
-    box.append(Object.assign(document.createElement('li'), { className: 'hint', textContent: 'Nothing saved yet. Name your filter (or one step) and press Save: it stays in this browser.' }));
+    box.append(Object.assign(document.createElement('li'), { className: 'hint', textContent: WRITE ? 'Nothing saved yet. Name your filter (or one step) and press Save: it stays in this browser.' : 'Nothing saved yet: filters you save on the filters page show here.' }));
     return;
   }
   list.forEach((def, index) => {
     const steps = Array.isArray(def.steps) ? `${def.steps.length} step${def.steps.length > 1 ? 's' : ''}` : '';
     const extra = [def.author ? `by ${def.author}` : '', steps, def.description ?? ''].filter(Boolean).join(' · ');
+    if (!WRITE) {                                                    // the editor: use one; changing it is the filters page's
+      const edit = Object.assign(document.createElement('a'), { className: 'button', textContent: 'Edit', href: MZ.filterToLink(def, PAGE_URL.filters), title: `"${def.name}" on the filters page` });
+      edit.addEventListener('click', () => { try { sessionStorage.setItem(HANDOFF, JSON.stringify({ picture: $('photo').value })); } catch { /* private mode */ } });
+      box.append(filterRow(def, extra, [
+        button('Use', () => { try { loadChain(def); } catch (e) { showError(e.message); } }),
+        button('Add', () => { try { addStep(def); } catch (e) { showError(e.message); } }),
+        edit,
+      ]));
+      return;
+    }
     box.append(filterRow(def, extra, [
       button('Open', async () => {
         if (chain.steps.length && !(await ask(`Open "${def.name}" in place of the filter you have? (Save that first to keep it.)`, { title: 'Open a saved filter', ok: 'Open' }))) return;
@@ -737,9 +768,12 @@ function renderLibrary() {
     const list = Object.assign(document.createElement('ul'), { className: 'rows' });
     for (const def of members) {
       count++;
-      list.append(filterRow(def, `${def.steps ? 'chain · ' : ''}${def.description ?? ''}`, [
+      list.append(filterRow(def, `${def.steps ? 'chain · ' : ''}${def.description ?? ''}`, WRITE ? [
         button('Add', () => addStep(def)),
         button('Copy link', () => copy(MZ.filterToLink(def, base()), `Link to "${def.name}" copied`)),
+      ] : [
+        button('Use', () => loadChain({ steps: [def] })),
+        button('Add', () => addStep(def)),
       ]));
     }
     fold.append(list);
@@ -788,9 +822,13 @@ function drawTestPicture(ctx, w, h) {
   ctx.fillStyle = '#fff'; ctx.font = 'bold 28px sans-serif'; ctx.fillText('MathZetta', 12, 36);
 }
 
+/** The preview's pixels: at most #preview-size's (480 × 360 fast, 960 × 720 sharp, 1440 × 1080); ?preview=480 fixes it (the checks). */
+const previewLimit = () => PREVIEW_SIZES[QUERY.get('preview')] ?? PREVIEW_SIZES[$('preview-size').value] ?? PREVIEW_SIZES[480];
 function fit(w, h) {
-  const scale = Math.min(1, 480 / w, 360 / h);
+  const [maxW, maxH] = previewLimit();
+  const scale = Math.min(1, maxW / w, maxH / h);
   for (const id of ['source', 'out', 'outCpu']) { $(id).width = Math.round(w * scale); $(id).height = Math.round(h * scale); }
+  workspace?.layout();
   if (typeof selection !== 'undefined') { selection.reset($('source').width, $('source').height); bindSelection(); }
   if (typeof ai !== 'undefined') { ai.invalidate(); aiBoxes = []; }
   if (typeof resetTrack !== 'undefined') resetTrack();
@@ -871,7 +909,7 @@ async function loadPhotos() {
   chooser.hidden = false;
   chooser.append(new Option('test picture', 'test'), ...photos.map((p, i) => new Option((p.title || p.file) + (/\.(mp4|webm|mov)$/i.test(p.file) ? ' (video)' : ''), String(i))));
   chooser.onchange = () => (chooser.value === 'test' ? testPicture() : showPhoto(Number(chooser.value)));
-  const wanted = QUERY.get('picture');
+  const wanted = QUERY.get('picture') ?? handoff?.picture;
   if (wanted !== 'test') await showPhoto(Math.min(photos.length - 1, Math.max(0, Number(wanted) || 0)));
 }
 
@@ -969,7 +1007,7 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 /**
- * The filter on the picture at any size (the preview is at most 480 × 360),
+ * The filter on the picture at any size (the preview is at most #preview-size's),
  * within what the GPU can draw, as a 2D canvas. Effects measured in pixels —
  * blur radii, px — are the same number of pixels, so they look finer on a
  * big picture.
@@ -2021,15 +2059,17 @@ for (const panel of document.querySelectorAll('details[data-remember]')) {
 }
 // Cropping is part of the download options: a drag on the result crops only while they are open.
 $('export').addEventListener('toggle', () => document.body.classList.toggle('cropping', $('export').open));
-// On a phone the original is hidden until asked for (the result is what matters, and both stacked push the filter far down);
-// the panels that draw on the original show it.
-{
-  const show = (on) => { document.body.classList.toggle('hide-original', !on); $('show-original').setAttribute('aria-pressed', String(on)); $('show-original').textContent = on ? 'hide original' : 'show original'; };
-  const drawsOnOriginal = ['select-panel', 'text-section', 'track-section'];
-  show(drawsOnOriginal.some((id) => $(id).open));
-  $('show-original').onclick = () => show(document.body.classList.contains('hide-original'));
-  for (const id of drawsOnOriginal) $(id).addEventListener('toggle', () => { if ($(id).open) show(true); });
-}
+// The stage and the tabs (workspace.js). The panels that draw on the original bring it back when only the result is shown;
+// a sharper or faster preview is the picture fitted again (which starts the selection over).
+workspace = setupWorkspace({
+  $,
+  sharp: Boolean(gl) && QUERY.get('engine') !== 'cpu',
+  toolActive: () => selection.state.mode !== 'off',
+  onPreviewSize() { fit(media.width, media.height); recompile(); showPicture(); },
+});
+// something added to the picture is a step: show it, where its words and colours are
+for (const id of ['add-text', 'add-rect', 'add-oval', 'add-brush']) $(id).addEventListener('click', () => { workspace.showTab('filter'); workspace.showOriginal(); $('steps').lastElementChild?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+for (const id of ['select-panel', 'text-section', 'track-section']) $(id).addEventListener('toggle', () => { if ($(id).open && !$(id).closest('[hidden]')) workspace.showOriginal(); });
 // On a phone the knobs are a screen or two below the result: once the result has scrolled off the top, it floats in a
 // corner (the same canvas, so nothing is copied), and a tap on it scrolls back. A spacer keeps its place, so the page
 // doesn't jump. Not while cropping (a drag on the result) or painting.
@@ -2050,7 +2090,7 @@ $('export').addEventListener('toggle', () => document.body.classList.toggle('cro
   const update = () => {
     queued = false;
     const place = (floating ? spacer : output).getBoundingClientRect();
-    set(phone.matches && place.bottom < 0 && !document.body.classList.contains('cropping') && !brushTarget);
+    set(phone.matches && place.bottom < 0 && !document.body.classList.contains('cropping') && !brushTarget && !workspace.expanded);
   };
   const later = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
   addEventListener('scroll', later, { passive: true });
@@ -2077,25 +2117,28 @@ const playLabel = () => { $('play-toggle').textContent = $('play').checked ? '�
 renderLibrary();
 renderSaved();
 testPicture();
+// the editor opens on a filter to tune; the filters page on an empty one to write (or a saved one to open)
+const opening = () => (WRITE ? rebuild() : loadChain({ steps: [byName('Colour circle')] }));
 try {
   if (location.hash.length > 1) {
     const shared = MZ.filterFromLink(location.hash);
     loadChain(shared);
-    showForkNote(shared);
-  } else loadChain({ steps: [byName('Colour circle')] });
+    if (!handoff) showForkNote(shared);
+  } else opening();
 } catch (e) {
-  showError('The link is not a filter: ' + e.message);
-  loadChain({ steps: [byName('Colour circle')] });
+  opening();
+  showError('The link is not a filter: ' + e.message);                // (after: drawing the opening filter clears the line)
 }
+if (WRITE) workspace.showTab('filter', false);                        // the filters page has no other tab
 renderHelp();
 renderExamples();
-$('help-link').onclick = (e) => { e.preventDefault(); showHelp('pixel'); };
+for (const a of document.querySelectorAll('#help-link, .help-link')) a.onclick = (e) => { e.preventDefault(); showHelp('pixel'); };
 await loadPhotos();
 
 // For scripts driving the page (tests).
 window.mzDemo = {
   BUILTIN, loadChain, addStep, draw, slots, gl, exportPng, saveGif, explain, HELP, testPicture, moveStep, rebuild, exporter, selection,
-  setGraphic, bindGraphics, showExample, EXAMPLES, updateStrokes, BRUSH_EFFECTS,
+  setGraphic, bindGraphics, showExample, workspace, EXAMPLES, updateStrokes, BRUSH_EFFECTS,
   setBrushTarget(target) { brushTarget = target; },
   get track() { return track; }, pauseAt, currentFrame, ensureTrack,
   setT(value) { currentT = value; },

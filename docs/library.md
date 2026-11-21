@@ -1,6 +1,6 @@
 # qblur on your own pages
 
-qblur is the library behind [the editor](https://qblur.com/): image filters written as maths, compiled to
+qblur is the library behind [the editor](https://qblur.com/editor.html): image filters written as maths, compiled to
 WebGL shaders, with the same pixels from plain JavaScript where there is no GPU. Put it on any page
 with one `<script>` from a CDN — no build step, no server, nothing uploaded: the pictures stay in the
 visitor's browser.
@@ -527,7 +527,7 @@ of that size, or with the CPU runner on a picture of that size.
 ## Sharing filters
 
 ```js
-const link = filterToLink(def, 'https://qblur.com/');   // https://qblur.com/#eyJmb3Jt… — opens in the editor
+const link = filterToLink(def, 'https://qblur.com/editor.html');   // https://qblur.com/editor.html#eyJmb3Jt… — opens in the editor
 const json = filterToJSON(def);                          // the document, defaults left out
 readFilter(text);                                        // whatever was pasted: a link, JSON, or an expression
 filterFromLink(location.hash);                           // a filter from your own page's address
@@ -549,7 +549,7 @@ LIBRARY.filter((f) => f.group === 'Blur & edges').map((f) => f.name);
 const comic = LIBRARY.find((f) => f.name === 'Comic');   // a chain of four
 ```
 
-The editor's [library](https://qblur.com/) shows them all on your own photo, with their maths.
+The editor's [library](https://qblur.com/editor.html) shows them all on your own photo, with their maths.
 
 ## Reference
 

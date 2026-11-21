@@ -221,3 +221,26 @@ export async function poolTests() {
     early.dispose();
     eq(await first.then(() => 'drawn', () => 'rejected'), 'rejected');
 }
+
+suite('The CPU reads what MathZetta 1.3 shaders read', () => {
+    const px = { data: new Uint8ClampedArray([128, 64, 255, 255]), width: 1, height: 1 };
+    const one = (f) => createCpuRunner(compileFilter(f)).setImage(px).draw().data[0];
+    const r = 128 / 255, g = 64 / 255;
+    test('arcsec, arccsc and arccot: acos(1/x), asin(1/x), π/2 − atan x, as the shader writes them', () => {
+        eq(one('arcsec(r + 1) / 2'), Math.round(Math.acos(1 / (r + 1)) / 2 * 255));
+        eq(one('arccot(g) / 2'), Math.round((Math.PI / 2 - Math.atan(g)) / 2 * 255));
+        eq(one('arccsc(1 + b)'), Math.round(Math.asin(1 / 2) * 255));
+    });
+    test('degrees, as the shader\'s radians()', () => eq(one('sin(30°) * rgb'), 64));
+    test('an evaluation bar: F at the top limit minus F at the bottom one', () => eq(one('\\left[ x^2 \\right]_0^{r} * rgb'), Math.round(r * r * 128)));
+});
+
+suite('The CPU reads implies, iff and set-builder membership as the shader does', () => {
+    const px = { data: new Uint8ClampedArray([128, 64, 255, 255]), width: 1, height: 1 };
+    const one = (f) => createCpuRunner(compileFilter(f)).setImage(px).draw().data[0];
+    test('⇒ and ⇔', () => {
+        eq(one('if r > 0.9 \\Rightarrow g > 0.9 then 1 else 0'), 255);   // r is 0.5: the implication holds
+        eq(one('if r > 0.4 \\iff g > 0.4 then 1 else 0'), 0);             // r > 0.4, g isn't
+    });
+    test('r ∈ {x | x > 0.4}', () => eq(one('if r \\in \\{x \\mid x > 0.4\\} then 1 else 0'), 255));
+});

@@ -3,7 +3,7 @@
  * A screenshot of a page of this repo after running some JavaScript in it —
  * for looking at the editor without a browser window.
  *
- *   node tools/shot.mjs "/site/index.html?picture=test" "mzDemo.loadChain({ steps: ['1 - rgb'] })" out.png
+ *   node tools/shot.mjs "/site/editor.html?picture=test" "mzDemo.loadChain({ steps: ['1 - rgb'] })" out.png
  *
  * Serves the repository itself, starts headless Chrome (SwiftShader WebGL),
  * waits for the editor to be ready, evaluates the expression (awaited), and
@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { sendFile } from './send-file.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const [path = '/demo/index.html', expr = '0', out = 'shot.png'] = process.argv.slice(2);
+const [path = '/demo/editor.html', expr = '0', out = 'shot.png'] = process.argv.slice(2);
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.mp4': 'video/mp4', '.css': 'text/css', '.jpg': 'image/jpeg', '.png': 'image/png', '.wasm': 'application/wasm' };
 
@@ -57,7 +57,8 @@ const send = (method, params = {}) => new Promise((resolve) => { pending.set(++i
 ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m.result); pending.delete(m.id); } });
 await send('Page.enable');
 await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: 1200, height: 1500, deviceScaleFactor: 1, mobile: false });
+const [shotW, shotH] = (process.env.SHOT_SIZE || '1200x1500').split('x').map(Number);   // SHOT_SIZE=390x800: a phone
+await send('Emulation.setDeviceMetricsOverride', { width: shotW, height: shotH, deviceScaleFactor: 1, mobile: shotW < 700 });
 await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}${path}` });
 for (let i = 0; i < 100; i++) {
     const r = await send('Runtime.evaluate', { expression: process.env.SHOT_READY || 'Boolean(window.mzDemo && mzDemo.compiled)', returnByValue: true });

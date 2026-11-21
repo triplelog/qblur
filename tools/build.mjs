@@ -15,7 +15,9 @@
  *                             the classic <script> without MathZetta: reads window.MathZetta, which a
  *                             MathZetta <script> put there first (mathzetta.min.js or the glsl flavour)
  *
- *   site/index.html     demo/index.html without the import map
+ *   site/index.html     the home page (demo/index.html: one small example) and its site/home.js (demo/home.js bundled)
+ *   site/editor.html    the editor (demo/editor.html) without the dev import map
+ *   site/filters.html   the filters page (demo/filters.html, made from editor.html by tools/filters-page.mjs), the same bundle
  *   site/app.js         demo/app.js and this package bundled; MathZetta and Inline Math (the knobs and notes) from jsDelivr
  *   site/cpu-worker.js  the CPU runner's worker, bundled the same way
  *   site/guide.html     docs/filters.md rendered (tools/markdown.mjs), heading ids as on GitHub
@@ -37,12 +39,17 @@ import terser from '@rollup/plugin-terser';
 import { cp, mkdir, readFile, writeFile, readdir, access, rm } from 'node:fs/promises';
 import { guidePage, forSite } from './markdown.mjs';
 import { AI_MODELS, SHIPPED_MODELS } from '../demo/ai.js';
+import { filtersPage } from './filters-page.mjs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const html = await readFile(join(ROOT, 'demo/index.html'), 'utf8');
+const html = await readFile(join(ROOT, 'demo/editor.html'), 'utf8');   // the editor: its import map names everything any page imports
+// the filters page is the editor in its other mode, made from editor.html (tools/filters-page.mjs)
+const filtersHtml = filtersPage(html);
+await writeFile(join(ROOT, 'demo/filters.html'), filtersHtml);
+const home = await readFile(join(ROOT, 'demo/index.html'), 'utf8');
 // Where the site will live, for the absolute URLs link previews need: SITE_URL, or "homepage" in package.json.
 const pkg = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'));
 const siteUrl = (process.env.SITE_URL || pkg.homepage || '').replace(/\/*$/, '/').replace(/^\/$/, '');
@@ -71,7 +78,7 @@ async function bundle(input, file, { worker = false } = {}) {
 }
 /** A page's import map: its own entries (the object model's runtime) and mathzetta from the CDN. */
 const siteMap = (page, ort) => {
-    const out = replaceImportMap(page.replace(/<script type="importmap">[\s\S]*?<\/script>/, `<script type="importmap">\n{ "imports": { "onnxruntime-web": "${ort}" } }\n</script>`), v);
+    const out = replaceImportMap(page.replace(/<script type="importmap">[\s\S]*?<\/script>/, `<script type="importmap">\n{ "imports": {${ort ? ` "onnxruntime-web": "${ort}" ` : ''}} }\n</script>`), v);
     cdnUsed.push(...cdnUrlsIn(out));
     return out;
 };
@@ -199,12 +206,19 @@ try {
 await mkdir(join(ROOT, 'site'), { recursive: true });
 await bundle('demo/app.js', 'app.js');
 await bundle('src/cpu-worker.js', 'cpu-worker.js', { worker: true });
-await writeFile(join(ROOT, 'site/index.html'), head(await preloads(siteMap(html, './ort/ort.wasm.min.mjs')
+await bundle('demo/home.js', 'home.js');
+await writeFile(join(ROOT, 'site/index.html'), head(await preloads(siteMap(home, null)   // the home page: no object model, no Inline Math
     .replaceAll('href="../docs/filters.md"', 'href="guide.html"')
-    .replaceAll('href="../docs/library.md"', 'href="library.html"')
-    .replaceAll('/node_modules/mathzetta-sites/src/', './mz/')
-    .replace('/node_modules/@mathzetta/inlinemath/inlinemath.css', () => { const url = fileUrl('inlinemath', 'inlinemath.css', v); cdnUsed.push(url); return url; }),   // the knobs and notes are drawn by Inline Math
-    join(ROOT, 'site/app.js')), { path: '', card: 'index', schema: webApp('qblur') }));
+    .replaceAll('href="../docs/library.md"', 'href="library.html"'),
+    join(ROOT, 'site/home.js')), { path: '', card: 'index', schema: webApp('qblur') }));
+for (const [page, source, name] of [['editor.html', html, 'qblur editor'], ['filters.html', filtersHtml, 'qblur filters']]) {
+    await writeFile(join(ROOT, 'site', page), head(await preloads(siteMap(source, './ort/ort.wasm.min.mjs')
+        .replaceAll('href="../docs/filters.md"', 'href="guide.html"')
+        .replaceAll('href="../docs/library.md"', 'href="library.html"')
+        .replaceAll('/node_modules/mathzetta-sites/src/', './mz/')
+        .replace('/node_modules/@mathzetta/inlinemath/inlinemath.css', () => { const url = fileUrl('inlinemath', 'inlinemath.css', v); cdnUsed.push(url); return url; }),   // the knobs and notes are drawn by Inline Math
+        join(ROOT, 'site/app.js')), { path: page, card: 'index', schema: webApp(name) }));
+}
 if (!siteUrl) console.log('note: set SITE_URL (or "homepage" in package.json) for absolute og:image / og:url / canonical in link previews');
 // the two documents, linking each other by their site names
 const siteLinks = (html) => html.replaceAll('href="filters.md', 'href="guide.html').replaceAll('href="library.md', 'href="library.html');
@@ -231,7 +245,7 @@ await cp(join(ROOT, 'demo/404.html'), join(ROOT, 'site/404.html'));
 {
     const { SITES } = await import(new URL('../node_modules/mathzetta-sites/src/sites.js', import.meta.url));
     const qblur = SITES.find((s) => s.id === 'qblur');
-    const SOURCES = { '': ['demo/index.html', 'demo/app.js'], 'guide.html': ['docs/filters.md'], 'library.html': ['docs/library.md'],
+    const SOURCES = { '': ['demo/index.html', 'demo/home.js'], 'editor.html': ['demo/editor.html', 'demo/app.js', 'demo/workspace.js'], 'filters.html': ['demo/editor.html', 'demo/app.js', 'tools/filters-page.mjs'], 'guide.html': ['docs/filters.md'], 'library.html': ['docs/library.md'],
         'privacy.html': ['docs/privacy.md', 'docs/site-details.json'], 'terms.html': ['docs/terms.md', 'docs/site-details.json'] };
     const changed = (path) => {   // the day of the last commit touching the page's sources (uncommitted: today)
         const files = SOURCES[path] ?? [`demo/${path}`];
@@ -255,9 +269,10 @@ for (const app of APPS) {
         { path: `${app}/`, card: app, schema: webApp(/<title>([^<]*?) — qblur<\/title>/.exec(page)?.[1] ?? app) }));
 }
 await cp(join(ROOT, 'demo/apps.css'), join(ROOT, 'site/apps.css'));
-// the link-preview cards and the icons (tools/share-cards.mjs makes them)
+// the link-preview cards (tools/share-cards.mjs makes them)
 await cp(join(ROOT, 'demo/share'), join(ROOT, 'site/share'), { recursive: true });
-for (const f of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png']) await cp(join(ROOT, 'demo', f), join(ROOT, 'site', f));
+// the icons and the sidebar's logo: the portfolio's branding/final/qblur, copied into demo/ as they are
+for (const f of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'logo.png']) await cp(join(ROOT, 'demo', f), join(ROOT, 'site', f));
 // the Shioh look and its sidebar (in place of the family's header and footer), the registry import pointed at site/mz/
 for (const f of ['shioh-style.css', 'site-theme.css', 'shioh.js']) await cp(join(ROOT, 'demo', f), join(ROOT, 'site', f));
 await rm(join(ROOT, 'site/shioh.css'), { force: true });   // the old one-file stylesheet (now shioh-style.css + site-theme.css)
@@ -309,4 +324,4 @@ await writeFile(join(ROOT, 'site/models/NOTICE'), [notice[0], ...notice.slice(1)
     await writeFile(join(ROOT, 'site/_headers'), kept.map(([path, seconds]) => `${path}\n  Cache-Control: public, max-age=${seconds}\n`).join(''));
 }
 console.log(`site: mathzetta ${v.mathzetta} and Inline Math ${v.inlinemath} from the CDN (${await checkCdn(cdnUsed)} addresses checked)`);
-console.log('dist/: qblur.js, qblur.global.min.js, qblur-apply.js, qblur-element.js, qblur.core.js, qblur.external.js, qblur.external.global.min.js · site/: index.html, app.js, cpu-worker.js, guide.html, library.html, privacy.html, terms.html, 404.html, robots.txt, sitemap.xml, shioh-style.css, site-theme.css, shioh.js, shell.js, avatar/, splash/, move/, text/, apps.css, mz/, photos/, ort/, models/ (' + shipped.join(', ') + ')');
+console.log('dist/: qblur.js, qblur.global.min.js, qblur-apply.js, qblur-element.js, qblur.core.js, qblur.external.js, qblur.external.global.min.js · site/: index.html, home.js, editor.html, filters.html, app.js, cpu-worker.js, guide.html, library.html, privacy.html, terms.html, 404.html, robots.txt, sitemap.xml, shioh-style.css, site-theme.css, shioh.js, shell.js, avatar/, splash/, move/, text/, apps.css, mz/, photos/, ort/, models/ (' + shipped.join(', ') + ')');

@@ -38,7 +38,7 @@ const table = (entries) => Object.assign(Object.create(null), entries);
 
 /** Constants and leaves every expression has. */
 const SCALARS = table({ r: '$r', g: '$g', b: '$b', a: '$a', x: '$x', y: '$y', px: '$px', py: '$py', w: '$w', h: '$h', t: '$t', gray: '$gray' });
-const CONSTANTS = table({ pi: 'Math.PI', 'π': 'Math.PI', e: 'Math.E', tau: '(2 * Math.PI)', 'τ': '(2 * Math.PI)', '∞': 'Infinity', '-∞': '(-Infinity)' });
+const CONSTANTS = table({ pi: 'Math.PI', 'π': 'Math.PI', e: 'Math.E', tau: '(2 * Math.PI)', 'τ': '(2 * Math.PI)', '∞': 'Infinity', '-∞': '(-Infinity)', '°': '(Math.PI / 180)' });   // 30° as the shader's radians(30.0)
 
 /** Functions applied to each component: name → (args as JS) => JS. */
 const COMPONENTWISE = table({
@@ -48,6 +48,8 @@ const COMPONENTWISE = table({
     csc: (x) => `(1 / Math.sin(${x}))`, sec: (x) => `(1 / Math.cos(${x}))`, cot: (x) => `(1 / Math.tan(${x}))`,
     fract: (x) => `(${x} - Math.floor(${x}))`, radians: (x) => `(${x} * 0.017453292519943295)`, degrees: (x) => `(${x} * 57.29577951308232)`,
     inversesqrt: (x) => `(1 / Math.sqrt(${x}))`,
+    // as MathZetta's shaders write them: acos(1/x), asin(1/x), π/2 − atan(x)
+    arcsec: (x) => `Math.acos(1 / ${x})`, arccsc: (x) => `Math.asin(1 / ${x})`, arccot: (x) => `(Math.PI / 2 - Math.atan(${x}))`,
     atan2: (y, x) => `Math.atan2(${y}, ${x})`, pow: (x, y) => `Math.pow(${x}, ${y})`,
     mod: (x, y) => `(${x} - ${y} * Math.floor(${x} / ${y}))`,
     step: (edge, x) => `(${x} < ${edge} ? 0 : 1)`,
@@ -56,6 +58,25 @@ const COMPONENTWISE = table({
     smoothstep: (e0, e1, x) => `$h_smoothstep(${e0}, ${e1}, ${x})`,
 });
 const FIXED_ARITY = table({ atan2: 2, pow: 2, mod: 2, step: 2, clamp: 3, mix: 3, smoothstep: 3 });
+
+/** y ∈ {x | P} (or {x ∈ S | P}) as the test it stands for: P with y for x; null for any other membership. */
+function setCondition(node) {
+    const [y, set] = node.args;
+    if (set.type !== 'op' || set.op !== 'setbuilder') return null;
+    let [element, condition] = set.args;
+    let domain = null;
+    if (element.type === 'op' && element.op === '∈') [element, domain] = element.args;
+    const put = (n) => (n.type === 'symbol' && n.value === element.value ? y : n.type === 'op' ? { ...n, args: n.args.map(put) } : n);
+    const test = domain ? { type: 'op', op: '&', args: [{ type: 'op', op: '∈', args: [y, domain] }, put(condition)] } : put(condition);
+    return node.op === '∉' ? { type: 'op', op: '\\not', args: [test] } : test;
+}
+
+/** [F]_a^b (F x a b evaluated) as F with b put in for x, minus F with a: what MathZetta's GLSL writes. */
+function evaluationDifference(node) {
+    const [body, variable, lo, hi] = node.args;
+    const put = (n, value) => (n.type === 'symbol' && n.value === variable.value ? value : n.type === 'op' ? { ...n, args: n.args.map((a) => put(a, value)) } : n);
+    return { type: 'op', op: '-', args: [put(body, hi), put(body, lo)] };
+}
 
 /** Neighbourhood functions: the result kind, and whether the per-pass plane is computed once for a constant argument. */
 const PLANES = table({
@@ -226,6 +247,8 @@ class Generator {
             case '\\xor': { const [a, b] = A(); return bool(`(${this.truth(a)} !== ${this.truth(b)})`); }
             case '\\nand': { const [a, b] = A(); return bool(`!(${this.truth(a)} && ${this.truth(b)})`); }
             case '\\nor': { const [a, b] = A(); return bool(`!(${this.truth(a)} || ${this.truth(b)})`); }
+            case '\\implies': { const [a, b] = A(); return bool(`(!${this.truth(a)} || ${this.truth(b)})`); }
+            case '\\iff': { const [a, b] = A(); return bool(`(${this.truth(a)} === ${this.truth(b)})`); }
             case '\\not': { const [a] = A(); return bool(`!${this.truth(a)}`); }
             case '?:': return this.ternary(args);
             case 'max': case 'min': return this.componentwise(A(), (...xs) => `Math.${op}(${xs.join(', ')})`);
@@ -247,8 +270,12 @@ class Generator {
             }
             case 'log': { const [base, x] = A(); return this.componentwise([base, x], (b, xx) => `(Math.log(${xx}) / Math.log(${b}))`); }
             case 'root': { const [n, x] = A(); return this.componentwise([n, x], (nn, xx) => `$h_root(${nn}, ${xx})`); }
-            case '∈': case '∉': return this.membership(node);
+            case '∈': case '∉': {
+                const test = setCondition(node);   // y ∈ {x | P}: P with y for x, as the shader writes it
+                return test ? this.value(test) : this.membership(node);
+            }
             case 'random': return this.random();
+            case 'evaluated': return this.value(evaluationDifference(node));   // [F]_a^b: F at b minus F at a, as the shader writes it
             case '_': {
                 const [a, b] = args;
                 if (a.type === 'symbol' && (b.type === 'number' || b.type === 'symbol')) return this.leaf({ type: 'symbol', value: `${a.value}_${b.value}` });

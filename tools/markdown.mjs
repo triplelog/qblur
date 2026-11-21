@@ -79,7 +79,7 @@ export function markdownToHtml(md) {
 export const forSite = (md) => md.replace(/^<!-- dev -->\n[\s\S]*?^<!-- \/dev -->\n*/gm, '');
 
 /** A complete page around the guide, in the family's style (mathzetta-sites: mz/ beside the page). */
-export function guidePage(md, { title = 'qblur · the guide', back = 'index.html', page = 'guide' } = {}) {
+export function guidePage(md, { title = 'qblur · the guide', back = 'editor.html', page = 'guide' } = {}) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
