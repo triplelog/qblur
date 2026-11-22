@@ -23,7 +23,7 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const CDN = process.argv.includes('--cdn');
 const local = (code) => (CDN ? code : code
-    .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/', '/dist/')
+    .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/', '/dist/')
     .replaceAll('https://cdn.jsdelivr.net/npm/mathzetta@1/build/', '/node_modules/mathzetta/build/'))
     .replaceAll("'photo.jpg'", "'/demo/photos/charleston.jpg'").replaceAll('"photo.jpg"', '"/demo/photos/charleston.jpg"')
     .replaceAll('"clip.mp4"', '"/demo/photos/waves.mp4"');

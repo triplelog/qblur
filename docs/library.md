@@ -41,7 +41,7 @@ controls.
 ```html runnable
 <img id="photo" src="photo.jpg" alt="" hidden>
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo');
   img.decode().then(() => QBlur.applyFilter(img, 'Sepia', { canvas: document.getElementById('out') }));
@@ -70,7 +70,7 @@ picture that redraws many times a second as a knob moves, a runner of your own (
 
 ```html runnable
 <qblur-image id="out" src="photo.jpg" filter="Vignette" params='{"strength": 2.5}' alt="A street of colored houses"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur-element.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur-element.js"></script>
 ```
 
 `<qblur-image>` draws its picture with the filter on it, and again whenever an attribute changes:
@@ -85,7 +85,7 @@ picture from another site must allow CORS). It fires `load` after each drawing a
 ```html runnable
 <img id="photo" src="photo.jpg" alt="">
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo'), canvas = document.getElementById('out');
   img.decode().then(() => {
@@ -107,7 +107,7 @@ a WebGL context and the CPU when it doesn't; pass the same canvas to `draw` eith
 <canvas id="out"></canvas>
 <label>Vignette <input id="strength" type="range" min="0" max="4" step="0.01" value="1.6"></label>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
 
   const img = new Image();
   img.src = 'photo.jpg';
@@ -173,7 +173,7 @@ at one file:
 } }
 </script>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.external.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.external.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -186,11 +186,11 @@ at one file:
 ```
 
 With classic scripts: `<script src="…/mathzetta@1/build/mathzetta.glsl.min.js">` (the GLSL flavor, which
-is what filters use) and then `…/@mathzetta/qblur@0.2/dist/qblur.external.global.min.js`.
+is what filters use) and then `…/@mathzetta/qblur@0.3/dist/qblur.external.global.min.js`.
 
-Pin a version (`@0.2` follows fixes, `@0.2.0` never changes) and, for a fixed version, add an `integrity`
+Pin a version (`@0.3` follows fixes, `@0.3.0` never changes) and, for a fixed version, add an `integrity`
 hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it
-yourself: `curl -s https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
+yourself: `curl -s https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
 gives the part after `sha384-`.
 
 ## Filters
@@ -341,7 +341,7 @@ so a page can build its controls from the filter:
 <canvas id="out"></canvas>
 <form id="knobs"></form>
 <script type="module">
-  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
 
   const def = {
     name: 'Duotone',
@@ -384,7 +384,7 @@ In a chain, `filterParams` gives each knob's own default; the values a chain set
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -404,7 +404,7 @@ A video is a picture that changes: give the runner each frame.
 <video id="clip" src="clip.mp4" muted loop playsinline autoplay hidden></video>
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
   const video = document.getElementById('clip'), canvas = document.getElementById('out');
   await new Promise((r) => { video.onloadeddata = r; if (video.readyState >= 2) r(); });
   canvas.width = video.videoWidth;
@@ -431,7 +431,7 @@ this pixel, `luma(mask)` its brightness, `alpha(mask)` its transparency — and 
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -470,7 +470,7 @@ frame, so they are crisp at any size.
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();

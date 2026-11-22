@@ -19,7 +19,7 @@ const png = await toBlob(mine);                                                 
 
 ```html
 <qblur-image src="photo.jpg" filter="Vignette" params='{"strength": 2}' alt="…"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur-element.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur-element.js"></script>
 ```
 
 For live knobs and video, a runner of your own:
@@ -76,10 +76,10 @@ Every npm release's `dist/` is on jsDelivr (and unpkg), MathZetta's GLSL output 
 
 ```html
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.js';
 </script>
 <!-- or a classic script: window.QBlur -->
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.3/dist/qblur.global.min.js"></script>
 ```
 
 Every build comes **with MathZetta inside or without it** (`*.external.*`). Sizes as the CDN sends them (compressed):

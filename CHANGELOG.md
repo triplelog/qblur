@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- **`away`** in filters: how far each pixel is from the selection, in pixels (0 inside it, and everywhere when nothing
+  is selected). The runners make it from the `selection` picture themselves, only for a filter that uses it: the exact
+  Euclidean distance transform (Felzenszwalb & Huttenlocher), measured at most `AWAY_SIZE` (512) on the long side.
+  New exports for making it elsewhere: `awayPicture`, `encodeAway`, `distanceTo`, `awayFromChannels`, `usesAway`,
+  `AWAY_SIZE`. Needs mathzetta 1.5.0 (`away` in `filterShader`): the peer range is now `^1.5.0`.
+- Two built-in filters use it: "Glow round the selection" and "Blur away from the selection".
+- The site: Color splash is on hold (its code stays in `demo/splash/`, unlisted); the profile picture, Make it move
+  and Fancy text apps were reworked, with a shared `kit.js`; a new sample portrait.
+
 ## 0.2.0
 
 - American spelling everywhere people read it (color, gray, center, neighborhood, math, license…): the docs, the

@@ -1,6 +1,6 @@
 {
   "name": "@mathzetta/qblur",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shareable image filters written as math: a JSON format with params, pictures and chains, compiled to WebGL shaders by MathZetta.",
   "type": "module",
   "main": "src/index.js",
@@ -67,7 +67,7 @@
     "check:docs": "node tools/check-docs.mjs"
   },
   "peerDependencies": {
-    "mathzetta": "^1.4.0"
+    "mathzetta": "^1.5.0"
   },
   "devDependencies": {
     "@mathzetta/inlinemath": "file:../mathzetta/packages/inlinemath",
