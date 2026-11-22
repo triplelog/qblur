@@ -1,13 +1,13 @@
 /**
  * <qblur-image>: a picture with a filter on it, as an HTML element.
  *
- *   <script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
- *   <qblur-image src="photo.jpg" filter="Sepia" alt="The harbour at dusk"></qblur-image>
+ *   <script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur-element.js"></script>
+ *   <qblur-image src="photo.jpg" filter="Sepia" alt="The harbor at dusk"></qblur-image>
  *   <qblur-image src="photo.jpg" filter="if gray > cutoff then 1 else 0" params='{"cutoff": 0.4}'></qblur-image>
  *
  * Attributes (each change redraws):
  *   src          the picture's address (from another site it must allow CORS; add crossorigin)
- *   filter       maths, a built-in filter's name, filter JSON or a share link
+ *   filter       math, a built-in filter's name, filter JSON or a share link
  *   params       JSON of knob values, { "name": value } — or set the `params` property to an object
  *                (whichever was set last counts)
  *   t            the frame, for filters that move

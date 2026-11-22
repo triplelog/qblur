@@ -23,15 +23,15 @@ it on.
 
 ## qblur's code, filters and models
 
-qblur's code and its built-in filters are open source under the MIT licence; the object model
-(MobileSAM) is under the Apache License 2.0 (its licence and notice are served with it, in `models/`).
-Those licences, not these terms, cover reusing them. Don't overload, probe or disrupt the site, and
+qblur's code and its built-in filters are open source under the MIT license; the object model
+(MobileSAM) is under the Apache License 2.0 (its license and notice are served with it, in `models/`).
+Those licenses, not these terms, cover reusing them. Don't overload, probe or disrupt the site, and
 don't present it as your own service.
 
 ## The service
 
 We provide qblur "as is" and may change, pause or stop any part of it. The sample photos belong to
-their photographers (credited beside each one) and are shown under their own licences.
+their photographers (credited beside each one) and are shown under their own licenses.
 
 ## Disclaimers and limits
 

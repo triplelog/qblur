@@ -10,11 +10,11 @@
  *      and points that disagree with the rest are pulled back to the
  *      group's movement;
  *   2. each moved point snaps to the strongest edge a pixel or two away;
- *   3. the outline between neighbouring points is redrawn along the
+ *   3. the outline between neighboring points is redrawn along the
  *      cheapest edge path (the scissors' cost map), searched only in a
  *      small box round the two points, so it hugs the real edge.
  *
- * At each keyframe the tracker also learns the object's colours — inside
+ * At each keyframe the tracker also learns the object's colors — inside
  * the outline against a band just outside — so every frame has a map of how
  * object-like each pixel is. The outline follows the boundary of that map
  * (plus some of the plain brightness edges), not every texture edge behind
@@ -33,9 +33,9 @@
 import { costFromGray, snap } from './livewire.js';
 import { simplifyLoop } from '../src/strokes.js';
 
-// ---- the object's colours ----------------------------------------------------------
-const BINS = 12;                                       // per channel: 1728 colours
-/** Each pixel's colour bin, and its brightness 0–255. */
+// ---- the object's colors ----------------------------------------------------------
+const BINS = 12;                                       // per channel: 1728 colors
+/** Each pixel's color bin, and its brightness 0–255. */
 export function frameData(rgba, w, h) {
     const gray = new Uint8Array(w * h), bins = new Uint16Array(w * h);
     for (let i = 0, p = 0; p < w * h; i += 4, p++) {
@@ -76,8 +76,8 @@ function ring(inside, loop, w, h, width = 10) {
     return out;
 }
 
-/** The object's colours against its surroundings, learnt from a frame and the outline that is right on it. */
-export function colourModel(bins, loop, w, h) {
+/** The object's colors against its surroundings, learned from a frame and the outline that is right on it. */
+export function colorModel(bins, loop, w, h) {
     const inside = fillPolygon(loop, w, h), around = ring(inside, loop, w, h, 14);
     const fg = new Float32Array(BINS ** 3), bg = new Float32Array(BINS ** 3);
     let nf = 0, nb = 0;
@@ -90,11 +90,11 @@ export function colourModel(bins, loop, w, h) {
     return { prob };
 }
 
-/** How object-like each pixel is, 0–1, by its colour. */
+/** How object-like each pixel is, 0–1, by its color. */
 export function probabilityMap(bins, model, w, h) {
     const p = new Float32Array(w * h);
     for (let i = 0; i < w * h; i++) p[i] = model.prob[bins[i]];
-    // a little smoothing, so single pixels of the wrong colour don't make edges
+    // a little smoothing, so single pixels of the wrong color don't make edges
     const q = new Float32Array(w * h);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
         let s = 0, n = 0;
@@ -322,7 +322,7 @@ export function trackStep(loop, grayA, grayB, costB, w, h, { points = 0, prob = 
         if (e > STRAY) { ex *= STRAY / e; ey *= STRAY / e; }
         return snap(costB, w, h, Math.min(w - 1, Math.max(0, fx + ex)), Math.min(h - 1, Math.max(0, fy + ey)), 2);
     });
-    // the outline between neighbours, along the edge
+    // the outline between neighbors, along the edge
     const out = [];
     for (let i = 0; i < moved.length; i++) {
         const a = moved[i], b = moved[(i + 1) % moved.length];
@@ -337,7 +337,7 @@ export function trackStep(loop, grayA, grayB, costB, w, h, { points = 0, prob = 
     const match = moves.reduce((s, m) => s + Math.exp(-m.err / 25), 0) / moves.length;
     const ratio = area(next) / Math.max(1, area(loop));
     const shape = Math.exp(-3 * Math.abs(Math.log(Math.max(1e-6, ratio))));
-    // with a colour model: is the inside still as much more object-like than the outside as on the keyframe?
+    // with a color model: is the inside still as much more object-like than the outside as on the keyframe?
     const likeness = prob && reference > 0 ? Math.max(0, Math.min(1, contrast(prob, next, w, h) / reference)) : edge;
     return { loop: next, score: likeness * (0.6 + 0.4 * match) * shape, edge, match, likeness };
 }
@@ -348,7 +348,7 @@ export function trackStep(loop, grayA, grayB, costB, w, h, { points = 0, prob = 
  */
 export function createTracker({ frames, w, h, getFrame, onProgress = () => {} }) {
     const keyframes = new Map();          // frame → outline
-    const models = new Map();             // keyframe → { model, reference }: its colours, and how much the inside stood out
+    const models = new Map();             // keyframe → { model, reference }: its colors, and how much the inside stood out
     const results = new Array(frames).fill(null);   // frame → { loop, score, from: 'key' | 'forward' | 'backward' }
     const cache = new Map();              // frame → { gray, bins }, the most recent 48
     let version = 0;
@@ -360,7 +360,7 @@ export function createTracker({ frames, w, h, getFrame, onProgress = () => {} })
         return cache.get(k);
     };
     const gray = async (k) => (await data(k)).gray;
-    /** Frame k as the keyframe `key` sees it: object-likeness by its colours, and the edges to follow. */
+    /** Frame k as the keyframe `key` sees it: object-likeness by its colors, and the edges to follow. */
     const seen = async (k, key) => {
         const d = await data(k);
         const { model } = models.get(key);
@@ -369,7 +369,7 @@ export function createTracker({ frames, w, h, getFrame, onProgress = () => {} })
     };
     async function learn(k) {
         const d = await data(k);
-        const model = colourModel(d.bins, keyframes.get(k), w, h);
+        const model = colorModel(d.bins, keyframes.get(k), w, h);
         const prob = probabilityMap(d.bins, model, w, h);
         models.set(k, { model, reference: Math.max(0.05, contrast(prob, keyframes.get(k), w, h)) });
         return { prob, cost: objectCost(d.gray, prob, w, h) };
@@ -402,7 +402,7 @@ export function createTracker({ frames, w, h, getFrame, onProgress = () => {} })
         removeKeyframe(k) { keyframes.delete(k); models.delete(k); version++; },
         /** Frame k as the first keyframe sees it (object-likeness 0–1), for showing what the tracker sees. */
         async probability(k) { const key = [...keyframes.keys()][0]; return key === undefined ? null : (await seen(k, key)).prob; },
-        /** Carry every keyframe forward and backward to its neighbours; each frame keeps the better direction. */
+        /** Carry every keyframe forward and backward to its neighbors; each frame keeps the better direction. */
         async track({ stop = () => false } = {}) {
             const keys = [...keyframes.keys()].sort((a, b) => a - b);
             if (!keys.length) throw new Error('Mark the object on a frame first: select it, then "use as keyframe".');

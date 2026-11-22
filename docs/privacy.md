@@ -11,7 +11,7 @@ about you as possible: there are no accounts, and your pictures never leave your
 
 ## Your pictures stay on your device
 
-Every photo, video or GIF you open in the editor or the small apps (profile picture, colour splash,
+Every photo, video or GIF you open in the editor or the small apps (profile picture, color splash,
 make it move, fancy text) is read and filtered **in your browser**. It is not uploaded to us or to
 anyone else. The same goes for the selection tools: "find objects" runs its neural network (MobileSAM)
 in your browser, from a file our site serves; what it sees is never sent anywhere. What you download
@@ -38,7 +38,7 @@ through us. A link carries the filter, never the picture.
 | Service | Why | What they receive |
 |---|---|---|
 | {{HOSTING_PROVIDER}} | serves the site's files | the standard information any web request carries — your IP address, browser type, the address requested, the time — kept in their logs under their own policy |
-| jsDelivr (`cdn.jsdelivr.net`) | the maths libraries the pages run on (MathZetta and Inline Math) | the same request information, when your browser fetches them |
+| jsDelivr (`cdn.jsdelivr.net`) | the math libraries the pages run on (MathZetta and Inline Math) | the same request information, when your browser fetches them |
 | Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`) | the site's typefaces, and the fonts you pick for text | the same request information, when your browser fetches a font |
 | A font address you type in | text in that font | the same request information, from that address's owner |
 

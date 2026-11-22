@@ -7,9 +7,9 @@
  *   const gif = await encodeGif(frames, { gifenc, delay: 40 });   // bring your own gifenc
  *
  * PNG is written by the package itself (src/png.js: indexed when the picture
- * has at most 256 colours, RGB when nothing is transparent), so it works
+ * has at most 256 colors, RGB when nothing is transparent), so it works
  * anywhere CompressionStream does — every current browser and Node ≥ 18.
- * JPEG and WebP need the browser's encoder (a canvas). GIF needs a colour
+ * JPEG and WebP need the browser's encoder (a canvas). GIF needs a color
  * quantizer and an LZW encoder; the package has no dependencies, so
  * encodeGif() takes gifenc (npm i gifenc) as an option rather than bundling it.
  */
@@ -52,7 +52,7 @@ function canvasOf(picture) {
  * @param {HTMLCanvasElement|OffscreenCanvas|{ data, width, height }} what
  * @param {{ type?: string, quality?: number, palette?: 'auto' | 'none' }} [options]
  *   type: 'image/png' (the default), 'image/jpeg' or 'image/webp' (browser only); quality 0–1 for the last two.
- *   palette (PNG): 'auto' writes an indexed PNG when there are at most 256 colours, 'none' never does.
+ *   palette (PNG): 'auto' writes an indexed PNG when there are at most 256 colors, 'none' never does.
  * @returns {Promise<Blob>}
  */
 export async function toBlob(what, { type = 'image/png', quality, palette = 'auto' } = {}) {
@@ -69,12 +69,12 @@ export async function toBlob(what, { type = 'image/png', quality, palette = 'aut
 /**
  * An animated GIF from frames (canvases or pictures, all one size), each `delay` ms.
  * Needs gifenc: `import * as gifenc from 'gifenc'` and pass it as `{ gifenc }`.
- * Each frame gets its own palette of up to `colours` colours.
+ * Each frame gets its own palette of up to `colors` colors.
  * @param {Iterable|AsyncIterable} frames
- * @param {{ gifenc: object, delay?: number, repeat?: number, colours?: number }} options
+ * @param {{ gifenc: object, delay?: number, repeat?: number, colors?: number }} options
  * @returns {Promise<Blob>}
  */
-export async function encodeGif(frames, { gifenc, delay = 1000 / 30, repeat = 0, colours = 256 } = {}) {
+export async function encodeGif(frames, { gifenc, delay = 1000 / 30, repeat = 0, colors = 256 } = {}) {
     const G = gifenc && (gifenc.GIFEncoder ? gifenc : gifenc.default);
     if (!G || typeof G.GIFEncoder !== 'function') throw new Error('encodeGif needs gifenc: import * as gifenc from \'gifenc\' and pass { gifenc }');
     const encoder = G.GIFEncoder();
@@ -87,7 +87,7 @@ export async function encodeGif(frames, { gifenc, delay = 1000 / 30, repeat = 0,
         size = [width, height];
         const transparent = hasTransparency(data);
         const format = transparent ? 'rgba4444' : 'rgb565';
-        const palette = G.quantize(data, Math.max(2, Math.min(256, colours)), { format, oneBitAlpha: transparent });
+        const palette = G.quantize(data, Math.max(2, Math.min(256, colors)), { format, oneBitAlpha: transparent });
         const index = G.applyPalette(data, palette, format);
         const options = { palette, delay: Math.round(delay), repeat };
         if (transparent) {

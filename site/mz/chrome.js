@@ -194,7 +194,13 @@ function mountShioh(options) {
     // ss-js before the frame is in the page, so the phone menu starts closed
     document.documentElement.classList.add('mz-light', 'ss-js');
     document.body.classList.add('mz', 'ss');   // body.mz: site.css's controls; body.ss: the frame (the Shioh stylesheets, linked after, win)
-    const main = options.main ?? document.querySelector('main');
+    // a page without a <main> gets one around its content (every page should have one; the audit says so)
+    let main = options.main ?? document.querySelector('main');
+    if (!main) {
+        main = document.createElement('main');
+        main.append(...[...document.body.childNodes].filter((n) => !(n.nodeType === 1 && /^(SCRIPT|STYLE|TEMPLATE|LINK)$/.test(n.tagName))));
+        document.body.prepend(main);
+    }
     if (!main.id) main.id = 'main';
     if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
     const shell = Object.assign(document.createElement('div'), { className: 'ss-shell' });

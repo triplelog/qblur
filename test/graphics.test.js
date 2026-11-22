@@ -30,7 +30,7 @@ suite('graphics: text and shapes', () => {
     test('bad settings are named', () => {
         throws(() => normalizeGraphic('t', { type: 'star' }), /text, rect, ellipse or strokes/);
         throws(() => normalizeGraphic('t', { colour: 'red' }), /no such setting "colour"/);
-        throws(() => normalizeGraphic('t', { color: 'url(evil)' }), /"color" is a colour/);
+        throws(() => normalizeGraphic('t', { color: 'url(evil)' }), /"color" is a color/);
         throws(() => normalizeGraphic('t', { font: '12px a; } body { x' }), /font family/);
         throws(() => normalizeGraphic('t', { fontUrl: 'http://x.org/a.woff2' }), /https/);
         throws(() => normalizeGraphic('b', { type: 'rect', fontUrl: 'https://x.org/a.woff2' }), /for text/);
@@ -87,7 +87,7 @@ suite('graphics in filters', () => {
         eq(c.passes.map((p) => p.bind.title), ['title', 'title~2', 'title']);     // the third is the same as the first: one picture
         eq([c.graphics.title.text, c.graphics['title~2'].text], ['Hello', 'Second']);
     });
-    test('animated through the maths: shift and zoom read the graphic like any picture', () => {
+    test('animated through the math: shift and zoom read the graphic like any picture', () => {
         has(compileFilter({ graphics: { title: {} }, color: 'mix(rgb, shift(title, 3 t, 0), alpha(shift(title, 3 t, 0)))' }).passes[0].fragment, 'alpha(mz_sample_title(mz_shift(3.0 * t, 0.0)))');
     });
 });
@@ -104,7 +104,7 @@ suite('shadow layers and fonts', () => {
         eq([c.graphics.title_shadow1.onlyShadow, c.graphics.title_shadow2.onlyShadow], [0, 1]);
         has(c.passes[0].fragment, 'uniform sampler2D mz_img_title_shadow2;');
     });
-    test('a layer gets its own maths; a chain may add layers', () => {
+    test('a layer gets its own math; a chain may add layers', () => {
         has(compileFilter({ ...layered, color: 'mix(rgb, gaussian(4), alpha(title_shadow1))' }).passes[0].fragment, 'alpha(mz_px_title_shadow1)');
         const added = { steps: [{ filter: { graphics: { title: { text: 'x' } }, color: 'mix(rgb, title_shadow1, alpha(title_shadow1))' }, with: { title: { shadows: [{ blur: 0.2 }] } } }] };
         eq(validateFilter(added), []);

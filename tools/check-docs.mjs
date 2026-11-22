@@ -23,7 +23,7 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const CDN = process.argv.includes('--cdn');
 const local = (code) => (CDN ? code : code
-    .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/', '/dist/')
+    .replaceAll('https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/', '/dist/')
     .replaceAll('https://cdn.jsdelivr.net/npm/mathzetta@1/build/', '/node_modules/mathzetta/build/'))
     .replaceAll("'photo.jpg'", "'/demo/photos/charleston.jpg'").replaceAll('"photo.jpg"', '"/demo/photos/charleston.jpg"')
     .replaceAll('"clip.mp4"', '"/demo/photos/waves.mp4"');
@@ -32,7 +32,7 @@ addEventListener('unhandledrejection', (e) => __errors.push(String(e.reason && e
 // so the check can read a WebGL canvas after the frame was shown (the examples don't need to keep it)
 const getContext = HTMLCanvasElement.prototype.getContext;
 HTMLCanvasElement.prototype.getContext = function (kind, o) { return getContext.call(this, kind, /webgl/.test(kind) ? { ...o, preserveDrawingBuffer: true } : o); };</script>`;
-// after a moment: no errors, and #out shows a picture (not blank, not one flat colour)
+// after a moment: no errors, and #out shows a picture (not blank, not one flat color)
 const LOOK = `(async () => {
   await new Promise((r) => setTimeout(r, 3000));
   const out = document.getElementById('out').canvas ?? document.getElementById('out');   // <qblur-image> draws on its own canvas

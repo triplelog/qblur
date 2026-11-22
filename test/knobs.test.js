@@ -1,7 +1,7 @@
 import { suite, test, eq, throws } from './harness.js';
 import { normalizeFilter, compileFilter } from '../src/index.js';
 import {
-    definitionOf, inlineDefinition, parseDefinition, numberOf, blocksOf, notesOf, freeName, renameInMaths, bakeStep, sliderStep,
+    definitionOf, inlineDefinition, parseDefinition, numberOf, blocksOf, notesOf, freeName, renameInMath, bakeStep, sliderStep,
 } from '../demo/knobs.js';
 
 suite('knobs as Inline Math variables (demo/knobs.js)', () => {
@@ -26,7 +26,7 @@ suite('knobs as Inline Math variables (demo/knobs.js)', () => {
     test('a menu is drawn starting on its value', () => {
         eq(inlineDefinition('n', { type: 'number', default: 4, min: 2, max: 8, options: [2, 4, 8] }), 'n := [[4 | 2 | 8]]');
     });
-    test('boxes take maths; bad lines say how to write one', () => {
+    test('boxes take math; bad lines say how to write one', () => {
         eq(parseDefinition('k := [[1/4]]').spec, { type: 'number', default: 0.25, input: 'box' });
         eq(parseDefinition('k := 2').spec.default, 2);
         eq(parseDefinition('amount := [[0..2 = 1]]', 'Amount').spec, { type: 'number', label: 'Amount', default: 1, min: 0, max: 2 });
@@ -45,9 +45,9 @@ suite('knobs as Inline Math variables (demo/knobs.js)', () => {
         eq(notesOf([{ param: 'a' }, 'text']), [{ param: 'a' }, 'text']);
         eq(freeName(new Set(['k1', 'k2'])), 'k3');
     });
-    test('renaming a knob renames it in the maths, as a whole word', () => {
-        eq(renameInMaths('if gray > k then k1 else k', 'k', 'cut'), 'if gray > cut then k1 else cut');
-        eq(renameInMaths({ r: 'k', g: 'pk' }, 'k', 'm'), { r: 'm', g: 'pk' });
+    test('renaming a knob renames it in the math, as a whole word', () => {
+        eq(renameInMath('if gray > k then k1 else k', 'k', 'cut'), 'if gray > cut then k1 else cut');
+        eq(renameInMath({ r: 'k', g: 'pk' }, 'k', 'm'), { r: 'm', g: 'pk' });
     });
     test('a step saved on its own keeps its settings', () => {
         const step = normalizeFilter({ steps: [{ filter: { name: 'T', params: { cutoff: 0.5, n: { options: [2, 4] }, tint: [1, 1, 1] }, color: 'rgb * tint * cutoff * n' }, with: { cutoff: 0.8, n: 3, tint: [1, 0, 0] } }] }).steps[0];

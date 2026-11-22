@@ -1,6 +1,6 @@
 # qblur on your own pages
 
-qblur is the library behind [the editor](https://qblur.com/editor.html): image filters written as maths, compiled to
+qblur is the library behind [the editor](https://qblur.com/editor.html): image filters written as math, compiled to
 WebGL shaders, with the same pixels from plain JavaScript where there is no GPU. Put it on any page
 with one `<script>` from a CDN — no build step, no server, nothing uploaded: the pictures stay in the
 visitor's browser.
@@ -8,30 +8,30 @@ visitor's browser.
 ## What you can do with it
 
 - **Filters on your pictures, live.** Any `<img>`, `<canvas>`, `<video>` or webcam — sepia, blur,
-  comic, tilt-shift, a colour splash, or one of your own in a line of maths: `1 - rgb`,
+  comic, tilt-shift, a color splash, or one of your own in a line of math: `1 - rgb`,
   `if gray > 0.5 then (1, 0, 0) else rgb`, `mix(rgb, gaussian(4), y)`.
 - **Knobs.** A filter declares its parameters (`strength`, `tint`, …) with ranges; your sliders set them
   and the picture redraws at once, without recompiling.
-- **79 ready-made filters** in `LIBRARY`, in seven groups (colour and tone, blur and edges, shape and
-  motion, text, brushes, other pictures, chains) — use them as they are, chain them, or read their maths.
+- **79 ready-made filters** in `LIBRARY`, in seven groups (color and tone, blur and edges, shape and
+  motion, text, brushes, other pictures, chains) — use them as they are, chain them, or read their math.
 - **Chains.** Filters run one after another, each with its own settings and opacity; a chain is a filter
   too, so published chains nest and keep their authors' names.
 - **Animation.** `t` counts frames: `pixel(px + 8 sin(py / 10 + t / 5), py)` is a wave. On a video, the
   filter runs on every frame.
 - **Several pictures.** Masks, overlays, a second photo to blend in, a background for a green screen —
   each placed (cover, fit, tile, zoomed, turned) and set by name.
-- **Text and shapes** drawn into the picture and coloured, shadowed, frosted or animated by the maths.
-- **Share a filter as a link** or a small JSON document; reading one is safe — a filter is only maths:
-  it can read the picture and write colours, nothing else.
+- **Text and shapes** drawn into the picture and colored, shadowed, frosted or animated by the math.
+- **Share a filter as a link** or a small JSON document; reading one is safe — a filter is only math:
+  it can read the picture and write colors, nothing else.
 - **Save the result** as PNG (in Node too), JPEG, WebP or an animated GIF.
 - **GPU or CPU, the same pixels.** WebGL when it is there (fast: the shaders are compiled once), plain
   JavaScript when it isn't — old browsers, locked-down machines, **Node** (thumbnails on a server, tests).
 
 Some things people build with it: filters on upload in a photo or social app; effects on a `<video>` or a
-webcam stream; a product page that recolours an item as the customer picks; generative art and
-animated backgrounds; previews in a CMS; high-contrast or colour-blindness views for accessibility; a
+webcam stream; a product page that recolors an item as the customer picks; generative art and
+animated backgrounds; previews in a CMS; high-contrast or color-blindness views for accessibility; a
 lesson on how pictures are just numbers. The [small apps](https://qblur.com/avatar/) on qblur.com —
-profile picture, colour splash, make it move, fancy text — are each a page of this library and a few
+profile picture, color splash, make it move, fancy text — are each a page of this library and a few
 controls.
 
 ## Start here
@@ -41,14 +41,14 @@ controls.
 ```html runnable
 <img id="photo" src="photo.jpg" alt="" hidden>
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo');
   img.decode().then(() => QBlur.applyFilter(img, 'Sepia', { canvas: document.getElementById('out') }));
 </script>
 ```
 
-`applyFilter(picture, filter, options)` takes the filter in any form — maths (`'1 - rgb'`), a built-in
+`applyFilter(picture, filter, options)` takes the filter in any form — math (`'1 - rgb'`), a built-in
 filter's name (`'Sepia'`, `'Gaussian blur'`), a filter document, JSON, a share link or a compiled filter —
 and resolves with the result at the picture's size: a 2D canvas (yours, given as `canvas`, or a new one) in a
 page, `{ data, width, height }` in Node. A picture longer than 4096 px on its long side (2048 on the CPU) is
@@ -69,8 +69,8 @@ picture that redraws many times a second as a knob moves, a runner of your own (
 ### As an HTML element
 
 ```html runnable
-<qblur-image id="out" src="photo.jpg" filter="Vignette" params='{"strength": 2.5}' alt="A street of coloured houses"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
+<qblur-image id="out" src="photo.jpg" filter="Vignette" params='{"strength": 2.5}' alt="A street of colored houses"></qblur-image>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur-element.js"></script>
 ```
 
 `<qblur-image>` draws its picture with the filter on it, and again whenever an attribute changes:
@@ -85,13 +85,13 @@ picture from another site must allow CORS). It fires `load` after each drawing a
 ```html runnable
 <img id="photo" src="photo.jpg" alt="">
 <canvas id="out"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
 <script>
   const img = document.getElementById('photo'), canvas = document.getElementById('out');
   img.decode().then(() => {
     canvas.width = img.naturalWidth;                   // the result is the canvas's size: make it the picture's
     canvas.height = img.naturalHeight;
-    const compiled = QBlur.compileFilter('1 - rgb');   // a filter: here, one line of maths
+    const compiled = QBlur.compileFilter('1 - rgb');   // a filter: here, one line of math
     const { runner } = QBlur.createRunner(compiled, { gl: canvas.getContext('webgl') });
     runner.setImage(img).draw({ canvas });             // the GPU draws on gl's canvas; without WebGL, the CPU draws on `canvas`
   });
@@ -107,7 +107,7 @@ a WebGL context and the CPU when it doesn't; pass the same canvas to `draw` eith
 <canvas id="out"></canvas>
 <label>Vignette <input id="strength" type="range" min="0" max="4" step="0.01" value="1.6"></label>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
 
   const img = new Image();
   img.src = 'photo.jpg';
@@ -132,7 +132,7 @@ a WebGL context and the CPU when it doesn't; pass the same canvas to `draw` eith
 ### From npm
 
 ```bash
-npm install @mathzetta/qblur mathzetta        # mathzetta is a peer dependency: qblur uses its maths parser and GLSL output
+npm install @mathzetta/qblur mathzetta        # mathzetta is a peer dependency: qblur uses its math parser and GLSL output
 ```
 
 ```js
@@ -173,7 +173,7 @@ at one file:
 } }
 </script>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.external.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.external.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -185,21 +185,21 @@ at one file:
 </script>
 ```
 
-With classic scripts: `<script src="…/mathzetta@1/build/mathzetta.glsl.min.js">` (the GLSL flavour, which
-is what filters use) and then `…/@mathzetta/qblur@0.1/dist/qblur.external.global.min.js`.
+With classic scripts: `<script src="…/mathzetta@1/build/mathzetta.glsl.min.js">` (the GLSL flavor, which
+is what filters use) and then `…/@mathzetta/qblur@0.2/dist/qblur.external.global.min.js`.
 
-Pin a version (`@0.1` follows fixes, `@0.1.0` never changes) and, for a fixed version, add an `integrity`
+Pin a version (`@0.2` follows fixes, `@0.2.0` never changes) and, for a fixed version, add an `integrity`
 hash so the browser checks the file. jsDelivr shows each file's hash on its package page, or make it
-yourself: `curl -s https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
+yourself: `curl -s https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2.0/dist/qblur.js | openssl dgst -sha384 -binary | openssl base64 -A`
 gives the part after `sha384-`.
 
 ## Filters
 
-A filter is maths run on every pixel. The [guide](filters.md) is the full language — what an expression
-can use, animation, neighbouring pixels, geometry, several pictures, colour spaces, text and brushes. In
+A filter is math run on every pixel. The [guide](filters.md) is the full language — what an expression
+can use, animation, neighboring pixels, geometry, several pictures, color spaces, text and brushes. In
 short: `r g b a` (or `rgb`) is the pixel, `x y` its position from 0 to 1, `px py` in pixels, `w h` the
 picture's size, `t` the frame, `gray` its brightness, `source` the original picture, and
-`pixel(px, py)` reads another pixel. The result is a colour `(r, g, b)` or a number (grey).
+`pixel(px, py)` reads another pixel. The result is a color `(r, g, b)` or a number (gray).
 
 What you pass to `compileFilter`:
 
@@ -227,9 +227,9 @@ The fields of a filter document:
 | --- | --- |
 | `format` | `"mathzetta-filter/1"` — optional when writing one; `filterToJSON` adds it. The format is frozen: later versions add, never change |
 | `name`, `author`, `description` | shown in credits and the editor's library |
-| `params` | knobs: `{ name: { default, min, max, step?, label? } }`; a colour is `[r, g, b]` (0–1) or `{ type: 'color', default: [r, g, b] }`; a bare number is a default |
-| `color` | the maths: a string, or by channel — `{ rgb: '…', a: '…' }`, `{ r, g, b, a }`, `{ rgba: '…' }` |
-| `space` | the colour space the maths works in: `'hsv'`, `'hsl'`, `'lab'`, `'oklab'`, `'linear'`, `'ycbcr'`, or `{ in, out }` |
+| `params` | knobs: `{ name: { default, min, max, step?, label? } }`; a color is `[r, g, b]` (0–1) or `{ type: 'color', default: [r, g, b] }`; a bare number is a default |
+| `color` | the math: a string, or by channel — `{ rgb: '…', a: '…' }`, `{ r, g, b, a }`, `{ rgba: '…' }` |
+| `space` | the color space the math works in: `'hsv'`, `'hsl'`, `'lab'`, `'oklab'`, `'linear'`, `'ycbcr'`, or `{ in, out }` |
 | `images` | other pictures it reads, by name: `{ mask: { description: 'light where the effect shows' } }` |
 | `graphics` | text, rectangles, ovals or brush strokes drawn into pictures it reads ([Text and shapes](#text-and-shapes)) |
 | `steps` | a chain instead of `color`: each step a filter (or an expression), with `with`, `opacity` and `skip` |
@@ -246,8 +246,8 @@ compiled.graphics;    // every graphic, by name
 compiled.credits;     // [{ name: 'Sepia', author: '' }, …] — the filters it is made of
 ```
 
-It throws when the filter is malformed or its maths doesn't parse:
-`the filter: Failed to parse expression "rgb * (1, 2": …`. A name the maths doesn't know (`rgb * nope`) is
+It throws when the filter is malformed or its math doesn't parse:
+`the filter: Failed to parse expression "rgb * (1, 2": …`. A name the math doesn't know (`rgb * nope`) is
 found when a runner is made: `unknown name "nope"`. `validateFilter(def)` lists every problem with the
 document itself, as messages naming the filter (`"Vignette": "with" sets "nope", but there is no parameter
 called that`), without throwing.
@@ -334,14 +334,14 @@ await sharp(Buffer.from(out.data), { raw: { width: out.width, height: out.height
 ## Knobs
 
 `filterParams(normalizeFilter(def))` lists every knob a filter or chain has —
-`{ strength: { type: 'number', default: 1.6, min: 0, max: 4 } }`, colours as `{ type: 'color', default: [r, g, b] }` —
+`{ strength: { type: 'number', default: 1.6, min: 0, max: 4 } }`, colors as `{ type: 'color', default: [r, g, b] }` —
 so a page can build its controls from the filter:
 
 ```html runnable
 <canvas id="out"></canvas>
 <form id="knobs"></form>
 <script type="module">
-  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, normalizeFilter, filterParams } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
 
   const def = {
     name: 'Duotone',
@@ -384,7 +384,7 @@ In a chain, `filterParams` gives each knob's own default; the values a chain set
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -404,7 +404,7 @@ A video is a picture that changes: give the runner each frame.
 <video id="clip" src="clip.mp4" muted loop playsinline autoplay hidden></video>
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
   const video = document.getElementById('clip'), canvas = document.getElementById('out');
   await new Promise((r) => { video.onloadeddata = r; if (video.readyState >= 2) r(); });
   canvas.width = video.videoWidth;
@@ -424,14 +424,14 @@ To save what is shown as a video: `new MediaRecorder(canvas.captureStream(30))`.
 
 ## Other pictures: masks, overlays, backgrounds
 
-A filter names the pictures it reads in `images`; the maths uses them by name — `mask` is its colour at
+A filter names the pictures it reads in `images`; the math uses them by name — `mask` is its color at
 this pixel, `luma(mask)` its brightness, `alpha(mask)` its transparency — and you give them with
 `setImage(name, picture)`. A picture not given is white.
 
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, LIBRARY } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -445,7 +445,7 @@ this pixel, `luma(mask)` its brightness, `alpha(mask)` its transparency — and 
   grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#000');
   g.fillStyle = grad; g.fillRect(0, 0, 256, 256);
 
-  // grey everywhere, colour where the mask is light ("Through a mask" is mix(source, rgb, luma(mask)))
+  // gray everywhere, color where the mask is light ("Through a mask" is mix(source, rgb, luma(mask)))
   const byName = (name) => LIBRARY.find((f) => f.name === name);
   const { runner } = createRunner(compileFilter({ steps: [byName('Grayscale'), byName('Through a mask')] }), { gl: canvas.getContext('webgl') });
   runner.setImage(img).setImage('mask', mask).draw({ canvas });
@@ -460,14 +460,14 @@ part of the picture.
 
 ## Text and shapes
 
-A filter's `graphics` are drawn into pictures of the frame's size, which the maths reads like any other
+A filter's `graphics` are drawn into pictures of the frame's size, which the math reads like any other
 picture. `renderGraphics` draws them (loading web fonts first); positions and sizes are fractions of the
 frame, so they are crisp at any size.
 
 ```html runnable
 <canvas id="out"></canvas>
 <script type="module">
-  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner, renderGraphics } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
   const img = new Image();
   img.src = 'photo.jpg';
   await img.decode();
@@ -487,7 +487,7 @@ frame, so they are crisp at any size.
 ```
 
 Text has `text`, `font` (a CSS family, or `fontUrl` for a web font), `weight`, `style`, `size`, `x`, `y`,
-`align`, `angle`, `color`, `outline` and shadows; `rect` and `ellipse` have `x`, `y` (the centre), `w`, `h`,
+`align`, `angle`, `color`, `outline` and shadows; `rect` and `ellipse` have `x`, `y` (the center), `w`, `h`,
 `angle`, `color`, `outline` and shadows, and a rectangle a corner `radius`. Brush strokes (`type: 'strokes'`) are recorded drawings that play out over `t`; draw them
 for each frame with `renderGraphics(compiled, w, h, { t })` or `rasterizeStrokes`. The guide's
 "Text and shapes" and "Brushes" have every field.
@@ -495,7 +495,7 @@ for each frame with `renderGraphics(compiled, w, h, { t })` or `rasterizeStrokes
 ## Saving the result
 
 ```js
-const png = await toBlob(canvas);                                    // a PNG: indexed when there are ≤ 256 colours, RGB when opaque
+const png = await toBlob(canvas);                                    // a PNG: indexed when there are ≤ 256 colors, RGB when opaque
 const jpeg = await toBlob(canvas, { type: 'image/jpeg', quality: 0.9 });   // JPEG and WebP: the browser's encoder
 const { data, width, height } = cpuRunner.draw();                    // CPU: the bytes themselves
 ```
@@ -505,7 +505,7 @@ PNG itself, so it works in Node as well; JPEG and WebP need a browser. A WebGL c
 with a 2D context: pass the canvas `applyFilter` gave you, or call the canvas's own `toBlob` right after
 `draw()` (or create the context with `preserveDrawingBuffer: true`).
 
-An animated GIF needs a colour quantizer and an LZW encoder. The package has no dependencies, so bring
+An animated GIF needs a color quantizer and an LZW encoder. The package has no dependencies, so bring
 [gifenc](https://www.npmjs.com/package/gifenc) (`npm i gifenc`, 9 KB) and pass it in:
 
 ```js node
@@ -534,7 +534,7 @@ filterFromLink(location.hash);                           // a filter from your o
 validateFilter(readFilter(text));                        // [] when it is fine
 ```
 
-A filter from someone else is safe to run: it is maths over the picture, compiled by qblur into shaders (or
+A filter from someone else is safe to run: it is math over the picture, compiled by qblur into shaders (or
 checked JavaScript on the CPU), with no access to the page, the network or anything else. One thing does reach
 the network: a filter with text may name a font (a Google Fonts family or an https address), which the page
 then fetches to draw it — so whoever serves that font sees the request.
@@ -544,12 +544,12 @@ then fetches to draw it — so whoever serves that font sees the request.
 `LIBRARY` is an array of filter documents (79), each with a `group` from `GROUPS`:
 
 ```js
-GROUPS;                                                  // ['Colour & tone', 'Blur & edges', 'Shape & motion', 'Text & shapes', 'Brushes', 'Other pictures', 'Chains']
+GROUPS;                                                  // ['Color & tone', 'Blur & edges', 'Shape & motion', 'Text & shapes', 'Brushes', 'Other pictures', 'Chains']
 LIBRARY.filter((f) => f.group === 'Blur & edges').map((f) => f.name);
 const comic = LIBRARY.find((f) => f.name === 'Comic');   // a chain of four
 ```
 
-The editor's [library](https://qblur.com/editor.html) shows them all on your own photo, with their maths.
+The editor's library (*From the library*, in its [Filter tab](https://qblur.com/editor.html)) puts any of them on your own photo, with its knobs; the [filters page](https://qblur.com/filters.html) shows their math.
 
 ## Reference
 
@@ -562,11 +562,11 @@ Everything the package exports — from `@mathzetta/qblur/apply`, the first seve
 | `MAX_SIZE`, `MAX_SIZE_CPU` | the default `maxSize`: 4096 on the GPU, 2048 on the CPU |
 | `toCompiled(filter)` | any form `applyFilter` takes → the compiled filter |
 | `toBlob(canvasOrPicture, { type, quality, palette })` | the result as a file: PNG anywhere, JPEG and WebP in a browser |
-| `encodeGif(frames, { gifenc, delay, repeat, colours })` | an animated GIF, with gifenc passed in |
-| `encodePng({ width, height, data, palette, colours, quantize })` | the PNG writer `toBlob` uses (indexed, RGB or RGBA) |
+| `encodeGif(frames, { gifenc, delay, repeat, colors })` | an animated GIF, with gifenc passed in |
+| `encodePng({ width, height, data, palette, colors, quantize })` | the PNG writer `toBlob` uses (indexed, RGB or RGBA) |
 | `pictureData(canvasOrPicture)` | its RGBA bytes |
 | `QBlurImage` (from `@mathzetta/qblur/element`) | the `<qblur-image>` element's class; importing the entry defines the element |
-| `compileFilter(def, { version })` | a filter (expression, document or chain) → `{ passes, images, graphics, credits, … }`; throws on a malformed filter or maths that doesn't parse |
+| `compileFilter(def, { version })` | a filter (expression, document or chain) → `{ passes, images, graphics, credits, … }`; throws on a malformed filter or math that doesn't parse |
 | `createRunner(compiled, { gl, prefer, precision, workers })` | `{ runner, engine, reason }`: the GPU when `gl` is a WebGL context, else the CPU |
 | `createFilterRunner(gl, compiled, { precision })` | the WebGL runner |
 | `createCpuRunner(compiled, { precision, workers, parallelFrom, workerUrl })` | the JavaScript runner (browsers and Node); `draw()` and `drawAsync()` |
@@ -597,5 +597,5 @@ Everything the package exports — from `@mathzetta/qblur/apply`, the first seve
   more where the effect needs it (bloom, edge strengths).
 - **Big pictures.** WebGL limits a texture to `gl.getParameter(gl.MAX_TEXTURE_SIZE)` (often 4096 or more);
   the CPU has no limit but takes longer — `drawAsync` uses every core.
-- **Licence.** MIT ([LICENSE](https://github.com/triplelog/qblur/blob/main/LICENSE), Copyright (c) 2025-2026 Robert Wilcox), and so is
+- **License.** MIT ([LICENSE](https://github.com/triplelog/qblur/blob/main/LICENSE), Copyright (c) 2025-2026 Robert Wilcox), and so is
   MathZetta, which the bundles include. The object models used by the editor's "find objects" are not in the package.

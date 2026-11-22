@@ -8,7 +8,7 @@
  *   const found = await model.find(rgba, w, h);          // [{ label, score, box: [x0, y0, x1, y1], mask: Uint8Array(w × h) }]
  *
  * In: `input` [1, 3, size, size], the picture stretched to the square (no
- * letterbox), ImageNet-normalized. Out: `dets` [1, 100, 4] boxes as centre
+ * letterbox), ImageNet-normalized. Out: `dets` [1, 100, 4] boxes as center
  * x, y, width, height in 0…1 of the picture; `labels` [1, 100, 91] class
  * logits (COCO's own ids, 1…90 with gaps); `masks` [1, 100, size/4, size/4]
  * mask logits over the whole picture (> 0 is inside). A DETR needs no NMS: each of

@@ -1,6 +1,6 @@
 # qblur
 
-Image filters written as maths — the site is **qblur** (qblur.com). A filter is an expression over a pixel —
+Image filters written as math — the site is **qblur** (qblur.com). A filter is an expression over a pixel —
 `1 - rgb`, `if gray > 0.5 then (1, 0, 0)`, `gaussian(3)`,
 `mix(source, rgb, luma(mask))` — or a JSON document with parameters, extra
 pictures (masks, overlays) and chains of other people's filters. The
@@ -12,14 +12,14 @@ import { applyFilter, toBlob } from '@mathzetta/qblur/apply';      // one call, 
 
 const canvas = await applyFilter(img, 'Sepia');                                  // a built-in filter, by name
 const sharp = await applyFilter(img, 'Threshold', { params: { cutoff: 0.3 } });  // …with a knob set
-const mine = await applyFilter(img, 'if gray > 0.5 then (1, 0, 0) else rgb');    // or maths
+const mine = await applyFilter(img, 'if gray > 0.5 then (1, 0, 0) else rgb');    // or math
 const png = await toBlob(mine);                                                  // PNG (JPEG, WebP in a browser)
 // pictures over 4096 px on the long side (2048 on the CPU) are scaled down first: { maxSize } changes it
 ```
 
 ```html
 <qblur-image src="photo.jpg" filter="Vignette" params='{"strength": 2}' alt="…"></qblur-image>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur-element.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur-element.js"></script>
 ```
 
 For live knobs and video, a runner of your own:
@@ -39,7 +39,7 @@ Three entries: `@mathzetta/qblur` (the filters, the runners, the library), `@mat
 Saving: `toBlob` (PNG anywhere, JPEG/WebP in a browser) and `encodeGif` (bring
 [gifenc](https://www.npmjs.com/package/gifenc): the package has no dependencies of its own). See [CHANGELOG.md](CHANGELOG.md). [docs/library.md](docs/library.md) is how to use the
 library on your own pages — the CDN, the builds, the API, with examples that `npm run check:docs` runs.
-[docs/filters.md](docs/filters.md) is the full guide to the maths: what an expression can use, animation, neighbourhoods,
+[docs/filters.md](docs/filters.md) is the full guide to the math: what an expression can use, animation, neighborhoods,
 geometry, several pictures, sharing and the API.
 
 It runs on the GPU (WebGL) or the CPU (plain JavaScript, also in Node):
@@ -76,10 +76,10 @@ Every npm release's `dist/` is on jsDelivr (and unpkg), MathZetta's GLSL output 
 
 ```html
 <script type="module">
-  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.js';
+  import { compileFilter, createRunner } from 'https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.js';
 </script>
 <!-- or a classic script: window.QBlur -->
-<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/dist/qblur.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mathzetta/qblur@0.2/dist/qblur.global.min.js"></script>
 ```
 
 Every build comes **with MathZetta inside or without it** (`*.external.*`). Sizes as the CDN sends them (compressed):
@@ -95,7 +95,7 @@ Every build comes **with MathZetta inside or without it** (`*.external.*`). Size
 
 MathZetta (its GLSL output and the parser) is about half of a full build. Without it, the page
 loads MathZetta once itself: a classic page puts a MathZetta `<script>` first — `mathzetta.min.js`
-or the `glsl` flavour (GLSL + formulas is what the filters use) — and the external classic build
+or the `glsl` flavor (GLSL + formulas is what the filters use) — and the external classic build
 reads `window.MathZetta`; a module page maps `mathzetta`, `mathzetta/glsl` and `mathzetta/formulas`
 to MathZetta's bundle with an import map (every name can point at the one file). The object models and their runtimes (the site's
 `models/`, `ort/`) are not in the package: they belong to the editor at qblur.com.
@@ -108,21 +108,21 @@ Publishing is `npm publish` (`prepublishOnly` runs the tests and the build).
 | `src/format.js` | the filter document: normalize, validate, compile to passes, JSON and share links |
 | `src/runtime.js` | the WebGL runner: textures, passes, live parameters |
 | `src/cpu.js` | filter expressions → typed, straight-line JavaScript per pass (through the whitelist gate) |
-| `src/cpu-helpers.js` | what that code calls: texture-like sampling, neighbourhood planes (separable, by bands of rows) |
+| `src/cpu-helpers.js` | what that code calls: texture-like sampling, neighborhood planes (separable, by bands of rows) |
 | `src/cpu-runner.js`, `src/cpu-worker.js` | the CPU runner (draw / drawAsync over workers) |
 | `src/auto.js` | `createRunner` / `chooseEngine`: GPU or CPU, and why |
 | `src/library.js` | `LIBRARY`: the built-in filters, each with a `group` (`GROUPS`); every one validated, compiled and round-tripped by `npm test`. Canny edges is a nine-pass chain of plain expressions |
-| `demo/avatar/`, `demo/splash/`, `demo/move/`, `demo/text/` | the small apps: a profile picture (framed on the person, a style, the background blurred, replaced or removed; a circle, a square or a cut-out sticker), a colour splash (click colours to keep), a photo that moves (saved as a GIF or video), fancy text (letters and border each coloured by a formula — gold, chrome, fire, a picture, or your own — as a transparent PNG or a GIF) — a few choices each; `npm run check:apps` |
+| `demo/avatar/`, `demo/splash/`, `demo/move/`, `demo/text/` | the small apps: a profile picture (framed on the person, a style, the background blurred, replaced or removed; a circle, a square or a cut-out sticker), a color splash (click colors to keep), a photo that moves (saved as a GIF or video), fancy text (letters and border each colored by a formula — gold, chrome, fire, a picture, or your own — as a transparent PNG or a GIF) — a few choices each; `npm run check:apps` |
 | `demo/kit.js`, `demo/apps.css` | what the small apps share: open a picture, the sample photos, a filter on the GPU or CPU (`createView`), download, GIF |
 | `demo/gif.js` | a GIF decoder (all frames, delays, disposal) so GIFs play and filter frame by frame; `gifenc` (a dev dependency, bundled) writes "Save as GIF" |
-| `demo/png.js` | a PNG writer for what the browser's cannot do: indexed (1/2/4/8-bit) when the picture has few colours, RGB when nothing is transparent, forced palettes with dithering |
-| `demo/export.js` | the Export panel: format with estimated sizes (auto picks the smallest sensible), quality / colours, size, a crop dragged on the picture, background for JPEG |
-| `demo/livewire.js` | selecting an object: intelligent scissors (a cost map from the gradient, Dijkstra once per clicked point, the wire to the cursor walked back in real time, snapping, path cooling) and a colour-fill wand; the mask is `selected` in the maths |
+| `demo/png.js` | a PNG writer for what the browser's cannot do: indexed (1/2/4/8-bit) when the picture has few colors, RGB when nothing is transparent, forced palettes with dithering |
+| `demo/export.js` | the editor's Download tab: format with estimated sizes (auto picks the smallest sensible), quality / colors, size, a crop dragged on the picture, background for JPEG |
+| `demo/livewire.js` | selecting an object: intelligent scissors (a cost map from the gradient, Dijkstra once per clicked point, the wire to the cursor walked back in real time, snapping, path cooling) and a color-fill wand; the mask is `selected` in the math |
 | `src/graphics.js` | text and shapes: `normalizeGraphic` (validation), `drawGraphic` onto any 2D canvas, `loadGraphicFonts`, `renderGraphics(compiled, w, h)` for the runner |
 | `tools/shot.mjs` | a screenshot of a page of this repo after running some JavaScript in it (headless Chrome) |
 | `src/strokes.js` | brushes: recorded strokes drawn again for every frame (round, soft, marker, chalk, spray; pressure or speed; timing; passes; clip to a mask) into a picture of coverage, age, passes and progress; `traceContours` for outlining a selection |
-| `demo/tracker.js` | tracking an object through a clip: patch-matched outline points held to the group's move/scale/turn, a colour model per keyframe so the outline follows the object's edge, a confidence per frame, keyframes propagated both ways |
-| `demo/examples.js` | the Examples tour at the top of the editor: each example's filter, picture, features and step-by-step explanation (tested to compile; the checker runs each) |
+| `demo/tracker.js` | tracking an object through a clip: patch-matched outline points held to the group's move/scale/turn, a color model per keyframe so the outline follows the object's edge, a confidence per frame, keyframes propagated both ways |
+| `demo/examples.js` | the Examples tour (at the end of the Filter tab, on the editor and the filters page): each example's filter, picture, features and step-by-step explanation (tested to compile; the checker runs each) |
 | `demo/ai.js` | finding objects: MobileSAM on the site (`SHIPPED_MODELS`, run by ONNX Runtime Web in `ort/`; every site file stays under 25 MiB for Cloudflare Pages); in development a menu also offers RF-DETR Small and Nano and MagicTouch 1 and 2 (`demo/models/`, Apache-2.0) to compare; nothing loads until asked |
 | `demo/rfdetr.js` | the model's input (stretched, normalized) and its decoding (boxes, labels, outlines); used by the page and by Node (test/ai.test.js) |
 | `demo/sam.js` | MobileSAM: the picture scaled for its encoder, the decoder's prompt (points, box), the surest of its masks; used by the page and by Node |
@@ -135,22 +135,22 @@ Publishing is `npm publish` (`prepublishOnly` runs the tests and the build).
 | `demo/editor.html` | the editor — filters on your picture: choosing one, its knobs, selecting and drawing, downloads — a dashboard: the stage — original and result as large as the window allows, expandable — beside the tabbed controls; what `npm run check` drives |
 | `demo/workspace.js` | the editor's stage and tabs: what is shown (Result / Both / Original), the pictures' size on screen, Expand, the preview's sharpness |
 | `demo/filters.html` | the filters page — writing, changing and saving filters beside a smaller preview: the same editor (`data-mode="write"`), made from editor.html by `tools/filters-page.mjs` (don't edit it) |
-| `demo/index.html`, `demo/home.js` | the home page: one small example (a 50 KB photo — or your own photo or video —, a line of maths, a few filters to try) that opens in the editor |
+| `demo/index.html`, `demo/home.js` | the home page: one small example (a 50 KB photo — or your own photo or video —, a line of math, a few filters to try) that opens in the editor |
 | `docs/filters.md` | the guide |
 
 This was `src/filters/` and `demos/filters.html` in MathZetta until
 2026-10-16; the GLSL expression output (`toGLSL`, `filterShader`) stayed
 there as `mathzetta/glsl`.
 
-## Licence
+## License
 
 MIT — [LICENSE](LICENSE), Copyright (c) 2025-2026 Robert Wilcox: the package, the editor, the apps, the
-built-in filters and the site's own files. In this repository but under their own licences:
+built-in filters and the site's own files. In this repository but under their own licenses:
 
 - `demo/models/` and `site/models/`: the object models, Apache License 2.0 (`LICENSE` and `NOTICE` there);
   none of them is in the npm package.
 - `demo/photos/` and `site/photos/`: the sample photos and videos, from Unsplash and Pexels under their own
-  licences (the Unsplash License, the Pexels License), credited in `photos/index.json` and under each on the page.
+  licenses (the Unsplash License, the Pexels License), credited in `photos/index.json` and under each on the page.
 - `site/ort/`: ONNX Runtime Web, MIT, Copyright (c) Microsoft Corporation (`site/ort/LICENSE`).
 - The site's bundles include gifenc (MIT, Copyright (c) 2017 Matt DesLauriers). `site/THIRD-PARTY-NOTICES.txt`
   lists all of these for the deployed site.

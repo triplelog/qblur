@@ -1,30 +1,30 @@
 /**
- * qblur — image filters written as maths. Types for `import … from '@mathzetta/qblur'`
+ * qblur — image filters written as math. Types for `import … from '@mathzetta/qblur'`
  * (and dist/qblur.js, dist/qblur.external.js, window.QBlur in the classic builds).
  * The format itself is described in docs/filters.md; these follow src/.
  */
 
 // ---- the filter document (mathzetta-filter/1) ----------------------------------------------
 
-export type Colour = [number, number, number];
+export type Color = [number, number, number];
 
-/** A knob: `0.5` (a number 0–1), `[1, 0, 0]` (a colour), or in full. */
-export type ParamSpec = number | Colour | {
+/** A knob: `0.5` (a number 0–1), `[1, 0, 0]` (a color), or in full. */
+export type ParamSpec = number | Color | {
     type?: 'number' | 'color';
-    default?: number | Colour;
+    default?: number | Color;
     min?: number;
     max?: number;
     step?: number;
     label?: string;
     /** A menu of these values. */
     options?: number[];
-    /** "box": typed in, as maths; the default is a slider. */
+    /** "box": typed in, as math; the default is a slider. */
     input?: 'slider' | 'box';
 };
 
 export interface NormalizedParam {
     type: 'number' | 'color';
-    default: number | Colour;
+    default: number | Color;
     min?: number;
     max?: number;
     step?: number;
@@ -55,7 +55,7 @@ export interface GraphicSpec {
 /** One expression for every channel, or one per channel. */
 export type ColorExpression = string | Partial<Record<'r' | 'g' | 'b' | 'a' | 'rgb' | 'rgba', string>>;
 
-export type ColourSpace = 'srgb' | 'linear' | 'hsv' | 'hsl' | 'lab' | 'oklab' | 'ycbcr';
+export type ColorSpace = 'srgb' | 'linear' | 'hsv' | 'hsl' | 'lab' | 'oklab' | 'ycbcr';
 
 /** A step of a chain: an expression, a filter, or a filter with settings. */
 export type Step = string | FilterDocument | {
@@ -67,7 +67,7 @@ export type Step = string | FilterDocument | {
     skip?: boolean;
 };
 
-/** A filter as published: maths plus a name, an author, its knobs and the pictures it needs. */
+/** A filter as published: math plus a name, an author, its knobs and the pictures it needs. */
 export interface FilterDocument {
     format?: 'mathzetta-filter/1';
     name?: string;
@@ -78,7 +78,7 @@ export interface FilterDocument {
     params?: Record<string, ParamSpec>;
     images?: string[] | Record<string, ImageSpec>;
     graphics?: Record<string, GraphicSpec>;
-    space?: ColourSpace | { in?: ColourSpace; out?: ColourSpace };
+    space?: ColorSpace | { in?: ColorSpace; out?: ColorSpace };
     /** A filter has either `color` or `steps`. */
     color?: ColorExpression;
     steps?: Step[];
@@ -104,7 +104,7 @@ export interface NormalizedFilter {
     params?: Record<string, NormalizedParam>;
     images?: Record<string, ImageSpec>;
     graphics?: Record<string, GraphicSpec>;
-    space?: { in: ColourSpace; out: ColourSpace };
+    space?: { in: ColorSpace; out: ColorSpace };
     color?: string | Partial<Record<'r' | 'g' | 'b' | 'a' | 'rgb' | 'rgba', string>>;
     steps?: NormalizedStep[];
 }

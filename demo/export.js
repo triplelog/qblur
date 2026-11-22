@@ -1,6 +1,6 @@
 /**
  * The Export panel: format (with each one's size estimated), quality or
- * colours, output size, a crop dragged on the picture, a background for
+ * colors, output size, a crop dragged on the picture, a background for
  * JPEG, and Download.
  *
  *   const exporter = setupExport({ $, renderFrame, media, download, outputCanvas, canCrop });   // canCrop: may a drag on the result crop now?
@@ -9,7 +9,7 @@
  * `renderFrame(width, height)` draws the filter on the picture at that size
  * and returns a 2D canvas; everything here works on that canvas.
  */
-import { encodePng, colourCount } from './png.js';
+import { encodePng, colorCount } from './png.js';
 
 const LIMIT = 4096;
 const ASPECTS = { free: 0, '1:1': 1, '4:3': 4 / 3, '3:2': 3 / 2, '16:9': 16 / 9, '9:16': 9 / 16 };
@@ -151,22 +151,22 @@ export function setupExport({ $, renderFrame, media, download, outputCanvas, noD
         }
         const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
         if (format === 'png8') {
-            const png = await encodePng({ width: canvas.width, height: canvas.height, data, palette: 'force', colours: Number($('export-colours').value) || 256, dither: $('export-dither').checked });
-            if (png) return { blob: png.blob, ext: 'png', note: `PNG, ${png.colours} colours at ${png.bits} bit${png.bits > 1 ? 's' : ''} a pixel` };
+            const png = await encodePng({ width: canvas.width, height: canvas.height, data, palette: 'force', colors: Number($('export-colors').value) || 256, dither: $('export-dither').checked });
+            if (png) return { blob: png.blob, ext: 'png', note: `PNG, ${png.colors} colors at ${png.bits} bit${png.bits > 1 ? 's' : ''} a pixel` };
             return { blob: await toBlob(canvas, 'image/png'), ext: 'png', note: 'PNG (this browser cannot write a palette PNG)' };
         }
-        const png = await encodePng({ width: canvas.width, height: canvas.height, data, palette: 'auto' });   // few colours → indexed, else RGB/RGBA
-        if (png) return { blob: png.blob, ext: 'png', note: png.kind === 'palette' ? `PNG, ${png.colours} colours at ${png.bits} bit${png.bits > 1 ? 's' : ''} a pixel` : `PNG, ${png.kind.toUpperCase()}` };
+        const png = await encodePng({ width: canvas.width, height: canvas.height, data, palette: 'auto' });   // few colors → indexed, else RGB/RGBA
+        if (png) return { blob: png.blob, ext: 'png', note: png.kind === 'palette' ? `PNG, ${png.colors} colors at ${png.bits} bit${png.bits > 1 ? 's' : ''} a pixel` : `PNG, ${png.kind.toUpperCase()}` };
         return { blob: await toBlob(canvas, 'image/png'), ext: 'png', note: 'PNG' };
     }
 
     /** Every format's size, for the panel; the picture is rendered once. */
     async function estimate() {
         const canvas = await picture();
-        const key = JSON.stringify([rendered.key, $('export-quality').value, $('export-colours').value, $('export-dither').checked, $('export-bg').value]);
+        const key = JSON.stringify([rendered.key, $('export-quality').value, $('export-colors').value, $('export-dither').checked, $('export-bg').value]);
         if (estimates && estimates.key === key) return estimates.sizes;
         const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
-        const sizes = { colours: colourCount(data) };
+        const sizes = { colors: colorCount(data) };
         for (const format of ['png', 'png8', 'jpeg', 'webp']) {
             try { const r = await encode(canvas, format); sizes[format] = { bytes: r.blob.size, note: r.note }; } catch { sizes[format] = null; }
             await new Promise((r) => setTimeout(r, 0));
@@ -175,10 +175,10 @@ export function setupExport({ $, renderFrame, media, download, outputCanvas, noD
         return sizes;
     }
 
-    /** Auto: lossless when the picture has few colours or transparency, otherwise the smaller of JPEG and WebP. */
+    /** Auto: lossless when the picture has few colors or transparency, otherwise the smaller of JPEG and WebP. */
     async function chooseAuto() {
         const sizes = await estimate();
-        if (sizes.colours <= 256) return 'png';                               // encodePng('auto') indexes it
+        if (sizes.colors <= 256) return 'png';                               // encodePng('auto') indexes it
         const canvas = await picture();
         const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
         let transparent = false;
@@ -205,7 +205,7 @@ export function setupExport({ $, renderFrame, media, download, outputCanvas, noD
             for (const [format, label] of [['png', 'PNG'], ['png8', 'PNG palette'], ['jpeg', 'JPEG'], ['webp', 'WebP']]) {
                 if (sizes[format]) parts.push(`${label} ${kb(sizes[format].bytes)}${format === auto ? ' ←' : ''}`);
             }
-            $('export-sizes').textContent = `${parts.join(' · ')}${sizes.colours <= 256 ? ` · ${sizes.colours} colours` : ''}`;
+            $('export-sizes').textContent = `${parts.join(' · ')}${sizes.colors <= 256 ? ` · ${sizes.colors} colors` : ''}`;
         } catch (e) {
             $('export-sizes').textContent = e.message;
         }
@@ -226,12 +226,12 @@ export function setupExport({ $, renderFrame, media, download, outputCanvas, noD
     function showControls() {
         const f = $('export-format').value;
         $('export-quality-row').hidden = !(f === 'jpeg' || f === 'webp' || f === 'auto');
-        $('export-colours-row').hidden = f !== 'png8';
+        $('export-colors-row').hidden = f !== 'png8';
         $('export-bg-row').hidden = !(f === 'jpeg' || f === 'auto');
     }
     $('export-format').addEventListener('change', showControls);
     $('export-quality').addEventListener('input', () => { $('export-quality-val').textContent = Math.round($('export-quality').value * 100); estimates = null; $('export-sizes').textContent = ''; });
-    for (const id of ['export-colours', 'export-dither', 'export-bg']) $(id).addEventListener('change', () => { estimates = null; $('export-sizes').textContent = ''; });
+    for (const id of ['export-colors', 'export-dither', 'export-bg']) $(id).addEventListener('change', () => { estimates = null; $('export-sizes').textContent = ''; });
     $('export-preset').addEventListener('change', sizeFromPreset);
     $('export-width').addEventListener('change', () => { $('export-preset').value = 'custom'; keepShape('width'); showOutput(); });
     $('export-height').addEventListener('change', () => { $('export-preset').value = 'custom'; keepShape('height'); showOutput(); });

@@ -44,7 +44,7 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
       <section aria-labelledby="h-photo">
         <h2 id="h-photo">Photo</h2>
         <div class="row">
-          <label class="button primary">Choose a photo…<input type="file" id="file" accept="image/*" hidden></label>
+          <label class="button primary">Choose a photo…<input type="file" class="pick" id="file" accept="image/*"></label>
           <label class="hint" for="sample">or try</label>
           <select id="sample"></select>
         </div>
@@ -65,7 +65,7 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
           <input type="text" id="speed-formula" class="formula" value="speed" spellcheck="false" autocomplete="off">
           <div id="amount-formula-row"><label class="hint" for="amount-formula">how much</label>
           <input type="text" id="amount-formula" class="formula" value="amount" spellcheck="false" autocomplete="off"></div>
-          <p class="formula-help">Maths worked out for every pixel. <code>speed</code> and <code>amount</code> are the sliders;
+          <p class="formula-help">Math worked out for every pixel. <code>speed</code> and <code>amount</code> are the sliders;
             use <code>x y</code> (0–1 across and down), <code>px py</code>, <code>r g b</code>, <code>gray</code>, <code>t</code>…
             Try <code>speed (0.3 + y)</code> (faster lower down), <code>amount gray</code> (bright parts move most) or
             <code>amount smoothstep(0.3, 0.7, x)</code> (only the right side). <button type="button" id="formulas-reset">reset</button></p>
@@ -83,7 +83,7 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
         <div id="status" class="status" role="status"></div>
       </section>
 
-      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Colour splash</a> · <a href="../text/">Fancy text</a> · <a href="../editor.html">the full editor</a>.</p>
+      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Color splash</a> · <a href="../text/">Fancy text</a> · <a href="../editor.html">the full editor</a>.</p>
     </div>
   </div>
 </main>

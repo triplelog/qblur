@@ -1,15 +1,15 @@
 /**
  * A PNG writer that can do what the browser's cannot: an indexed picture
- * (PNG-8) at 1, 2, 4 or 8 bits a pixel when the picture has few colours —
+ * (PNG-8) at 1, 2, 4 or 8 bits a pixel when the picture has few colors —
  * a threshold or posterize result is 5–20× smaller that way — and RGB
- * rather than RGBA when nothing is transparent. Truecolour rows use the
+ * rather than RGBA when nothing is transparent. Truecolor rows use the
  * Paeth filter, which deflate likes for photos.
  *
- *   const { blob, kind, colours, bits } = await encodePng({ width, height, data, palette: 'auto', colours: 256, dither: true });
+ *   const { blob, kind, colors, bits } = await encodePng({ width, height, data, palette: 'auto', colors: 256, dither: true });
  *
- * `palette`: 'auto' (indexed if the picture has ≤ 256 colours, else
- * truecolour), 'none', or 'force' (reduce to `colours` colours, with
- * optional dithering — that needs a `quantize(data, colours, { dither, width })`
+ * `palette`: 'auto' (indexed if the picture has ≤ 256 colors, else
+ * truecolor), 'none', or 'force' (reduce to `colors` colors, with
+ * optional dithering — that needs a `quantize(data, colors, { dither, width })`
  * returning { palette, indices }: the package has no quantizer of its own,
  * so it stays dependency-free; the editor passes one built on gifenc).
  * Deflate comes from CompressionStream (every current browser, and Node
@@ -48,8 +48,8 @@ async function deflate(bytes) {
     return new Uint8Array(await new Response(stream.readable).arrayBuffer());
 }
 
-/** How many distinct RGBA colours, counting up to `limit`. */
-export function colourCount(data, limit = 257) {
+/** How many distinct RGBA colors, counting up to `limit`. */
+export function colorCount(data, limit = 257) {
     const seen = new Set();
     for (let i = 0; i < data.length; i += 4) {
         seen.add(((data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3]) >>> 0);
@@ -58,7 +58,7 @@ export function colourCount(data, limit = 257) {
     return seen.size;
 }
 
-/** Every colour as it is, when there are at most 256: { palette: [[r, g, b, a]…], indices }. */
+/** Every color as it is, when there are at most 256: { palette: [[r, g, b, a]…], indices }. */
 export function exactPalette(data) {
     const index = new Map();
     const palette = [];
@@ -83,10 +83,10 @@ function paeth(a, b, c) {
 }
 
 /**
- * @param {object} o { width, height, data: RGBA bytes, palette: 'auto' | 'none' | 'force', colours, dither, quantize }
- * @returns {Promise<{ blob: Blob, kind: 'palette' | 'rgb' | 'rgba', colours: number, bits: number } | null>}
+ * @param {object} o { width, height, data: RGBA bytes, palette: 'auto' | 'none' | 'force', colors, dither, quantize }
+ * @returns {Promise<{ blob: Blob, kind: 'palette' | 'rgb' | 'rgba', colors: number, bits: number } | null>}
  */
-export async function encodePng({ width, height, data, palette = 'auto', colours = 256, dither = true, quantize = null }) {
+export async function encodePng({ width, height, data, palette = 'auto', colors = 256, dither = true, quantize = null }) {
     if (typeof CompressionStream === 'undefined') return null;
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || !data || data.length < width * height * 4) {
         throw new Error('encodePng: width and height are whole numbers of pixels, and data holds 4 bytes for each');
@@ -94,10 +94,10 @@ export async function encodePng({ width, height, data, palette = 'auto', colours
     let indexed = null;
     if (palette === 'auto' || palette === 'force') {
         indexed = exactPalette(data);
-        if (indexed && indexed.palette.length > colours) indexed = null;
+        if (indexed && indexed.palette.length > colors) indexed = null;
         if (!indexed && palette === 'force') {
-            if (!quantize) throw new Error('encodePng: palette "force" needs a quantize function (the picture has more than `colours` colours)');
-            indexed = quantize(data, Math.min(256, Math.max(2, colours)), { dither, width });
+            if (!quantize) throw new Error('encodePng: palette "force" needs a quantize function (the picture has more than `colors` colors)');
+            indexed = quantize(data, Math.min(256, Math.max(2, colors)), { dither, width });
         }
     }
     const chunks = [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])];
@@ -110,7 +110,7 @@ export async function encodePng({ width, height, data, palette = 'auto', colours
         const n = indexed.palette.length;
         bits = n <= 2 ? 1 : n <= 4 ? 2 : n <= 16 ? 4 : 8;
         kind = 'palette';
-        ihdr[8] = bits; ihdr[9] = 3;                                     // colour type 3: indexed
+        ihdr[8] = bits; ihdr[9] = 3;                                     // color type 3: indexed
         const stride = Math.ceil(width * bits / 8);
         rows = new Uint8Array(height * (1 + stride));
         for (let y = 0; y < height; y++) {
@@ -153,5 +153,6 @@ export async function encodePng({ width, height, data, palette = 'auto', colours
         chunks.push(chunk('IHDR', ihdr));
     }
     chunks.push(chunk('IDAT', await deflate(rows)), chunk('IEND', new Uint8Array(0)));
-    return { blob: new Blob(chunks, { type: 'image/png' }), kind, colours: indexed ? indexed.palette.length : colourCount(data), bits };
+    const count = indexed ? indexed.palette.length : colorCount(data);
+    return { blob: new Blob(chunks, { type: 'image/png' }), kind, colors: count, bits };
 }

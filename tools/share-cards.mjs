@@ -25,19 +25,19 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/ja
 
 /** Each card: the page, what to wait for, the element whose picture goes on the card, and its words. */
 export const CARDS = [
-    { name: 'index', path: '/demo/editor.html', ready: 'Boolean(window.mzDemo && mzDemo.compiled)', shot: '#out', colour: '#a4b6dd',
-        title: 'Image filters written as maths', line: 'Chain them, tune their knobs, share them as a link. In your browser.' },
-    { name: 'avatar', path: '/demo/avatar/index.html', ready: 'Boolean(window.qblurApp && qblurApp.state.person)', shot: '#frame canvas:not(#marks)', colour: '#a2d0c0',
+    { name: 'index', path: '/demo/editor.html', ready: 'Boolean(window.mzDemo && mzDemo.compiled)', shot: '#out', color: '#a4b6dd',
+        title: 'Image filters written as math', line: 'Chain them, tune their knobs, share them as a link. In your browser.' },
+    { name: 'avatar', path: '/demo/avatar/index.html', ready: 'Boolean(window.qblurApp && qblurApp.state.person)', shot: '#frame canvas:not(#marks)', color: '#a2d0c0',
         before: "document.getElementById('show-marks').click()",
-        title: 'Profile picture', line: 'Centred on you, in a style you like, with the background blurred or replaced.' },
-    { name: 'splash', path: '/demo/splash/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', colour: '#d09292',
-        title: 'Colour splash', line: 'Keep one colour and turn the rest of the photo grey.' },
-    { name: 'move', path: '/demo/move/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', colour: '#c094cc',
+        title: 'Profile picture', line: 'Centered on you, in a style you like, with the background blurred or replaced.' },
+    { name: 'splash', path: '/demo/splash/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#d09292',
+        title: 'Color splash', line: 'Keep one color and turn the rest of the photo gray.' },
+    { name: 'move', path: '/demo/move/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#c094cc',
         title: 'Make it move', line: 'A wave, a ripple, a slow zoom: a photo saved as a GIF or a video.' },
-    { name: 'text', path: '/demo/text/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', colour: '#a4b6dd',
+    { name: 'text', path: '/demo/text/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#a4b6dd',
         title: 'Fancy text', line: 'Gold, chrome, fire, a photo inside the letters: a transparent PNG or a GIF.' },
-    { name: 'docs', path: null, colour: '#a2d0c0',
-        title: 'Filters as maths, on your pages', line: 'The guide to the filter language, and qblur as a library: GPU or CPU, in Node too.' },
+    { name: 'docs', path: null, color: '#a2d0c0',
+        title: 'Filters as math, on your pages', line: 'The guide to the filter language, and qblur as a library: GPU or CPU, in Node too.' },
 ];
 
 const esc = (s) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -46,7 +46,7 @@ const card = (c, img) => `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
   * { box-sizing: border-box; margin: 0; }
   body { width: 1200px; height: 630px; background: #000; padding: 28px; display: flex; gap: 24px; font-family: 'Open Sans', sans-serif; }
-  .words { flex: 1; background: ${c.colour}; border-radius: 3px; padding: 44px 44px 36px; display: flex; flex-direction: column; color: #222; }
+  .words { flex: 1; background: ${c.color}; border-radius: 3px; padding: 44px 44px 36px; display: flex; flex-direction: column; color: #222; }
   .mark { display: block; height: 72px; width: auto; align-self: flex-start; }
   h1 { font: 800 ${c.title.length > 24 ? 56 : 64}px/1.05 Montserrat, sans-serif; margin-top: auto; }
   p { font-size: 27px; line-height: 1.35; margin-top: 22px; }

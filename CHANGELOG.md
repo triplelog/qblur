@@ -1,16 +1,30 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
+- American spelling everywhere people read it (color, gray, center, neighborhood, math, license…): the docs, the
+  site's pages, messages and errors, and the built-in filters' names and groups (`Color & tone`, "Color circle",
+  "Color reveal brush", "Color spotlight"). **Breaking:** the British names are gone, not aliased: `encodePng`
+  and `encodeGif` take `colors` only (`colours` is ignored) and `encodePng`'s result has `colors` only; the types
+  `Colour` / `ColourSpace` are `Color` / `ColorSpace`; a built-in filter asked for by name (`applyFilter`,
+  `<qblur-image filter>`) needs its new name ("Color circle"). The filter format is unchanged (its keys were
+  already `color`).
 - The CPU runner reads what the next MathZetta's shaders read: `arcsec`, `arccsc` and `arccot` (as `acos(1/x)`,
   `asin(1/x)` and `π/2 − atan x`), degrees (`30°`, which the GPU already took and the CPU called an unknown name),
   and evaluation bars (`\left[F\right]_a^b`, F at b minus F at a).
 - …and `⇒` / `⇔` (`\Rightarrow`, `\iff`), and membership in set-builder notation (`r \in \{x \mid x > 0.4\}`).
+- The CPU runner takes the empty set: `r ∈ ∅` is false and `r ∉ ∅` true, as on the GPU (it built `()` and threw a
+  SyntaxError).
+- The site: Copy link / Copy JSON are off while there are no steps (they threw); where the clipboard is refused, the
+  text shows in a box to copy by hand on both pages; play / pause also pauses a GIF, and its label (and the tracking
+  panel's) follows; a video or picture that can't be read says so, and the old one's object URL is let go; the file
+  choosers are reachable by keyboard; the home page's handlers wait for its photo, and only a filter's link
+  (`#…`, not `#main`) is sent on to the editor; storage blocked by the browser no longer stops the editor.
 - The site (not the package): the editor has its own page, `editor.html`, laid out as a dashboard — the pictures on a
   stage that takes the room the window has (Result / Both / Original, **Expand** over the whole window, a sharper
   preview: up to 960 × 720, or 1440 × 1080 when asked), beside the controls as tabs. The home page is now one small
   example that opens in the editor; a filter's old link (`qblur.com/#…`) is sent on to the editor.
-- The site: writing filters has its own page, `filters.html` (the steps' maths, knobs and notes, a smaller preview,
+- The site: writing filters has its own page, `filters.html` (the steps' math, knobs and notes, a smaller preview,
   saving, importing, the library and the cheat sheet), and the editor is for using them: choose one (saved or from
   the library), tune its knobs, select and draw, download — "Edit this filter" and "Use it in the editor" carry the
   filter (and the sample picture) between the two. Both pages are the same editor (`demo/app.js`, `data-mode`);

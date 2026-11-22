@@ -5,7 +5,7 @@
 <title>Editor — qblur</title>
 <meta name="description" content="The qblur editor: put image filters on your photos, videos and GIFs — pick one, chain them, tune their knobs on a large preview, select and draw on the picture, then download the result or share the filter as a link. Runs in your browser.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="The qblur editor: image filters written as maths">
+<meta property="og:title" content="The qblur editor: image filters written as math">
 <meta property="og:description" content="Chain filters, tune their knobs, and share the result as a link. Runs in the browser, on photos, video and GIFs.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -114,7 +114,7 @@
      filter's knobs, choosing one, selecting and drawing, downloads) and filters.html (data-mode="write", made from this
      file by tools/filters-page.mjs: writing, changing and saving filters, with a smaller preview) */
   body[data-mode="use"] .write-only, body[data-mode="write"] .use-only { display: none !important; }
-  /* using: a step shows its knobs and notes, not its maths or its editing parts */
+  /* using: a step shows its knobs and notes, not its math or its editing parts */
   body[data-mode="use"] ol#steps li .head button.edit, body[data-mode="use"] ol#steps li > .body > :is(.add, .step-actions) { display: none; }
   /* writing: no tabs (selecting, drawing and downloads are the editor's), the filter's controls the wide column */
   body[data-mode="write"] .tabs { display: none; }
@@ -142,7 +142,7 @@
   ol#steps li .head button.edit[aria-pressed="true"] { background: var(--mz-accent); border-color: var(--mz-accent); color: #fff; }
   .meta input { flex: 1 1 8rem; min-width: 0; font-family: system-ui, sans-serif; }
 
-  /* the steps: each a filter that folds away, with its maths, its knobs and its notes */
+  /* the steps: each a filter that folds away, with its math, its knobs and its notes */
   ol#steps { list-style: none; padding: 0; margin: 0; }
   ol#steps li { border: 1px solid var(--line); border-radius: var(--ss-radius-sm); margin-bottom: .5rem; background: var(--soft); }
   .head { display: flex; align-items: center; gap: .4rem; padding: .4rem .6rem; }
@@ -224,8 +224,8 @@
   .graphic .row2 { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; font-size: .85rem; color: var(--mz-muted); }
   .graphic select, .graphic input[type=text] { font: .85rem system-ui, sans-serif; }
   .brush-info { font-size: .85rem; color: var(--mz-muted); }
-  #select-colours .swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border: 1px solid var(--mz-muted); border-radius: 3px; vertical-align: middle; margin-right: .2rem; cursor: pointer; position: relative; }
-  #select-colours .swatch:hover::after { content: '×'; position: absolute; inset: 0; text-align: center; color: var(--mz-bg); font-size: .9rem; line-height: 1.1rem; text-shadow: 0 0 2px #000; }
+  #select-colors .swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border: 1px solid var(--mz-muted); border-radius: 3px; vertical-align: middle; margin-right: .2rem; cursor: pointer; position: relative; }
+  #select-colors .swatch:hover::after { content: '×'; position: absolute; inset: 0; text-align: center; color: var(--mz-bg); font-size: .9rem; line-height: 1.1rem; text-shadow: 0 0 2px #000; }
   #export input[type=number] { width: 4.6rem; font: .85rem ui-monospace, monospace; padding: .15rem .3rem; }
   #export select { font: .85rem system-ui, sans-serif; }
   #export input[type=range] { width: 6rem; }
@@ -265,7 +265,7 @@
   <h1>Editor</h1>
   <span class="hint bar-what">pick a filter, tune its knobs, download the result — <a href="filters.html" class="to-filters">write or change a filter</a></span>
   <span class="spacer"></span>
-  <label class="button" title="a photo, a video or a GIF from your computer — it stays on your computer">Open a picture…<input type="file" id="file" accept="image/*,video/*,.gif" hidden></label>
+  <label class="button" title="a photo, a video or a GIF from your computer — it stays on your computer">Open a picture…<input type="file" class="pick" id="file" accept="image/*,video/*,.gif"></label>
   <select id="photo" hidden title="or try one of these" aria-label="or try one of these pictures"></select>
   <button id="quick-link" title="copy a link to this filter (not the picture): anyone who opens it can change it and keep their own">Copy link</button>
   <button id="quick-download" class="primary use-only" title="the result at the picture's full size (more choices under Download)">Download</button>
@@ -305,9 +305,9 @@
     </div>
     <div class="under">
       <span id="credit"></span>
-      <button id="test-picture" title="a drawn picture with flat colours, edges and text">test picture</button>
+      <button id="test-picture" title="a drawn picture with flat colors, edges and text">test picture</button>
     </div>
-    <div class="t when-moving"><button id="play-toggle" title="play / pause">❚❚</button><span class="hint">t</span><input type="range" id="t" min="0" max="240" value="0" title="time (t)" aria-label="time (t)"><output id="tval">0</output>
+    <div class="t when-moving"><button id="play-toggle" title="play / pause" aria-label="pause">❚❚</button><span class="hint">t</span><input type="range" id="t" min="0" max="240" value="0" title="time (t)" aria-label="time (t)"><output id="tval">0</output>
       <label class="hint" hidden><input type="checkbox" id="play" checked> play</label></div>
     <div id="export-msg" class="hint"></div>
     <div class="error" id="error"></div>
@@ -326,9 +326,10 @@
       <div id="fork-note" class="fork-note" role="status" hidden></div>
       <div class="meta write-only"><input type="text" id="name" placeholder="name it" aria-label="the filter's name"><input type="text" id="author" placeholder="your name" aria-label="your name (the author)"></div>
       <div class="buttons"><button id="save" class="primary write-only" title="keep it in this browser: it is under Your saved filters below">Save</button>
-        <a class="button use-only to-filters" id="to-filters" href="filters.html" title="its maths, knobs and notes, on the page for writing filters — save it there">Edit this filter</a>
+        <a class="button use-only to-filters" id="to-filters" href="filters.html" title="its math, knobs and notes, on the page for writing filters — save it there">Edit this filter</a>
         <button id="copy-link" title="a link with the whole filter in it: whoever opens it can change it and keep their own">Copy link</button>
         <button id="start-over" title="remove every step">Clear</button><span id="share-msg" class="hint"></span></div>
+      <textarea id="copy-fallback" rows="3" readonly spellcheck="false" hidden aria-label="the text to copy"></textarea>
       <ol id="steps"></ol>
       <div id="steps-empty" class="empty-steps" hidden>No filter yet — add one below.</div>
       <div id="credits" class="hint"></div>
@@ -351,7 +352,7 @@
         <h3 id="add-heading" class="part"><span class="write-only">Add a new filter</span><span class="use-only">Choose a filter</span></h3>
         <p class="hint use-only">Use one in place of what is here, or Add it as one more step. To write your own, <a href="filters.html" class="to-filters">open the filters page</a>.</p>
         <div class="add write-only">
-          <input type="text" id="expr" class="expr" style="flex:1; width:auto" placeholder="write its maths: 1 - rgb" spellcheck="false" aria-label="the new filter's maths"><select id="expr-space" title="the colour space r g b are in" aria-label="colour space"><option value="srgb">sRGB</option><option value="linear">linear</option><option value="hsv">HSV</option><option value="hsl">HSL</option><option value="lab">Lab</option><option value="oklab">OKLab</option><option value="ycbcr">YCbCr</option></select><button id="add-expr" class="primary">Add</button>
+          <input type="text" id="expr" class="expr" style="flex:1; width:auto" placeholder="write its math: 1 - rgb" spellcheck="false" aria-label="the new filter's math"><select id="expr-space" title="the color space r g b are in" aria-label="color space"><option value="srgb">sRGB</option><option value="linear">linear</option><option value="hsv">HSV</option><option value="hsl">HSL</option><option value="lab">Lab</option><option value="oklab">OKLab</option><option value="ycbcr">YCbCr</option></select><button id="add-expr" class="primary">Add</button>
         </div>
         <div class="hint write-only">Then give it knobs and notes in its step (<b>Edit</b> shows them on any step). <a href="#help" class="help-link" id="help-link" title="how to write a filter">How do I write one?</a></div>
         <details id="help" class="write-only"><summary class="hint">How to write a filter</summary><div id="help-body"></div></details>
@@ -380,7 +381,7 @@
         <div class="tools">
           <button id="select-ai" title="a neural network finds objects and outlines them; click one to select it (the model loads once, from this site)">find objects (AI)</button>
           <button id="select-trace" title="click around its edge; the line follows the edge">trace the edge</button>
-          <button id="select-fill" title="click inside a flat colour">fill a colour</button>
+          <button id="select-fill" title="click inside a flat color">fill a color</button>
           <button id="select-refine" title="paint over the selection: what should be inside, or outside — the edge adjusts to the picture">refine with a brush</button>
           <button id="select-keep" class="primary" hidden title="add what is highlighted to the selection (Enter)">keep</button>
           <button id="select-clear">clear</button>
@@ -393,7 +394,7 @@
             <label class="hint">size <input type="range" id="refine-size" min="0.01" max="0.15" step="0.005" value="0.04"></label></span>
           <label class="hint" id="select-contiguous-row" hidden><input type="checkbox" id="select-contiguous" checked> connected only</label>
           <label class="hint" id="select-cool-row" hidden title="a stretch of the line that stays put as you move on is fixed for you"><input type="checkbox" id="select-cool" checked> freeze as I go</label>
-          <span id="select-colours"></span>
+          <span id="select-colors"></span>
         </div>
         <div class="options">
           <label class="hint">soft edge <input type="range" id="select-feather" min="0" max="30" step="1" value="0"></label>
@@ -410,7 +411,7 @@
           Red on the timeline is where the tracker is unsure: click there, fix the outline (or let the AI), and use that as another keyframe.</div>
         <canvas id="track-timeline" width="480" height="28" title="each frame: green is sure, red unsure; black marks are keyframes — click to go there"></canvas>
         <div class="tools">
-          <button id="track-play">▶ play</button><button id="track-key">use as keyframe</button><button id="track-run" class="primary">track</button><button id="track-stop" hidden>stop</button>
+          <button id="track-play">❚❚ pause</button><button id="track-key">use as keyframe</button><button id="track-run" class="primary">track</button><button id="track-stop" hidden>stop</button>
           <button id="track-edit" title="put this frame's outline into the edge tracer, to adjust its points">edit this frame</button>
           <button id="track-ai" title="the object model redraws each red frame from the tracked outline">fix red frames with AI</button>
           <button id="track-clear">clear</button>
@@ -424,9 +425,9 @@
       <summary>Add text, shapes or brush strokes</summary>
       <div class="body">
         <div class="tools"><button id="add-text">+ text</button><button id="add-rect">+ rectangle</button><button id="add-oval">+ oval</button><button id="add-brush">+ brush</button></div>
-        <div class="hint">Each one appears as a step under <b>Filter</b>, with its words, font, colour and shadows; drag it on the picture to move it.
+        <div class="hint">Each one appears as a step under <b>Filter</b>, with its words, font, color and shadows; drag it on the picture to move it.
           <b>Fonts:</b> pick one from the list, type a Google Fonts name (like <i>Lobster</i>) and press "use", or
-          <label style="text-decoration: underline; cursor: pointer">load a font file<input type="file" id="font-file" accept=".woff2,.woff,.ttf,.otf" hidden></label>
+          <label style="text-decoration: underline; cursor: pointer">load a font file<input type="file" class="pick" id="font-file" accept=".woff2,.woff,.ttf,.otf"></label>
           (a file from your computer doesn't travel in links).</div>
         <div id="font-msg" class="hint"></div>
       </div>
@@ -440,7 +441,7 @@
         <div class="buttons">
           <label class="hint">format <select id="export-format"><option value="auto">auto — smallest sensible</option><option value="png">PNG</option><option value="png8">PNG, palette</option><option value="jpeg">JPEG</option><option value="webp">WebP</option></select></label>
           <label class="hint" id="export-quality-row">quality <input type="range" id="export-quality" min="0.3" max="1" step="0.01" value="0.85"><output id="export-quality-val">85</output></label>
-          <label class="hint" id="export-colours-row" hidden>colours <input type="number" id="export-colours" min="2" max="256" value="256"> <input type="checkbox" id="export-dither" checked> dither</label>
+          <span class="hint" id="export-colors-row" hidden><label>colors <input type="number" id="export-colors" min="2" max="256" value="256"></label> <label><input type="checkbox" id="export-dither" checked> dither</label></span>
           <label class="hint" id="export-bg-row">behind transparency <input type="color" id="export-bg" value="#ffffff"></label>
         </div>
         <div class="buttons">

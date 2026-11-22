@@ -4,24 +4,24 @@
  * The same language as the shaders (mathzetta/glsl's filterShader): the
  * same names (r g b a x y px py w h t gray rgb unchanged), the same
  * functions (pixel, blur, gaussian, sobel, zoom, the pictures a filter
- * names…), the same rules for turning a number or a colour into a pixel.
+ * names…), the same rules for turning a number or a color into a pixel.
  * The GLSL is typed and so is this: every node of the expression gets a
  * type — float, bool, vec2, vec3 or vec4 — and becomes one local variable
  * per component inside a loop over the pixels. No vector objects exist at
  * run time; a filter is one straight-line loop body.
  *
- * Neighbourhood functions whose argument is the same for every pixel
+ * Neighborhood functions whose argument is the same for every pixel
  * (blur(radius) with radius a parameter) are worked out once per pass,
  * over the whole picture and separably — blur, gaussian, dilate and erode
  * over a square are a horizontal pass then a vertical one, the same sums
  * in a different order — then read per pixel. An argument that changes
- * per pixel falls back to computing that pixel's neighbourhood directly.
+ * per pixel falls back to computing that pixel's neighborhood directly.
  *
  * The generated code is compiled with new Function only after mathzetta's
  * checkGeneratedJs has passed it: every name in it is one this file
  * generates ($-prefixed) or a Math member, it holds no strings, and only
  * the arrays made here can be indexed. A filter is user input — shared by
- * link, pasted as JSON — and can read the picture and write colours,
+ * link, pasted as JSON — and can read the picture and write colors,
  * nothing else.
  */
 
@@ -78,7 +78,7 @@ function evaluationDifference(node) {
     return { type: 'op', op: '-', args: [put(body, hi), put(body, lo)] };
 }
 
-/** Neighbourhood functions: the result kind, and whether the per-pass plane is computed once for a constant argument. */
+/** Neighborhood functions: the result kind, and whether the per-pass plane is computed once for a constant argument. */
 const PLANES = table({
     blur: 3, blurx: 3, blury: 3, gaussian: 3, gaussianx: 3, gaussiany: 3, dilate: 3, erode: 3, sharpen: 3,
     sobel: 1, sobelx: 1, sobely: 1, laplacian: 1, emboss: 1,
@@ -162,7 +162,7 @@ class Generator {
 
     leaf(node) {
         if (node.type === 'number') return f(`(${node.value.replace(/\.+$/, '')})`);
-        if (node.type === 'string') this.fail('a filter has no text: numbers and colours only');
+        if (node.type === 'string') this.fail('a filter has no text: numbers and colors only');
         const v = node.value;
         const percent = /^(-?(?:\d+\.?\d*|\.\d+))%$/.exec(v);
         if (percent) return f(`(${percent[1]} / 100)`);   // 50% is 0.5, as in the shader
@@ -182,7 +182,7 @@ class Generator {
         this.fail(`unknown name "${v}"`);
     }
 
-    /** A named picture's colour at this pixel (vec4), sampled once per pixel. */
+    /** A named picture's color at this pixel (vec4), sampled once per pixel. */
     pictureHere(name) {
         if (!this.perPixel.has(name)) {
             const s = this.sampler(name, '$px', '$py');
@@ -201,7 +201,7 @@ class Generator {
             this.pictureNames.add(name);
             this.body.push(`$h_picture($Q_${name}, $qw_${name}, $qh_${name}, $w, $h, $qz_${name}, $qx_${name}, $qy_${name}, $qa_${name}, $qm_${name}, ${X}, ${Y}, ${out});`);
         }
-        if (this.space && name !== 'selection') this.body.push(`$h_col_to${this.space}(${out}[0], ${out}[1], ${out}[2], ${out});`);   // a mask is not a colour
+        if (this.space && name !== 'selection') this.body.push(`$h_col_to${this.space}(${out}[0], ${out}[1], ${out}[2], ${out});`);   // a mask is not a color
         return vec([0, 1, 2, 3].map((k) => `${out}[${k}]`));
     }
 
@@ -257,7 +257,7 @@ class Generator {
             case 'mean': return this.componentwise(A(), (...xs) => `((${xs.join(' + ')}) / ${xs.length})`);
             case '()': case '[]': case '{}': case '(]': case '[)': {
                 const parts = A().flatMap((v) => (v.kind === 'b' ? [num(v)] : v.c.map((_, k) => num(v, k))));
-                if (parts.length > 4) this.fail('a colour has at most 4 values (r, g, b, a)');
+                if (parts.length > 4) this.fail('a color has at most 4 values (r, g, b, a)');
                 return vec(parts);
             }
             case '!': return this.componentwise(A(), (x) => `$h_factorial(${x})`);
@@ -345,7 +345,8 @@ class Generator {
             const [lo, hi] = set.args.map((a) => num(this.value(a)));
             test = `(${v} ${set.op[0] === '[' ? '>=' : '>'} ${lo} && ${v} ${set.op[1] === ']' ? '<=' : '<'} ${hi})`;
         } else if (set.type === 'op' && set.op === '{}') {
-            test = `(${set.args.map((item) => `${v} === ${num(this.value(item))}`).join(' || ')})`;
+            // ∅ (an empty {}): nothing is in it — `false`, as the shader's
+            test = set.args.length ? `(${set.args.map((item) => `${v} === ${num(this.value(item))}`).join(' || ')})` : 'false';
         } else if (set.type === 'symbol' && ['ℝ', 'ℤ', 'ℕ'].includes(set.value)) {
             test = { 'ℝ': `Number.isFinite(${v})`, 'ℤ': `Number.isInteger(${v})`, 'ℕ': `(Number.isInteger(${v}) && ${v} > 0)` }[set.value];
         } else this.fail('∈ needs an interval [a, b], a set {…}, ℝ, ℤ or ℕ');
@@ -357,7 +358,7 @@ class Generator {
         return f(this.temp('$h_random($px, $py, $h, ++$seed)'));
     }
 
-    // ---- functions: pictures, geometry, neighbourhoods, GLSL built-ins ------------
+    // ---- functions: pictures, geometry, neighborhoods, GLSL built-ins ------------
 
     call(name, args, node) {
         const A = () => args.map((a) => this.value(a));
@@ -401,7 +402,7 @@ class Generator {
                 let v;
                 if (args.length === 2) v = this.call('pixel', args);
                 else if (args.length === 1) v = this.value(args[0]);
-                else this.fail(`${name}() takes a colour, or a position px, py`);
+                else this.fail(`${name}() takes a color, or a position px, py`);
                 const k = { red: 0, green: 1, blue: 2, alpha: 3 }[name];
                 if (name === 'luma') return f(`(${num(v, 0)} * 0.299 + ${num(v, 1)} * 0.587 + ${num(v, 2)} * 0.114)`);
                 if (name === 'alpha' && size(v) === 3) return f('1');
@@ -425,7 +426,7 @@ class Generator {
             }
             case 'cross': {
                 const [a, b] = A();
-                if (size(a) !== 3 || size(b) !== 3) this.fail('cross() takes two colours (3 values each)');
+                if (size(a) !== 3 || size(b) !== 3) this.fail('cross() takes two colors (3 values each)');
                 const [x1, y1, z1] = a.c; const [x2, y2, z2] = b.c;
                 return this.keep(vec([`(${y1} * ${z2} - ${z1} * ${y2})`, `(${z1} * ${x2} - ${x1} * ${z2})`, `(${x1} * ${y2} - ${y1} * ${x2})`]));
             }
@@ -441,8 +442,8 @@ class Generator {
             case 'tolinear': case 'fromlinear': case 'tohsv': case 'fromhsv': case 'tohsl': case 'fromhsl':
             case 'tolab': case 'fromlab': case 'tooklab': case 'fromoklab': case 'toycbcr': case 'fromycbcr': {
                 const a = A();
-                const c = a.length === 3 ? a.map((v) => num(v)) : [0, 1, 2].map((k) => num(a[0], k));   // a colour, or three numbers
-                if (a.length !== 1 && a.length !== 3) this.fail(`${name}() takes a colour`);
+                const c = a.length === 3 ? a.map((v) => num(v)) : [0, 1, 2].map((k) => num(a[0], k));   // a color, or three numbers
+                if (a.length !== 1 && a.length !== 3) this.fail(`${name}() takes a color`);
                 const out = this.scratchArray();
                 this.body.push(`$h_col_${name}(${c.join(', ')}, ${out});`);
                 return this.keep(vec([0, 1, 2].map((k) => `${out}[${k}]`)));
@@ -458,7 +459,7 @@ class Generator {
             case 'log': return this.builtin('ln', A());
             case 'max': case 'min': return this.componentwise(A(), (...xs) => `Math.${name}(${xs.join(', ')})`);
         }
-        if (PLANES[name]) return this.neighbourhood(name, args);
+        if (PLANES[name]) return this.neighborhood(name, args);
         this.fail(`unknown function "${name}"`);
     }
 
@@ -498,9 +499,9 @@ class Generator {
 
     /**
      * blur(radius) and friends. With an argument the same for every pixel (numbers, params, t),
-     * the whole plane is computed once before the loop; otherwise this pixel's neighbourhood is.
+     * the whole plane is computed once before the loop; otherwise this pixel's neighborhood is.
      */
-    neighbourhood(name, args) {
+    neighborhood(name, args) {
         const kind = PLANES[name];
         const constant = args.every((a) => this.isUniform(a));
         if (constant) {
@@ -541,7 +542,7 @@ class Generator {
 
     // ---- assembling the pass ------------------------------------------------------
 
-    /** One channel line of the colour, as filterShader writes it (mz_keep, then mz_rgba / mz_rgb / mz_ch_*). */
+    /** One channel line of the color, as filterShader writes it (mz_keep, then mz_rgba / mz_rgb / mz_ch_*). */
     channel(ch, tree) {
         const keepValue = ch === 'rgba' || ch === 'rgb' ? '$gray' : `$c${'rgba'.indexOf(ch)}`;
         this.body.push(`$u = ${keepValue}; $k0 = $c0; $k1 = $c1; $k2 = $c2; $k3 = $c3;`);
@@ -549,11 +550,11 @@ class Generator {
         const n = size(v);
         const comp = (k) => num(v, k);
         if (ch === 'rgba') {
-            if (n === 2) this.fail('a colour is one number (grey), three (r, g, b) or four (r, g, b, a) — not two');
+            if (n === 2) this.fail('a color is one number (gray), three (r, g, b) or four (r, g, b, a) — not two');
             const c = n === 1 ? [comp(0), comp(0), comp(0), '1'] : n === 3 ? [comp(0), comp(1), comp(2), '1'] : [0, 1, 2, 3].map(comp);
             this.body.push(`$c0 = ${c[0]}; $c1 = ${c[1]}; $c2 = ${c[2]}; $c3 = ${c[3]};`);
         } else if (ch === 'rgb') {
-            if (n === 2) this.fail('a colour is one number (grey), three (r, g, b) or four — not two');
+            if (n === 2) this.fail('a color is one number (gray), three (r, g, b) or four — not two');
             const c = n === 1 ? [comp(0), comp(0), comp(0)] : [comp(0), comp(1), comp(2)];
             this.body.push(`$c0 = ${c[0]}; $c1 = ${c[1]}; $c2 = ${c[2]};`);
         } else {

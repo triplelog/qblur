@@ -10,8 +10,8 @@
  * The encoder takes the picture scaled so its longer side is 1024, as
  * [h, w, 3] RGB 0…255 (it normalizes and pads itself) and gives a 256 × 64 ×
  * 64 embedding. The decoder is Segment Anything's: points in that scaled
- * picture (label 1 in, 0 out; a box is two points labelled 2 and 3; without
- * a box a padding point labelled -1), and it returns four masks at the
+ * picture (label 1 in, 0 out; a box is two points labeled 2 and 3; without
+ * a box a padding point labeled -1), and it returns four masks at the
  * picture's size with a predicted quality for each: one click is ambiguous
  * (a shirt or the person?), so masks 1–3 are the guesses and the surest is
  * taken; with more to go on, mask 0.

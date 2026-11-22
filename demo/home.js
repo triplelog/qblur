@@ -1,8 +1,8 @@
 /**
- * The home page's one example (demo/index.html): a small photo, a filter written as maths, the result.
+ * The home page's one example (demo/index.html): a small photo, a filter written as math, the result.
  * Light on purpose — one 50 KB picture, no library list, no object model, no Inline Math; the editor
- * (editor.html) is where everything else lives, and "Open this filter in the editor" carries the maths there
- * as a link. "Use your own photo or video" (or a file dropped on the picture) puts the same line of maths on
+ * (editor.html) is where everything else lives, and "Open this filter in the editor" carries the math there
+ * as a link. "Use your own photo or video" (or a file dropped on the picture) puts the same line of math on
  * the visitor's own picture — it never leaves the computer — and Download saves a photo's result.
  */
 import { filterToLink, compileCpuPass } from '@mathzetta/qblur';
@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 const PICTURE = 'photos/home.jpg';
 const OWN_MAX = 1600;        // a photo of one's own: at most this on its long side (the download's size)
 const CLIP_MAX = 960;        // a video's frames: smaller, so even the CPU keeps up
-/** Filters to try: each a line of maths (test/examples.test.js compiles them). */
+/** Filters to try: each a line of math (test/examples.test.js compiles them). */
 export const PRESETS = [
     ['Vignette', 'rgb * (1 - 1.6 ((x - 0.5)^2 + (y - 0.5)^2))'],
     ['Invert', '1 - rgb'],
@@ -27,39 +27,40 @@ export const PRESETS = [
 ];
 
 const stillOnly = matchMedia('(prefers-reduced-motion: reduce)');
-let view = null, moving = false, t = 0, original = false, good = $('maths').value;
+let view = null, moving = false, t = 0, original = false, good = $('math').value;
 let clip = null, clipCanvas = null;          // a video of one's own, and the canvas its frames are drawn into
 
 /** Does this filter change with time? Then it is redrawn every frame. */
 const moves = (compiled) => compiled.passes.some((p) => { try { const uses = compileCpuPass(p).uses; return uses.has('t') || uses.has('random'); } catch { return false; } });
 
-function show(maths) {
+function show(math) {
+    if (!view) return;                                   // the photo is still loading: it opens on what the box says then
     const box = $('error');
     try {
-        view.set(original ? 'rgb' : maths);
-        good = maths;
+        view.set(original ? 'rgb' : math);
+        good = math;
         box.textContent = '';
-        $('maths').removeAttribute('aria-invalid');
-        $('open-editor').href = filterToLink(maths, 'editor.html');
+        $('math').removeAttribute('aria-invalid');
+        $('open-editor').href = filterToLink(math, 'editor.html');
     } catch (e) {                                        // the last filter that worked stays on the picture
         const { text, hint } = explain(e.message);
         box.textContent = hint ? `${text} — ${hint}` : text;
-        $('maths').setAttribute('aria-invalid', 'true');
+        $('math').setAttribute('aria-invalid', 'true');
         return;
     }
     moving = Boolean(clip) || (!original && !stillOnly.matches && moves(view.compiled));
     view.draw(t);
-    for (const b of $('presets').children) b.setAttribute('aria-pressed', String(b.dataset.maths === maths.trim()));
+    for (const b of $('presets').children) b.setAttribute('aria-pressed', String(b.dataset.math === math.trim()));
 }
 
-for (const [name, maths] of PRESETS) {
+for (const [name, math] of PRESETS) {
     const b = Object.assign(document.createElement('button'), { type: 'button', textContent: name });
-    b.dataset.maths = maths;
-    b.onclick = () => { $('maths').value = maths; show(maths); };
+    b.dataset.math = math;
+    b.onclick = () => { $('math').value = math; show(math); };
     $('presets').append(b);
 }
 let timer = 0;
-$('maths').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => show($('maths').value), 200); });
+$('math').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => show($('math').value), 200); });
 $('compare').onclick = () => {
     original = !original;
     $('compare').setAttribute('aria-pressed', String(original));
@@ -95,9 +96,11 @@ function stopClip() {
 async function useFile(file) {
     if (!file) return;
     const box = $('error');
+    let url = null;
     try {
+        await ready;                                     // (a file chosen or dropped while the sample photo loads waits for it)
         if (file.type.startsWith('video/')) {
-            const url = URL.createObjectURL(file);
+            url = URL.createObjectURL(file);
             const v = Object.assign(document.createElement('video'), { src: url, muted: true, loop: true, playsInline: true });
             await new Promise((resolve, reject) => { v.onloadedmetadata = resolve; v.onerror = () => reject(new Error('That video can\'t be played here — try an MP4 or WebM.')); });
             stopClip();
@@ -105,6 +108,7 @@ async function useFile(file) {
             clipCanvas = Object.assign(document.createElement('canvas'), { width: Math.round(v.videoWidth * s), height: Math.round(v.videoHeight * s) });
             await v.play();
             clip = v;
+            url = null;                                  // the clip's now: stopClip revokes it
             clipCanvas.getContext('2d').drawImage(v, 0, 0, clipCanvas.width, clipCanvas.height);
             setPicture(clipCanvas, clipCanvas.width, clipCanvas.height);
             $('save').hidden = true;                     // a video's result is the editor's to record
@@ -116,6 +120,7 @@ async function useFile(file) {
         }
         $('credit').textContent = `Your ${clip ? 'video' : 'photo'}: it stays on your computer.`;
     } catch (e) {
+        if (url) URL.revokeObjectURL(url);
         box.textContent = e.message;
     }
 }
@@ -124,12 +129,15 @@ $('file').addEventListener('change', () => useFile($('file').files[0]));
 $('frame').addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); $('frame').classList.add('dropping'); } });
 $('frame').addEventListener('dragleave', () => $('frame').classList.remove('dropping'));
 $('frame').addEventListener('drop', (e) => { e.preventDefault(); $('frame').classList.remove('dropping'); useFile(e.dataTransfer.files[0]); });
-$('save').onclick = () => { view.draw(t); download(view.snapshot(), 'qblur.png'); };
+$('save').onclick = () => { if (!view) return; view.draw(t); download(view.snapshot(), 'qblur.png'); };
 
-const picture = await loadPicture(PICTURE, 800);
-view = createView($('frame'), picture.width, picture.height, { label: 'the photo with the filter applied' });
-view.setImage('source', picture);
-show($('maths').value);
+// (the handlers above are wired first, so the page answers at once; until the photo is in, show() waits and useFile awaits this)
+const ready = loadPicture(PICTURE, 800).then((picture) => {
+    view = createView($('frame'), picture.width, picture.height, { label: 'the photo with the filter applied' });
+    view.setImage('source', picture);
+    show($('math').value);
+});
+await ready;
 (function tick() {
     if (clip && !document.hidden && clip.readyState >= 2) {     // the video's next frame, through the filter
         clipCanvas.getContext('2d').drawImage(clip, 0, 0, clipCanvas.width, clipCanvas.height);

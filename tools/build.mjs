@@ -13,7 +13,7 @@
  *   dist/cpu-worker.js        the CPU runner's worker (drawAsync on big pictures), MathZetta inside; found beside the bundle
  *   dist/qblur.external.global.min.js
  *                             the classic <script> without MathZetta: reads window.MathZetta, which a
- *                             MathZetta <script> put there first (mathzetta.min.js or the glsl flavour)
+ *                             MathZetta <script> put there first (mathzetta.min.js or the glsl flavor)
  *
  *   site/index.html     the home page (demo/index.html: one small example) and its site/home.js (demo/home.js bundled)
  *   site/editor.html    the editor (demo/editor.html) without the dev import map
@@ -71,7 +71,7 @@ async function bundle(input, file, { worker = false } = {}) {
         external: (id) => isLibrary(id) || id.startsWith('node:') || id === 'onnxruntime-web' || id === '@mediapipe/tasks-vision',   // Node branches never taken in a browser; the object models' runtimes load from ort/ and mediapipe/ when first used
         onwarn: (warning, warn) => { if (warning.code !== 'CIRCULAR_DEPENDENCY') warn(warning); },
     });
-    await build.write({ file: join(ROOT, 'site', file), format: 'es', banner: `/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT licence; MathZetta loads from jsDelivr; other people's code ${worker ? 'on this site' : 'in this file (gifenc) and on this site'}: THIRD-PARTY-NOTICES.txt */`,
+    await build.write({ file: join(ROOT, 'site', file), format: 'es', banner: `/* qblur — Copyright (c) 2025-2026 Robert Wilcox — MIT license; MathZetta loads from jsDelivr; other people's code ${worker ? 'on this site' : 'in this file (gifenc) and on this site'}: THIRD-PARTY-NOTICES.txt */`,
         plugins: [minify], ...(worker ? { paths: (id) => cdnUrl(id, v) ?? id } : {}) });
     await build.close();
     if (worker) cdnUsed.push(...cdnUrlsIn(await readFile(join(ROOT, 'site', file), 'utf8')));
@@ -163,12 +163,12 @@ async function preloads(page, bundleFile) {
 }
 
 // the library: one ES module and one classic script, with MathZetta's GLSL output bundled in
-// every file says whose it is and its licence (terser keeps comments with "MIT licence"); MathZetta, inside most bundles, too
-const libBanner = `/* qblur ${pkg.version} — Copyright (c) 2025-2026 Robert Wilcox — MIT licence — https://qblur.com */`;
-const withMathZetta = libBanner.replace(' */', ' — MathZetta inside: Copyright (c) 2025 Robert Wilcox, MIT licence */');
+// every file says whose it is and its license (terser keeps comments with "MIT license"); MathZetta, inside most bundles, too
+const libBanner = `/* qblur ${pkg.version} — Copyright (c) 2025-2026 Robert Wilcox — MIT license — https://qblur.com */`;
+const withMathZetta = libBanner.replace(' */', ' — MathZetta inside: Copyright (c) 2025 Robert Wilcox, MIT license */');
 await rm(join(ROOT, 'dist'), { recursive: true, force: true });
 await mkdir(join(ROOT, 'dist'), { recursive: true });
-const minify = terser({ format: { comments: /MIT licence/ } });
+const minify = terser({ format: { comments: /MIT license/ } });
 const CORE = join(ROOT, 'src/core-entry.tmp.js');   // the GPU-only entry, written for the build and removed after
 const GLOBAL = join(ROOT, 'src/global-entry.tmp.js');   // the classic scripts: everything on window.QBlur, @mathzetta/qblur/apply too
 await writeFile(GLOBAL, "export * from './index.js';\nexport * from './apply.js';\n");
@@ -222,8 +222,8 @@ for (const [page, source, name] of [['editor.html', html, 'qblur editor'], ['fil
 if (!siteUrl) console.log('note: set SITE_URL (or "homepage" in package.json) for absolute og:image / og:url / canonical in link previews');
 // the two documents, linking each other by their site names
 const siteLinks = (html) => html.replaceAll('href="filters.md', 'href="guide.html').replaceAll('href="library.md', 'href="library.html');
-await writeFile(join(ROOT, 'site/guide.html'), head(siteLinks(guidePage(forSite(await readFile(join(ROOT, 'docs/filters.md'), 'utf8')), { title: 'How to write an image filter as maths — qblur guide' })),
-    { path: 'guide.html', card: 'docs', description: 'How to write an image filter as maths: what an expression can use — the pixel, its neighbours, where it is, time, other pictures — with examples to try in the editor.' }));
+await writeFile(join(ROOT, 'site/guide.html'), head(siteLinks(guidePage(forSite(await readFile(join(ROOT, 'docs/filters.md'), 'utf8')), { title: 'How to write an image filter as math — qblur guide' })),
+    { path: 'guide.html', card: 'docs', description: 'How to write an image filter as math: what an expression can use — the pixel, its neighbors, where it is, time, other pictures — with examples to try in the editor.' }));
 await writeFile(join(ROOT, 'site/library.html'), head(siteLinks(guidePage(await readFile(join(ROOT, 'docs/library.md'), 'utf8'), { title: 'Image filters on your own pages: the JavaScript library — qblur', page: 'library' })),
     { path: 'library.html', card: 'docs', schema: { '@type': 'SoftwareSourceCode', name: '@mathzetta/qblur', codeRepository: 'https://github.com/triplelog/qblur',
         programmingLanguage: 'JavaScript', license: 'https://opensource.org/licenses/MIT' }, description: 'qblur on your own pages: one script tag or an ES module from a CDN, filters on the GPU or the CPU (in Node too), knobs, video, text and sharing — with working examples.' }));
@@ -265,7 +265,8 @@ for (const app of APPS) {
     await bundle(`demo/${app}/app.js`, `${app}/app.js`);
     const page = await readFile(join(ROOT, 'demo', app, 'index.html'), 'utf8');
     await writeFile(join(ROOT, 'site', app, 'index.html'), head(await preloads(siteMap(page, '../ort/ort.wasm.min.mjs')
-        .replaceAll('/node_modules/mathzetta-sites/src/', '../mz/'), join(ROOT, 'site', app, 'app.js')),
+        .replaceAll('/node_modules/mathzetta-sites/src/', '../mz/')
+        .replaceAll('href="../../docs/filters.md', 'href="../guide.html'), join(ROOT, 'site', app, 'app.js')),   // the guide: the Markdown in dev, its page on the site
         { path: `${app}/`, card: app, schema: webApp(/<title>([^<]*?) — qblur<\/title>/.exec(page)?.[1] ?? app) }));
 }
 await cp(join(ROOT, 'demo/apps.css'), join(ROOT, 'site/apps.css'));
@@ -282,23 +283,23 @@ await cp(join(ROOT, 'demo/photos'), join(ROOT, 'site/photos'), { recursive: true
 // the object model and the runtime that runs it, served from the site itself
 await mkdir(join(ROOT, 'site/ort'), { recursive: true });
 for (const f of ['ort.wasm.min.mjs', 'ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) await cp(join(ROOT, 'node_modules/onnxruntime-web/dist', f), join(ROOT, 'site/ort', f));
-// what the site serves that is someone else's, with their licences (MIT asks for the notice to travel with every copy)
+// what the site serves that is someone else's, with their licenses (MIT asks for the notice to travel with every copy)
 {
     const MIT = async (holder) => `MIT License\n\nCopyright (c) ${holder}\n\n` + (await readFile(join(ROOT, 'LICENSE'), 'utf8')).split(/\n\n/).slice(2).join('\n\n');
     const ort = await MIT('Microsoft Corporation');
     await writeFile(join(ROOT, 'site/ort/LICENSE'), `ONNX Runtime Web ${JSON.parse(await readFile(join(ROOT, 'node_modules/onnxruntime-web/package.json'), 'utf8')).version} (https://github.com/microsoft/onnxruntime), the files in this folder:\n\n${ort}`);
     const gifenc = await readFile(join(ROOT, 'node_modules/gifenc/LICENSE.md'), 'utf8');
     await writeFile(join(ROOT, 'site/THIRD-PARTY-NOTICES.txt'), [
-        `qblur.com runs qblur (Copyright (c) 2025-2026 Robert Wilcox, MIT licence: https://github.com/triplelog/qblur).
-These parts of the site are other people's, under their own licences:`,
+        `qblur.com runs qblur (Copyright (c) 2025-2026 Robert Wilcox, MIT license: https://github.com/triplelog/qblur).
+These parts of the site are other people's, under their own licenses:`,
         `gifenc (https://github.com/mattdesl/gifenc), bundled into app.js and the apps' app.js to write GIFs:\n\n${gifenc.trim()}`,
-        `ONNX Runtime Web (https://github.com/microsoft/onnxruntime), in ort/, which runs the object model: MIT licence, Copyright (c)
+        `ONNX Runtime Web (https://github.com/microsoft/onnxruntime), in ort/, which runs the object model: MIT license, Copyright (c)
 Microsoft Corporation (the full text: ort/LICENSE).`,
         `MobileSAM and Segment Anything's mask decoder, in models/: Apache License 2.0 (models/LICENSE, models/NOTICE).`,
         `The sample photos and videos, in photos/: from Unsplash and Pexels, under the Unsplash License
 (https://unsplash.com/license) and the Pexels License (https://www.pexels.com/license/); each one's author is
 credited under it on the page (photos/index.json).`,
-        `Loaded from elsewhere when a page opens: MathZetta and Inline Math (Copyright (c) 2025 Robert Wilcox, MIT licence) from
+        `Loaded from elsewhere when a page opens: MathZetta and Inline Math (Copyright (c) 2025 Robert Wilcox, MIT license) from
 jsDelivr, and the Montserrat and Open Sans fonts (SIL Open Font License) from Google Fonts.`,
     ].join('\n\n') + '\n');
 }

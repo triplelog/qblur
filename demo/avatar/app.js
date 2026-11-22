@@ -3,7 +3,7 @@
  * blurred, replaced or removed, cut to a circle, saved as a 1024 × 1024 PNG — or cut out round the
  * person as a sticker (a transparent PNG, an outline round the silhouette if wanted).
  *
- * The frame is a square of the photo (centre and side, in the photo's pixels) drawn into a 1024
+ * The frame is a square of the photo (center and side, in the photo's pixels) drawn into a 1024
  * canvas — or, cut out, the person's box with a margin, 1024 on its long side; the filter runs on that. The person is outlined by MobileSAM (../ai.js):
  * a guess from two clicks where a portrait's subject is (face, chest), then the user's own marks —
  * with "Mark me" / "Mark not me" (a toggle under the photo), each click adds a point in or out, shown
@@ -36,11 +36,11 @@ const STYLES = [
 const BACKGROUNDS = {
   keep: null,
   blur: (s) => ({ name: 'Blurred background', color: `mix(gaussian(${(10 * s).toFixed(1)}), rgb, selected)` }),
-  colour: () => ({ name: 'Colour background', params: { c1: [0.16, 0.44, 0.86] }, color: 'mix(c1, rgb, selected)' }),
+  color: () => ({ name: 'Color background', params: { c1: [0.16, 0.44, 0.86] }, color: 'mix(c1, rgb, selected)' }),
   gradient: () => ({ name: 'Gradient background', params: { c1: [0.16, 0.44, 0.86], c2: [0.96, 0.64, 0.78] }, color: 'mix(mix(c1, c2, y), rgb, selected)' }),
   none: () => ({ name: 'No background', color: { rgb: 'rgb', a: 'a selected' } }),
 };
-/** A cut-out's outline: `outline` is the person's shape grown a little; where it is and the person isn't, the ring colour. */
+/** A cut-out's outline: `outline` is the person's shape grown a little; where it is and the person isn't, the ring color. */
 const OUTLINE = { name: 'Sticker outline', images: { outline: {} }, params: { ringc: [1, 1, 1] }, color: { rgb: 'mix(ringc, rgb, selected)', a: 'max(a, luma(outline))' } };
 
 const state = { picture: null, person: null, frame: null, style: 'natural', bg: 'keep', moved: false, found: undefined, shape: 'circle' };
@@ -120,7 +120,7 @@ function chainFor(styleId, bg, s = 1, sticker = false) {
   return steps.length ? { steps } : 'rgb';
 }
 const sticker = () => state.shape === 'cutout' && $('ring').checked;
-function bgKnobs() { return { c1: hex($('bg1').value), c2: hex($('bg2').value), ringc: hex($('ring-colour').value) }; }
+function bgKnobs() { return { c1: hex($('bg1').value), c2: hex($('bg2').value), ringc: hex($('ring-color').value) }; }
 let shape = '';
 function rebuild() {
   try {
@@ -139,7 +139,7 @@ function render() {
   view.knobs(bgKnobs());
   view.draw(0);
   const ring = $('ring').checked && state.shape !== 'cutout';      // a cut-out's outline is drawn by the filter
-  $('frame').style.setProperty('--ring', ring ? $('ring-colour').value : 'transparent');
+  $('frame').style.setProperty('--ring', ring ? $('ring-color').value : 'transparent');
   $('frame').style.setProperty('--ring-w', `${(ring ? 0.035 : 0) * $('frame').clientWidth}px`);
   drawMarks();
 }
@@ -419,7 +419,7 @@ async function usePicture(canvas, credit = '', person = '') {
   render();
   updateTiles();
   if (person && await usePrecomputed(person)) return;           // a sample with its outline ready: no model yet
-  findPerson({ reframe: true });                              // centred on you, as soon as the model has looked
+  findPerson({ reframe: true });                              // centered on you, as soon as the model has looked
 }
 
 $('file').onchange = async () => {
@@ -456,15 +456,15 @@ $('zoom').oninput = () => {
   state.frame.size = Math.min(state.picture.width, state.picture.height) / Number($('zoom').value);
   clampFrame(); render(); updateTiles();
 };
-$('centre').onclick = () => findPerson({ reframe: true });
+$('center').onclick = () => findPerson({ reframe: true });
 for (const r of document.querySelectorAll('input[name=bg]')) r.onchange = async () => {
   state.bg = r.value;
-  $('bg-colours').hidden = !(r.value === 'colour' || r.value === 'gradient');
+  $('bg-colors').hidden = !(r.value === 'color' || r.value === 'gradient');
   $('bg2').hidden = r.value !== 'gradient';
   if (r.value !== 'keep' && !state.person) await findPerson({ reframe: !state.moved });
   render();
 };
-for (const id of ['bg1', 'bg2', 'ring', 'ring-colour']) $(id).oninput = render;
+for (const id of ['bg1', 'bg2', 'ring', 'ring-color']) $(id).oninput = render;
 for (const r of document.querySelectorAll('input[name=shape]')) r.onchange = async () => {
   if (!r.checked) return;
   if (r.value === 'cutout' && !state.person && !(await findPerson({ reframe: false }))) {
@@ -497,7 +497,7 @@ $('download').onclick = async () => {
   g.drawImage(view.canvas, 0, 0);
   if ($('ring').checked) {
     const w = SIZE * 0.035;
-    g.strokeStyle = $('ring-colour').value;
+    g.strokeStyle = $('ring-color').value;
     g.lineWidth = w;
     if (circle) { g.beginPath(); g.arc(SIZE / 2, SIZE / 2, SIZE / 2 - w / 2, 0, Math.PI * 2); g.stroke(); }
     else g.strokeRect(w / 2, w / 2, SIZE - w, SIZE - w);

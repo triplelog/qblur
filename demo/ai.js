@@ -4,7 +4,7 @@
  * Apache-2.0, demo/models/NOTICE):
  *
  *   rfdetr-small   RF-DETR-Seg Small: every object of 80 common kinds (people, cars, dogs, cups…),
- *                  labelled and outlined, in one pass; click one to take it
+ *                  labeled and outlined, in one pass; click one to take it
  *   rfdetr-nano    the same, smaller input: faster, a little less sure, finer things missed
  *   mobilesam      MobileSAM (Segment Anything): no list — click anything and it is outlined
  *   magictouch     MediaPipe's MagicTouch: click anything (small)
@@ -20,14 +20,14 @@
  *   await ai.embed(otherFrame);                                         // look at another picture (a frame of a video)
  *   const mask = await ai.mask({ points: [[x, y]], labels: [1], box }); // Uint8Array, 1 inside, at the picture's size
  *
- * mask(): points labelled 1 are in the object, 0 are not; a box says
+ * mask(): points labeled 1 are in the object, 0 are not; a box says
  * roughly where it is (the tracker's "fix red frames" uses that).
  */
 import { loadDetector } from './rfdetr.js';
 import { loadSam } from './sam.js';
 
 export const AI_MODELS = {
-    'rfdetr-small': { name: 'RF-DETR Small', kind: 'objects', about: 'finds 80 kinds of thing, labelled — 41 MB', files: ['models/rfdetr-seg-small.onnx'], size: 576 },
+    'rfdetr-small': { name: 'RF-DETR Small', kind: 'objects', about: 'finds 80 kinds of thing, labeled — 41 MB', files: ['models/rfdetr-seg-small.onnx'], size: 576 },
     'rfdetr-nano': { name: 'RF-DETR Nano', kind: 'objects', about: 'the same, faster, less detail — 37 MB', files: ['models/rfdetr-seg-nano.onnx'], size: 312 },
     mobilesam: { name: 'MobileSAM', kind: 'anything', about: 'click anything — 19 MB', files: ['models/mobilesam-encoder.onnx', 'models/mobilesam-decoder.onnx'] },
     magictouch: { name: 'MagicTouch', kind: 'anything', about: 'click anything, small — 6 MB', files: ['models/magic_touch.tflite'] },
@@ -99,7 +99,7 @@ export function setupAI({ source, onProgress = () => {}, model = DEFAULT_MODEL, 
         return kept;
     }
 
-    /** Each backend: look(canvas) once per picture, objects() (labelled, if it finds any), mask(prompt). */
+    /** Each backend: look(canvas) once per picture, objects() (labeled, if it finds any), mask(prompt). */
     const makers = {
         async objects(spec, what) {
             const ort = await onnx();
@@ -126,7 +126,7 @@ export function setupAI({ source, onProgress = () => {}, model = DEFAULT_MODEL, 
                         .sort((a, b) => a.area - b.area)[0];                      // the smallest object there: a cup on a table, not the table
                     points.forEach((p, k) => { if (labels[k] === 1) { const o = under(p); if (o) add(o, true); } });
                     points.forEach((p, k) => { if (labels[k] === 0) { const o = under(p); if (o) add(o, false); } });
-                    if (!result.some(Boolean) && points.some((_, k) => labels[k] === 1)) throw new Error('Nothing this model knows is there — try a click-anything model (MobileSAM, MagicTouch), or "trace the edge" or "fill a colour".');
+                    if (!result.some(Boolean) && points.some((_, k) => labels[k] === 1)) throw new Error('Nothing this model knows is there — try a click-anything model (MobileSAM, MagicTouch), or "trace the edge" or "fill a color".');
                     return result;
                 },
             };

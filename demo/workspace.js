@@ -2,7 +2,7 @@
  * The editor's workspace (demo/editor.html): the stage — the original and the result, as large as the
  * window allows — beside the controls, which are tabs. DOM only; app.js owns the pictures themselves.
  *
- *   const workspace = setupWorkspace({ $, toolActive, onPreviewSize, sharp });
+ *   const workspace = setupWorkspace({ $, toolActive, onPreviewSize, sharp, tabs });   // tabs: false on the filters page (Filter only)
  *   workspace.layout();              // after the pictures change size (app.js's fit())
  *   workspace.showOriginal();        // a tool that draws on the original needs it on screen
  *   workspace.showResult();          // …and cropping needs the result
@@ -19,7 +19,7 @@ const TABS = ['filter', 'tools', 'export'];
 const GAP = 16;          // between the two pictures (.frames' gap)
 const MAX_ZOOM = 3;      // a small picture is enlarged at most this much
 
-export function setupWorkspace({ $, toolActive = () => false, onPreviewSize = () => {}, sharp = true }) {
+export function setupWorkspace({ $, toolActive = () => false, onPreviewSize = () => {}, sharp = true, tabs = true }) {
     const body = document.body, stage = $('stage'), frames = $('frames');
     const kept = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
     const keep = (key, value) => { try { localStorage.setItem(key, value); } catch { /* private mode */ } };
@@ -129,6 +129,7 @@ export function setupWorkspace({ $, toolActive = () => false, onPreviewSize = ()
     size.addEventListener('change', () => { keep('qblur-preview', size.value); onPreviewSize(); });
 
     setView(view, false);
-    showTab(kept('qblur-tab'), false);
+    // the filters page has the Filter tab alone: the editor's saved tab isn't opened there (it would bring the original back)
+    showTab(tabs ? kept('qblur-tab') : 'filter', false);
     return { layout, setView, showOriginal, showResult, showTab, expand, get view() { return view; }, get tab() { return tab; }, get expanded() { return expanded(); } };
 }

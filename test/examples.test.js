@@ -21,11 +21,11 @@ suite('the examples', () => {
         const presets = [...home.matchAll(/^    \['([^']+)', '([^']+)'\],$/gm)].map((m) => m[2]);
         if (presets.length < 5) throw new Error(`found ${presets.length} presets in demo/home.js`);
         const page = await readFile(new URL('../demo/index.html', import.meta.url), 'utf8');
-        const first = /<textarea id="maths"[^>]*>([^<]*)<\/textarea>/.exec(page)[1];
+        const first = /<textarea id="math"[^>]*>([^<]*)<\/textarea>/.exec(page)[1];
         eq(first, presets[0]);                            // the page opens on the first one
-        for (const maths of presets) {
-            compileFilter(maths);
-            eq(compileFilter(filterFromLink(filterToLink(maths, 'editor.html'))).passes.length, compileFilter(maths).passes.length);
+        for (const math of presets) {
+            compileFilter(math);
+            eq(compileFilter(filterFromLink(filterToLink(math, 'editor.html'))).passes.length, compileFilter(math).passes.length);
         }
     });
     test('ids are unique, and explanations\' code spans close', () => {

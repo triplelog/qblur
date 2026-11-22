@@ -10,7 +10,7 @@ import { createTracker, resample } from './tracker.js';
 import { setupWorkspace, PREVIEW_SIZES } from './workspace.js';
 import { renderMarkdownInto, markdownToHTML, createVariables } from '@mathzetta/inlinemath/markdown';
 import {
-  HOW, definitionOf, inlineDefinition, parseDefinition, numberOf, sliderStep, blocksOf, notesOf, freeName, renameInMaths, bakeStep, trim, toHex, fromHex,
+  HOW, definitionOf, inlineDefinition, parseDefinition, numberOf, sliderStep, blocksOf, notesOf, freeName, renameInMath, bakeStep, trim, toHex, fromHex,
 } from './knobs.js';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 const MZ = { ...core, ...filters };
@@ -24,7 +24,9 @@ const byName = (name) => BUILTIN.find((f) => f.name === name);
 // Saved filters: a list of filters (the format's JSON) in localStorage, under "qblur".
 const STORE = 'qblur';
 const saved = () => { try { const list = JSON.parse(localStorage.getItem(STORE)); return Array.isArray(list) ? list : []; } catch { return []; } };
-const store = (list) => localStorage.setItem(STORE, JSON.stringify(list));
+const store = (list) => localStorage.setItem(STORE, JSON.stringify(list));       // throws when storage is blocked or full: callers say so
+/** localStorage.getItem, or null where storage is blocked (a SecurityError in some private modes). */
+const storedItem = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
 
 // ---- state -----------------------------------------------------------------
 let chain = { format: MZ.FILTER_FORMAT, steps: [] };
@@ -39,7 +41,7 @@ const base = () => location.href.split('#')[0];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const GUIDE = $('guide-link').getAttribute('href');   // ../docs/filters.md here, guide.html on the site
 // Two pages run this: editor.html uses filters (the picture large: knobs, choosing a filter, selecting and drawing,
-// downloads) and filters.html writes them (maths, knobs and notes, saving, importing; made from editor.html by
+// downloads) and filters.html writes them (math, knobs and notes, saving, importing; made from editor.html by
 // tools/filters-page.mjs). The markup is the same; the page's CSS shows each its parts (.use-only, .write-only).
 const WRITE = document.body.dataset.mode === 'write';
 const PAGE_URL = { editor: new URL('editor.html', location.href).href.split('?')[0], filters: new URL('filters.html', location.href).href.split('?')[0] };
@@ -80,7 +82,7 @@ function showHelp(id) {
   section.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-/** The error, plus — when it is one we recognise — what to do and where to read. */
+/** The error, plus — when it is one we recognize — what to do and where to read. */
 function showError(message) {
   const box = $('error');
   box.textContent = '';
@@ -133,7 +135,7 @@ function recompile() {
   showError('');
   try {
     compiled = MZ.compileFilter(chain.steps.length ? chain : 'rgb', { version: WEBGL2 ? 300 : 100 });
-    // A colour space between passes wants more than 8 bits (Lab's dark corners lose ~20/255 in bytes): half floats where the GPU has them.
+    // A color space between passes wants more than 8 bits (Lab's dark corners lose ~20/255 in bytes): half floats where the GPU has them.
     const precision = QUERY.get('precision') || (compiled.passes.some((p) => p.space && p.space !== 'srgb') ? 'half' : 'byte');
     const made = MZ.createRunner(compiled, { gl, prefer: QUERY.get('engine') || $('engine').value, precision });
     runner = made.runner.setImage($('source'));
@@ -184,7 +186,7 @@ function draw() {
 }
 $('engine').addEventListener('change', recompile);
 
-function rebuild() { recompile(); renderSteps(); renderPictures(); updateShare(); }
+function rebuild() { retargetBrush(); recompile(); renderSteps(); renderPictures(); updateShare(); }
 
 // ---- other pictures: masks and overlays ------------------------------------
 const slots = new Map();   // image name → { canvas, kind, file }
@@ -258,7 +260,8 @@ function renderPictures() {
       if (!file.files[0]) return;
       const img = new Image();
       img.src = URL.createObjectURL(file.files[0]);
-      await img.decode();
+      try { await img.decode(); } catch { showError(`Could not open "${file.files[0].name}": it is not a picture this browser can read`); return; }
+      finally { URL.revokeObjectURL(img.src); }          // decoded: the picture no longer needs its address
       slot.file = img; paintSlot(slot); bindPictures(); draw(); renderPictures();
     };
     info.append(pick, ' ', file);
@@ -305,9 +308,9 @@ function setLive(stepIndex, name, value) {
   updateShareSoon();
 }
 
-// Each step is a filter that folds away: its name, its maths, and its page — the knobs, each a line
+// Each step is a filter that folds away: its name, its math, and its page — the knobs, each a line
 // written as an Inline Math variable (`cutoff := [[0..1 step 0.01 = 0.5]]`) and drawn by Inline Math
-// as its input, and notes in Markdown, whose maths sees the knobs ({{cutoff}} is the value now).
+// as its input, and notes in Markdown, whose math sees the knobs ({{cutoff}} is the value now).
 const folded = new WeakSet();            // steps the user folded away
 const editing = new WeakSet();           // steps showing their editing parts: name and author, each knob's line, the add buttons
 let openNote = null;                     // { step, k }: a text just added, opened for writing
@@ -381,10 +384,10 @@ function stepItem(step, i) {
     who.append(input);
   }
   body.append(who);
-  if (!f.steps && typeof f.color === 'string') {                       // a filter's maths stays editable, and so does its colour space
-    // the maths wraps and grows with what is written (Enter applies it; shift+Enter is a new line)
+  if (!f.steps && typeof f.color === 'string') {                       // a filter's math stays editable, and so does its color space
+    // the math wraps and grows with what is written (Enter applies it; shift+Enter is a new line)
     const input = Object.assign(document.createElement('textarea'), { className: 'expr', value: f.color, spellcheck: false, rows: 1 });
-    input.setAttribute('aria-label', 'the maths');
+    input.setAttribute('aria-label', 'the math');
     const fit = () => { input.style.height = 'auto'; input.style.height = `${input.scrollHeight + 2}px`; };
     input.addEventListener('input', fit);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); input.dispatchEvent(new Event('change')); } });
@@ -510,7 +513,7 @@ function stepPage(step, i) {
   add.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: 'add' }));
   if (own) {
     const knobs = [['slider', { default: 0.5, min: 0, max: 1, step: 0.01 }], ['box', { default: 1, input: 'box' }],
-      ['menu', { options: [1, 2, 4] }], ['colour', { type: 'color', default: [1, 0.5, 0] }]];
+      ['menu', { options: [1, 2, 4] }], ['color', { type: 'color', default: [1, 0.5, 0] }]];
     for (const [label, spec] of knobs) {
       const b = button(`+ ${label}`, () => addKnob(step, spec));
       b.title = `a new knob: ${definitionOf('k', MZ.normalizeFilter({ params: { k: spec }, color: 'k' }).params.k)}`;
@@ -518,13 +521,13 @@ function stepPage(step, i) {
     }
   }
   const text = button('+ text', () => {
-    const next = [...blocks, 'Write about it here: *Markdown*, with maths such as $x^2$' + (Object.keys(params).some(inlineName) ? ", and a knob's value: $" + '{{' + Object.keys(params).find(inlineName) + '}}$' : '') + '.'];
+    const next = [...blocks, 'Write about it here: *Markdown*, with math such as $x^2$' + (Object.keys(params).some(inlineName) ? ", and a knob's value: $" + '{{' + Object.keys(params).find(inlineName) + '}}$' : '') + '.'];
     setBlocks(next);
     openNote = { step, k: next.length - 1 };
     rebuild();
     updateShareSoon();
   });
-  text.title = 'a note in Markdown, with maths drawn by Inline Math';
+  text.title = 'a note in Markdown, with math drawn by Inline Math';
   add.append(text);
   box.append(add);
   return box;
@@ -563,7 +566,7 @@ function noteBlock(step, text, k, blocks, setBlocks, store, tools, draws) {
   return row;
 }
 
-/** A knob's line changed: the knob is defined again (renamed in the maths too); the problem, if there is one. */
+/** A knob's line changed: the knob is defined again (renamed in the math too); the problem, if there is one. */
 function setKnob(step, old, text) {
   const f = step.filter;
   let parsed;
@@ -573,7 +576,7 @@ function setKnob(step, old, text) {
   const params = Object.fromEntries(Object.entries(f.params).map(([k, v]) => (k === old ? [name, spec] : [k, v])));
   const next = { ...f, params };
   if (f.notes) next.notes = f.notes.map((b) => (typeof b === 'object' && b.param === old ? { param: name } : b));
-  if (name !== old) next.color = renameInMaths(f.color, old, name);
+  if (name !== old) next.color = renameInMath(f.color, old, name);
   try { step.filter = MZ.normalizeFilter(next); } catch (e) { return e.message; }
   delete step.with[old];                                            // the line says where it starts now
   rebuild();
@@ -589,7 +592,7 @@ function addKnob(step, spec) {
   step.filter = MZ.normalizeFilter(next);
   rebuild();
   updateShareSoon();
-  toast(`${name} is a new knob: use it in the maths, e.g. ${spec.type === 'color' ? `mix(rgb, ${name}, 0.5)` : `rgb * ${name}`}`);
+  toast(`${name} is a new knob: use it in the math, e.g. ${spec.type === 'color' ? `mix(rgb, ${name}, 0.5)` : `rgb * ${name}`}`);
 }
 
 // Opacity is a uniform, so unless the chain's shape changes (a chain step crossing 1 → less
@@ -650,6 +653,12 @@ function shareable() {
 
 function updateShare() {
   const def = chain.steps.length ? shareable() : null;
+  $('copy-fallback').hidden = true;                // copied by hand, for a filter that has changed since
+  // nothing to share without a step: the buttons say so (and their handlers check too)
+  for (const id of ['copy-link', 'copy-json', 'quick-link']) {
+    $(id).disabled = !def;
+    if (!def) $(id).title = NOTHING_TO_SHARE; else if ($(id).dataset.title) $(id).title = $(id).dataset.title;
+  }
   // the other page, with this filter
   $('to-editor').href = def ? MZ.filterToLink(def, PAGE_URL.editor) : PAGE_URL.editor;
   for (const a of document.querySelectorAll('.to-filters')) a.href = def ? MZ.filterToLink(def, PAGE_URL.filters) : PAGE_URL.filters;
@@ -663,9 +672,28 @@ function updateShareSoon() { clearTimeout(shareTimer); shareTimer = setTimeout(u
 // a confirmation is a toast (shioh.js); the message line keeps what needs the user's hand
 const toast = (text) => (window.ssToast ? window.ssToast(text) : ($('share-msg').textContent = text, setTimeout(() => { $('share-msg').textContent = ''; }, 2500)));
 const ask = (message, opts) => (window.ssConfirm ? window.ssConfirm(message, opts) : Promise.resolve(confirm(message)));
+const NOTHING_TO_SHARE = 'Add a step first: there is no filter to share yet';
+for (const id of ['copy-link', 'copy-json', 'quick-link']) $(id).dataset.title = $(id).title;
+/** Copy to the clipboard; where that is refused, the text goes in a box under the Filter tab's buttons, selected, to copy by hand
+ *  (on both pages: the JSON's own box is the filters page's alone). */
 async function copy(text, message = 'Copied') {
-  try { await navigator.clipboard.writeText(text); $('share-msg').textContent = ''; toast(message); }
-  catch { $('share-section').open = true; $('json').value = text; $('json').select(); $('share-msg').textContent = 'Select and copy the text below'; }
+  const box = $('copy-fallback');
+  try { await navigator.clipboard.writeText(text); box.hidden = true; $('share-msg').textContent = ''; toast(message); }
+  catch {
+    workspace?.showTab('filter');
+    box.value = text;
+    box.hidden = false;
+    $('share-msg').textContent = 'Copying was not allowed here: select the text below and copy it';
+    box.focus();
+    box.select();
+  }
+}
+/** The filter to share, or null (and a message) when there are no steps. */
+function shareableOrSay() {
+  if (chain.steps.length) return shareable();
+  workspace?.showTab('filter');
+  $('share-msg').textContent = NOTHING_TO_SHARE;
+  return null;
 }
 
 function loadChain(def) {
@@ -733,7 +761,7 @@ function renderSaved() {
         if (!(await ask(`Delete "${def.name}" from this browser?`, { title: 'Delete a saved filter', ok: 'Delete' }))) return;
         const now = saved();
         now.splice(index, 1);
-        store(now);
+        try { store(now); } catch (e) { $('share-msg').textContent = `Could not delete: ${e.message}`; return; }
         renderSaved();
       }),
     ]));
@@ -744,12 +772,14 @@ function renderSaved() {
 function showForkNote(def) {
   const box = $('fork-note');
   const whose = def.name ? `“${def.name}”${def.author ? ` by ${def.author}` : ''}` : 'This filter';
-  box.textContent = `${whose} came from a link. It is yours to change: edit any step, then Save to keep your version here, or Copy link to share it.`;
+  box.textContent = WRITE
+    ? `${whose} came from a link. It is yours to change: edit any step, then Save to keep your version in this browser, or Copy link to share it.`
+    : `${whose} came from a link. Tune its knobs, then Download the result or Copy link to share it; to change its math or save it, use "Edit this filter".`;
   box.hidden = false;
 }
 
 // The library: a group per fold, a line per filter, narrowed by the search box (name, description,
-// group, or the maths itself). A search opens every group with something in it.
+// group, or the math itself). A search opens every group with something in it.
 const openGroups = new Set();
 function renderLibrary() {
   const box = $('library');
@@ -792,9 +822,9 @@ $('add-expr').onclick = () => {
   $('steps').lastElementChild?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 };
 $('expr').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('add-expr').onclick(); });
-$('copy-link').onclick = () => copy(MZ.filterToLink(shareable(), base()), 'Link copied — whoever opens it can change it and keep their own');
-$('copy-json').onclick = () => copy(MZ.filterToJSON(shareable()), 'JSON copied');
-$('save').onclick = () => { if (chain.steps.length) saveFilter(shareable(), $('name')); };
+$('copy-link').onclick = () => { const def = shareableOrSay(); if (def) copy(MZ.filterToLink(def, base()), 'Link copied — whoever opens it can change it and keep their own'); };
+$('copy-json').onclick = () => { const def = shareableOrSay(); if (def) copy(MZ.filterToJSON(def), 'JSON copied'); };
+$('save').onclick = () => { const def = shareableOrSay(); if (def) saveFilter(def, $('name')); };
 for (const id of ['name', 'author']) $(id).addEventListener('input', updateShareSoon);
 $('do-import').onclick = () => {
   try {
@@ -873,22 +903,27 @@ function playGif(gif, from = 0) {
   const frame = document.createElement('canvas');
   frame.width = gif.width;
   frame.height = gif.height;
-  const ctx = frame.getContext('2d');
+  if (media?.gif !== gif) keepUrl();              // (the same GIF again: saving one, resuming it)
   media = { kind: 'gif', source: frame, width: gif.width, height: gif.height, gif, index: from };
   fit(gif.width, gif.height);
   $('credit').textContent = `GIF: ${gif.frames.length} frames`;
-  const step = () => {
-    if (media.gif !== gif) return;
-    ctx.putImageData(new ImageData(gif.frames[media.index].data, gif.width, gif.height), 0, 0);
-    showPicture();
-    syncT(media.index);
-    gifTimer = setTimeout(() => { media.index = (media.index + 1) % gif.frames.length; step(); }, gif.frames[media.index].delay);
-  };
-  step();
+  gifStep();
+}
+/** Show the GIF's frame media.index; while playing (#play), the next one after its delay. */
+function gifStep() {
+  clearTimeout(gifTimer);
+  gifTimer = null;
+  const { gif } = media;
+  media.source.getContext('2d').putImageData(new ImageData(gif.frames[media.index].data, gif.width, gif.height), 0, 0);
+  showPicture();
+  syncT(media.index);
+  if (!$('play').checked) return;
+  gifTimer = setTimeout(() => { if (media.gif !== gif) return; media.index = (media.index + 1) % gif.frames.length; gifStep(); }, gif.frames[media.index].delay);
 }
 
 function testPicture() {
   stopVideo();
+  keepUrl();
   media = { kind: 'test', source: null, width: 320, height: 240 };
   fit(320, 240);
   showPicture();
@@ -913,11 +948,19 @@ async function loadPhotos() {
   if (wanted !== 'test') await showPhoto(Math.min(photos.length - 1, Math.max(0, Number(wanted) || 0)));
 }
 
-/** A video plays muted and looped; t counts its frames. */
+// The object URL of the picture or video on screen (a file, or a listed video held in memory): revoked once
+// another picture has taken its place (a video's must live while it plays, and tracking reads it again).
+let mediaUrl = null;
+function keepUrl(url = null) {
+  if (mediaUrl && mediaUrl !== url) URL.revokeObjectURL(mediaUrl);
+  mediaUrl = url;
+}
+
+/** A video plays muted and looped (unless paused with #play-toggle); t counts its frames. */
 async function playVideo(url) {
-  stopVideo();
   const v = Object.assign(document.createElement('video'), { src: url, muted: true, loop: true, playsInline: true, crossOrigin: 'anonymous' });
   await new Promise((resolve, reject) => { v.onloadedmetadata = resolve; v.onerror = () => reject(new Error(`Could not play ${url}`)); });
+  stopVideo();                                   // (only now: a video that can't be played leaves the picture there was)
   video = v;
   media = { kind: 'video', source: v, width: v.videoWidth, height: v.videoHeight };
   fit(v.videoWidth, v.videoHeight);
@@ -929,6 +972,7 @@ async function playVideo(url) {
     if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame); else requestAnimationFrame(onFrame);
   };
   await v.play();
+  if (!$('play').checked) v.pause();             // paused: its first frame stays on screen
   onFrame();
 }
 
@@ -939,7 +983,9 @@ async function showPhoto(index) {
     try {
       const response = await fetch(`photos/${photo.file}`);
       if (!response.ok) throw new Error(`Could not load photos/${photo.file}`);
-      await playVideo(URL.createObjectURL(await response.blob()));
+      const url = URL.createObjectURL(await response.blob());
+      try { await playVideo(url); } catch (e) { URL.revokeObjectURL(url); throw e; }
+      keepUrl(url);
     } catch (e) { showError(e.message); return; }
     $('file').value = '';
     $('photo').value = String(index);
@@ -950,6 +996,7 @@ async function showPhoto(index) {
   img.src = `photos/${photo.file}`;
   try { await img.decode(); } catch { showError(`Could not load photos/${photo.file}`); return; }
   stopVideo();
+  keepUrl();
   $('file').value = '';
   media = { kind: 'image', source: img, width: img.naturalWidth, height: img.naturalHeight };
   fit(img.naturalWidth, img.naturalHeight);
@@ -973,24 +1020,42 @@ $('test-picture').onclick = testPicture;
 $('file').onchange = async () => {
   const file = $('file').files[0];
   if (!file) return;
-  stopVideo();
   if (file.type === 'image/gif' || /\.gif$/i.test(file.name)) {
     try { playGif(decodeGif(await file.arrayBuffer())); } catch (e) { showError(`Could not read the GIF: ${e.message}`); }
     return;
   }
+  // what was on screen stays until the new file has loaded; a file that can't be read says so
   const url = URL.createObjectURL(file);
+  const failed = (what) => { URL.revokeObjectURL(url); $('file').value = ''; showError(`Could not open "${file.name}": ${what}`); };
   if (file.type.startsWith('video/')) {
-    await playVideo(url);
+    try { await playVideo(url); } catch { failed('this browser cannot play it (try an MP4 or WebM)'); return; }
+    keepUrl(url);
   } else {
     const img = new Image();
     img.src = url;
-    await img.decode();
+    try { await img.decode(); } catch { failed('it is not a picture this browser can read'); return; }
+    stopVideo();
+    keepUrl(url);
     media = { kind: 'image', source: img, width: img.naturalWidth, height: img.naturalHeight };
     fit(img.naturalWidth, img.naturalHeight);
     showPicture();
     $('credit').textContent = '';
   }
 };
+
+/** The play / pause buttons (under the pictures, and the tracking panel's) say what pressing them does. */
+function playLabel() {
+  const on = $('play').checked;
+  $('play-toggle').textContent = on ? '❚❚' : '▶';
+  $('play-toggle').setAttribute('aria-label', on ? 'pause' : 'play');
+  $('track-play').textContent = on ? '❚❚ pause' : '▶ play';
+}
+/** Play or pause what moves: t, and a video or GIF (a clip pauses on a whole frame, as tracking needs). */
+function setPlaying(on) {
+  if (media.kind === 'gif' || media.kind === 'video') { if (on) resumeClip(); else pauseAt(currentFrame()).catch((e) => showError(e.message)); return; }
+  $('play').checked = on;
+  playLabel();
+}
 
 function syncT(value) {
   currentT = value;
@@ -1082,8 +1147,8 @@ function setGraphic(i, name, base, changes) {
   const before = graphicNow(i, name, base);
   step.with[name] = next;
   if (spec.shadows.length !== before.shadows.length) {
-    // More or fewer shadow layers: new pictures, so the shaders change. Maths still laying the graphic on
-    // the default way is kept in step with them; maths of one's own is left alone (the panel says what to add).
+    // More or fewer shadow layers: new pictures, so the shaders change. Math still laying the graphic on
+    // the default way is kept in step with them; math of one's own is left alone (the panel says what to add).
     const f = step.filter;
     if (typeof f.color === 'string' && f.color.replace(/\s+/g, '') === MZ.layeredExpression(name, before).replace(/\s+/g, '')) f.color = MZ.layeredExpression(name, spec);
     rebuild();
@@ -1145,19 +1210,19 @@ function graphicControls(i, name, base) {
   box.append(knob('y', g.y, -0.2, 1.2, 0.002, (v) => set({ y: v })));
   box.append(knob('angle', g.angle, -3.14, 3.14, 0.01, (v) => set({ angle: v })));
   const looks = row();
-  const colour = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.color) });
-  colour.oninput = () => set({ color: colour.value });
+  const color = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.color) });
+  color.oninput = () => set({ color: color.value });
   const shadowOn = Object.assign(document.createElement('input'), { type: 'checkbox', checked: Boolean(g.shadow) });
-  const shadowColour = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.shadow?.color ?? '#000000') });
-  const shadow = () => (shadowOn.checked ? { ...(g.shadow ?? { blur: 0.15, dx: 0.04, dy: 0.06 }), color: hexAlpha(shadowColour.value, 0.7) } : null);
+  const shadowColor = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.shadow?.color ?? '#000000') });
+  const shadow = () => (shadowOn.checked ? { ...(g.shadow ?? { blur: 0.15, dx: 0.04, dy: 0.06 }), color: hexAlpha(shadowColor.value, 0.7) } : null);
   shadowOn.onchange = () => set({ shadow: shadow() });
-  shadowColour.oninput = () => { shadowOn.checked = true; set({ shadow: shadow() }); };
+  shadowColor.oninput = () => { shadowOn.checked = true; set({ shadow: shadow() }); };
   const outlineOn = Object.assign(document.createElement('input'), { type: 'checkbox', checked: Boolean(g.outline) });
-  const outlineColour = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.outline?.color ?? '#000000') });
-  const outline = () => (outlineOn.checked ? { width: g.outline?.width ?? 0.06, color: outlineColour.value } : null);
+  const outlineColor = Object.assign(document.createElement('input'), { type: 'color', value: cssToHex(g.outline?.color ?? '#000000') });
+  const outline = () => (outlineOn.checked ? { width: g.outline?.width ?? 0.06, color: outlineColor.value } : null);
   outlineOn.onchange = () => set({ outline: outline() });
-  outlineColour.oninput = () => { outlineOn.checked = true; set({ outline: outline() }); };
-  looks.append('colour', colour, outlineOn, 'outline', outlineColour, shadowOn, 'shadow, drawn in', shadowColour);
+  outlineColor.oninput = () => { outlineOn.checked = true; set({ outline: outline() }); };
+  looks.append('color', color, outlineOn, 'outline', outlineColor, shadowOn, 'shadow, drawn in', shadowColor);
   box.append(looks);
   if (g.shadow) box.append(knob('shadow blur', g.shadow.blur, 0, 1, 0.01, (v) => set({ shadow: { ...graphicNow(i, name, base).shadow, blur: v } })));
   box.append(shadowLayerControls(i, name, base, g, set));
@@ -1166,7 +1231,7 @@ function graphicControls(i, name, base) {
 
 /**
  * Shadow layers: each a picture of its own (title_shadow1, title_shadow2… back to front),
- * so the maths can give each its own filter. The controls set how each is cast.
+ * so the math can give each its own filter. The controls set how each is cast.
  */
 function shadowLayerControls(i, name, base, g, set) {
   const box = document.createElement('div');
@@ -1176,7 +1241,7 @@ function shadowLayerControls(i, name, base, g, set) {
   head.append(Object.assign(document.createElement('b'), { textContent: 'shadow layers' }), add);
   box.append(head);
   const names = MZ.shadowLayerNames(name, g);
-  const maths = String(chain.steps[i].filter.color ?? '');
+  const math = String(chain.steps[i].filter.color ?? '');
   g.shadows.forEach((layer, k) => {
     const change = (changes) => set({ shadows: g.shadows.map((l, j) => (j === k ? { ...l, ...changes } : l)) });
     const line = Object.assign(document.createElement('div'), { className: 'row2' });
@@ -1184,7 +1249,7 @@ function shadowLayerControls(i, name, base, g, set) {
     c.oninput = () => change({ color: hexAlpha(c.value, 0.8) });
     line.append(Object.assign(document.createElement('code'), { textContent: names[k] }), c,
       button('remove', () => set({ shadows: g.shadows.filter((_, j) => j !== k) })));
-    if (!new RegExp(`\\b${names[k]}\\b`).test(maths)) line.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: ` — not in the maths yet: add mix(…, ${names[k]}, alpha(${names[k]}))` }));
+    if (!new RegExp(`\\b${names[k]}\\b`).test(math)) line.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: ` — not in the math yet: add mix(…, ${names[k]}, alpha(${names[k]}))` }));
     box.append(line);
     box.append(knob('blur', layer.blur, 0, 2, 0.01, (v) => change({ blur: v })));
     box.append(knob('across', layer.dx, -1, 1, 0.005, (v) => change({ dx: v })));
@@ -1192,7 +1257,7 @@ function shadowLayerControls(i, name, base, g, set) {
   });
   if (g.shadows.length) {
     box.append(Object.assign(document.createElement('div'), { className: 'hint',
-      textContent: `Each layer is a picture of that shadow alone, back to front, so the maths can treat it on its own — e.g. mix(rgb, gaussian(4), alpha(${names[0]})) blurs the picture under it, mix(rgb, (1, 0.2, 0.6), alpha(${names[0]})) colours it, shift(${names[0]}, 2 sin(t / 9), 0) moves it.` }));
+      textContent: `Each layer is a picture of that shadow alone, back to front, so the math can treat it on its own — e.g. mix(rgb, gaussian(4), alpha(${names[0]})) blurs the picture under it, mix(rgb, (1, 0.2, 0.6), alpha(${names[0]})) colors it, shift(${names[0]}, 2 sin(t / 9), 0) moves it.` }));
   }
   return box;
 }
@@ -1253,7 +1318,7 @@ function fontControls(g, set) {
   return box;
 }
 
-/** CSS colour → #rrggbb for <input type=color> (the browser does the parsing). */
+/** CSS color → #rrggbb for <input type=color> (the browser does the parsing). */
 function cssToHex(css) {
   const c = document.createElement('canvas').getContext('2d');
   c.fillStyle = '#000';
@@ -1265,7 +1330,7 @@ function cssToHex(css) {
 }
 const hexAlpha = (hex, a) => `rgba(${[1, 3, 5].map((k) => parseInt(hex.slice(k, k + 2), 16)).join(',')},${a})`;
 
-/** New text or shapes: a step of their own, whose maths lays them on (and can be edited like any expression). */
+/** New text or shapes: a step of their own, whose math lays them on (and can be edited like any expression). */
 function newName(prefix) {
   const taken = new Set(Object.keys(compiled?.graphics ?? {}));
   for (let n = 1; ; n++) if (!taken.has(`${prefix}${n}`)) return `${prefix}${n}`;
@@ -1292,7 +1357,7 @@ async function loadFontFile(file) {
 }
 $('font-file').onchange = () => loadFontFile($('font-file').files[0]);
 
-// Drag a graphic on the picture to move it: the one whose centre is nearest the pointer.
+// Drag a graphic on the picture to move it: the one whose center is nearest the pointer.
 {
   let moving = null;
   const frac = (e) => { const r = $('source').getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
@@ -1356,15 +1421,28 @@ async function showExample(example) {
   const steps = document.createElement('ol');
   for (const line of example.how) { const li = document.createElement('li'); li.append(withCode(line)); steps.append(li); }
   box.append(steps);
-  box.append(Object.assign(document.createElement('div'), { className: 'hint', textContent: 'The maths is in the steps below — change any of it and the picture follows. "How to write a filter" lists everything you can use.' }));
+  box.append(Object.assign(document.createElement('div'), { className: 'hint', textContent: WRITE
+    ? 'The math is in the steps above — change any of it and the picture follows. "How to write a filter" lists everything you can use.'
+    : 'The steps above show its knobs; "Edit this filter" opens its math on the filters page, to change any of it.' }));
   await bindGraphics();
 }
 
 // ---- brushes: strokes painted on the picture ----------------------------------
-let brushTarget = null;                  // { i, name } of the brush that paints when the picture is dragged
+// where selecting is: a tab of the editor (the filters page has none)
+const SELECT_WHERE = WRITE ? 'in the editor, its Select & draw tab' : 'the Select & draw tab';
+let brushTarget = null;                  // { i, name, base, step } of the brush that paints when the picture is dragged
 let liveStroke = null;                   // the stroke being drawn: { key, points, t0 }
 let selectionVersion = 0;
 const maskCache = { key: '', mask: null };
+
+/** After steps move, go or are replaced: the drawing brush follows its step, or stops (and the picture stops painting). */
+function retargetBrush() {
+  if (!brushTarget) return;
+  const i = brushTarget.step ? chain.steps.indexOf(brushTarget.step) : -1;
+  if (i >= 0 && MZ.filterGraphics(brushTarget.step.filter)[brushTarget.name]?.type === 'strokes') brushTarget.i = i;
+  else { brushTarget = null; liveStroke = null; }
+  $('input').classList.toggle('painting', Boolean(brushTarget));
+}
 
 /** The selection as a w × h Float32Array 0–1, for brushes that stay inside (or outside) it. */
 function selectionMask(w, h) {
@@ -1396,7 +1474,7 @@ function updateStrokes(w = $('source').width, h = $('source').height, t = brushT
 
 /**
  * The brush strokes drawn as lines over the original, so it is easy to see what has been painted
- * (the result may show little of them yet, or nothing: the paint is maths). Until "hide strokes".
+ * (the result may show little of them yet, or nothing: the paint is math). Until "hide strokes".
  */
 let showStrokes = true;
 function drawStrokeOverlay() {
@@ -1430,12 +1508,12 @@ function drawStrokeOverlay() {
   });
 }
 
-/** What each brush effect does: the step's maths (and any knob it needs). */
+/** What each brush effect does: the step's math (and any knob it needs). */
 const BRUSH_EFFECTS = {
-  'ink': { label: 'ink in a colour', color: (n) => `mix(rgb, ink, alpha(${n}))`, params: { ink: { type: 'color', default: [0.95, 0.2, 0.25] } } },
+  'ink': { label: 'ink in a color', color: (n) => `mix(rgb, ink, alpha(${n}))`, params: { ink: { type: 'color', default: [0.95, 0.2, 0.25] } } },
   'blur': { label: 'blur, stronger each pass', color: (n) => `mix(rgb, gaussian(2 + 3 min(4 green(${n}), 3)), alpha(${n}))` },
   'darken': { label: 'darken, building up', color: (n) => `rgb (1 - 0.22 min(4 green(${n}), 4) alpha(${n}))` },
-  'reveal': { label: 'reveal the colour (picture starts grey)', color: (n) => `mix((gray, gray, gray), rgb, alpha(${n}))` },
+  'reveal': { label: 'reveal the color (picture starts gray)', color: (n) => `mix((gray, gray, gray), rgb, alpha(${n}))` },
   'fuse': { label: 'glow, then cool to charcoal', color: (n) => `mix(rgb, mix((1, 0.9, 0.5), (0.1, 0.07, 0.06), red(${n})), alpha(${n})) + (1, 0.5, 0.1) alpha(${n}) max(0, 1 - 3 red(${n})) 0.6` },
   'rainbow': { label: 'rainbow along the drawing', color: (n) => `mix(rgb, fromhsv(blue(${n}), 0.85, 1), alpha(${n}))` },
   'invert': { label: 'invert', color: (n) => `mix(rgb, 1 - rgb, alpha(${n}))` },
@@ -1449,25 +1527,25 @@ function brushControls(i, name, base, g, set, box) {
   const drawing = brushTarget && brushTarget.i === i && brushTarget.name === name;
 
   const actions = row();
-  const drawButton = button(drawing ? 'drawing — click to stop' : 'draw', () => { brushTarget = drawing ? null : { i, name, base }; $('input').classList.toggle('painting', Boolean(brushTarget)); renderSteps(); draw(); });
+  const drawButton = button(drawing ? 'drawing — click to stop' : 'draw', () => { brushTarget = drawing ? null : { i, name, base, step }; $('input').classList.toggle('painting', Boolean(brushTarget)); renderSteps(); draw(); });
   if (drawing) drawButton.classList.add('brush-on');
   actions.append(drawButton,
     button('undo stroke', () => { set({ strokes: graphicNow(i, name, base).strokes.slice(0, -1) }); renderSteps(); }),   // the strokes as they are now, not as this panel was drawn
     button('clear', () => { set({ strokes: [] }); renderSteps(); }),
     button('outline the selection', () => { outlineSelection(graphicNow(i, name, base), set); renderSteps(); }),
-    button('replay', () => { brushTarget = null; $('input').classList.remove('painting'); currentT = 0; $('play').checked = true; renderSteps(); }),
+    button('replay', () => { brushTarget = null; $('input').classList.remove('painting'); currentT = 0; setPlaying(true); renderSteps(); }),
     button(showStrokes ? 'hide strokes' : 'show strokes', () => { showStrokes = !showStrokes; renderSteps(); draw(); }));
   box.append(actions);
   box.append(Object.assign(document.createElement('div'), { className: 'brush-info',
     textContent: g.strokes.length
       ? `${g.strokes.length} stroke${g.strokes.length > 1 ? 's' : ''} · drawn over ${Math.round(timeline.total)} frames (${(timeline.total / MZ.FPS).toFixed(1)} s)${drawing ? ' · shown finished while drawing' : ''}`
-      : 'Click "draw", then paint on the picture (top left). A pen or touch screen gives pressure.' }));
+      : 'Click "draw", then paint on the original. A pen or touch screen gives pressure.' }));
 
-  // what the paint does: the step's maths
+  // what the paint does: the step's math
   const effect = row();
   const pick = document.createElement('select');
   const current = Object.entries(BRUSH_EFFECTS).find(([, e]) => String(f.color).replace(/\s+/g, '') === e.color(name).replace(/\s+/g, ''))?.[0];
-  if (!current) pick.append(new Option('your own maths (in the step above)', '', false, true));
+  if (!current) pick.append(new Option('your own math (in the step\'s expression)', '', false, true));
   for (const [key, e] of Object.entries(BRUSH_EFFECTS)) pick.append(new Option(e.label, key, false, key === current));
   pick.onchange = () => {
     const e = BRUSH_EFFECTS[pick.value];
@@ -1518,17 +1596,17 @@ function brushControls(i, name, base, g, set, box) {
   for (const [v, l] of [['none', 'anywhere'], ['inside', 'only inside the selection'], ['outside', 'only outside the selection']]) clip.append(new Option(l, v, false, v === g.clip));
   clip.onchange = () => set({ clip: clip.value });
   where.append(Object.assign(document.createElement('b'), { textContent: 'paint' }), clip);
-  if (g.clip !== 'none' && !selection.hasSelection()) where.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: ' — select something under the picture first' }));
+  if (g.clip !== 'none' && !selection.hasSelection()) where.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: ` — select something first (${SELECT_WHERE})` }));
   box.append(where);
 
   box.append(Object.assign(document.createElement('div'), { className: 'hint',
-    textContent: `In the maths, ${name} is the paint: alpha(${name}) where it is; red(${name}) how long ago it was painted (0 just now, 1 after "age span" frames); green(${name}) × 4 how many strokes went over it; blue(${name}) how far through the drawing it was painted. So the paint can change as it is drawn — and with t, after.` }));
+    textContent: `In the math, ${name} is the paint: alpha(${name}) where it is; red(${name}) how long ago it was painted (0 just now, 1 after "age span" frames); green(${name}) × 4 how many strokes went over it; blue(${name}) how far through the drawing it was painted. So the paint can change as it is drawn — and with t, after.` }));
   return box;
 }
 
 /** The selection's outline (or outlines) as strokes, drawn round at an even pace. */
 function outlineSelection(g, set) {
-  if (!selection.hasSelection()) { showError('Select something first (under the picture: trace the edge, fill a colour, or find objects), then outline it.'); return; }
+  if (!selection.hasSelection()) { showError(`Select something first (${SELECT_WHERE}: trace the edge, fill a color, or find objects), then outline it.`); return; }
   const w = $('source').width, h = $('source').height;
   const loops = MZ.traceContours(selectionMask(w, h), w, h);
   if (!loops.length) { showError('The selection is too small to outline.'); return; }
@@ -1580,7 +1658,7 @@ function outlineSelection(g, set) {
 $('add-brush').onclick = () => {
   const n = newName('brush');
   addStep({ graphics: { [n]: { type: 'strokes', brush: 'round', size: 0.025 } }, params: { ink: [0.95, 0.2, 0.25] }, color: `mix(rgb, ink, alpha(${n}))` });
-  brushTarget = { i: chain.steps.length - 1, name: n, base: MZ.normalizeGraphic(n, { type: 'strokes', brush: 'round', size: 0.025 }) };
+  brushTarget = { i: chain.steps.length - 1, name: n, base: MZ.normalizeGraphic(n, { type: 'strokes', brush: 'round', size: 0.025 }), step: chain.steps.at(-1) };
   $('input').classList.add('painting');
   renderSteps();
 };
@@ -1659,12 +1737,14 @@ async function ensureTrack() {
 async function seekTo(v, k) {
   const target = Math.min(v.duration - 0.001, (k + 0.5) / MZ.FPS);
   await new Promise((resolve) => { v.onseeked = resolve; v.currentTime = target; });
-  if (Math.abs(v.currentTime - target) > 1 / MZ.FPS) throw new Error('This video cannot be stepped through frame by frame here (the server does not allow seeking). Load it with "picture or video" instead.');
+  if (Math.abs(v.currentTime - target) > 1 / MZ.FPS) throw new Error('This video cannot be stepped through frame by frame here (the server does not allow seeking). Load it with "Open a picture…" instead.');
 }
 
 /** Pause the clip on frame k (and show it). */
 async function pauseAt(k) {
   paused = true;
+  $('play').checked = false;
+  playLabel();
   if (media.kind === 'gif') {
     clearTimeout(gifTimer);
     gifTimer = null;
@@ -1678,14 +1758,14 @@ async function pauseAt(k) {
     await seekTo(v, k);
     showPicture();
   }
-  $('track-play').textContent = '▶ play';
   describeFrame();
 }
 function resumeClip() {
   paused = false;
-  if (media.kind === 'gif') playGif(media.gif, media.index);
-  else if (media.kind === 'video') media.source.play();
-  $('track-play').textContent = '❚❚ pause';
+  $('play').checked = true;
+  playLabel();
+  if (media.kind === 'gif') gifStep();
+  else if (media.kind === 'video') media.source.play().catch(() => {});
 }
 
 function drawTimeline() {
@@ -1753,10 +1833,10 @@ function largestLoop(loops) {
   return [...loops].sort((a, b) => size(b) - size(a))[0].slice(0, -1);
 }
 
-$('track-play').onclick = () => (paused ? resumeClip() : pauseAt(currentFrame()));
+$('track-play').onclick = () => setPlaying(!$('play').checked);
 $('track-key').onclick = async () => {
   const loop = selectionOutline();
-  if (!loop) { $('track-msg').textContent = 'Select the object first, under the picture: trace the edge, fill a colour or find objects.'; return; }
+  if (!loop) { $('track-msg').textContent = 'Select the object first, under "Select part of the picture" above: trace the edge, fill a color or find objects.'; return; }
   if (!paused) await pauseAt(currentFrame());
   await ensureTrack();
   await track.tracker.setKeyframe(currentFrame(), loop);
@@ -1826,18 +1906,18 @@ new ResizeObserver(() => drawTimeline()).observe($('track-timeline'));
 
 const exporter = setupExport({ $, renderFrame, media: () => media, download, outputCanvas: outCanvas, noDownload: () => Boolean(window.mzDemoNoDownload), canCrop: () => $('export').open });
 
-// ---- selecting an object: `selected` in the maths ---------------------------
+// ---- selecting an object: `selected` in the math ---------------------------
 const NO_SELECTION = Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
 NO_SELECTION.getContext('2d').fillStyle = '#fff';
 NO_SELECTION.getContext('2d').fillRect(0, 0, 1, 1);
 const selection = setupSelection({ $, source: () => $('source'), overlay: $('overlay'), surface: $('select-surface'), onChange: () => { bindSelection(); showSwatches(); } });
-function showSwatches() {                                      // the wand's colours; click one to drop it
-  const box = $('select-colours');
+function showSwatches() {                                      // the wand's colors; click one to drop it
+  const box = $('select-colors');
   box.textContent = '';
-  selection.state.colours.forEach((c, i) => {
-    const swatch = Object.assign(document.createElement('span'), { className: 'swatch', title: 'click to remove this colour' });
+  selection.state.colors.forEach((c, i) => {
+    const swatch = Object.assign(document.createElement('span'), { className: 'swatch', title: 'click to remove this color' });
     swatch.style.background = `rgb(${c.join(',')})`;
-    swatch.onclick = () => selection.removeColour(i);
+    swatch.onclick = () => selection.removeColor(i);
     box.append(swatch);
   });
 }
@@ -1854,7 +1934,7 @@ function bindSelection(redraw = true) {
 const dev = location.pathname.includes('/demo/');
 // in development every model in demo/models/ can be tried; the built site has only the shipped ones
 const aiOffered = dev ? Object.keys(AI_MODELS) : SHIPPED_MODELS;
-const aiChoice = [new URLSearchParams(location.search).get('ai'), localStorage.getItem('mz-ai-model')].find((k) => aiOffered.includes(k)) ?? DEFAULT_MODEL;
+const aiChoice = [new URLSearchParams(location.search).get('ai'), storedItem('mz-ai-model')].find((k) => aiOffered.includes(k)) ?? DEFAULT_MODEL;
 const ai = setupAI({
   source: () => $('source'), model: aiChoice,
   ortUrl: dev ? '/node_modules/onnxruntime-web/dist/' : 'ort/',
@@ -1876,7 +1956,7 @@ const aiTiming = () => `${ai.spec.name} looked in ${(ai.lookMs / 1000).toFixed(1
 const aiHint = () => (ai.spec.kind === 'objects'
   ? (aiBoxes.length ? `Found ${aiBoxes.map((b) => b.label).join(', ')}. ` : 'Found nothing it knows (people, animals, vehicles, furniture… 80 kinds). ') + 'Click an object to outline it in yellow; shift-click one to take it away; '
   : 'Click anything to outline it in yellow; click again to add to it, shift-click where it went too far; ')
-  + 'Enter or "keep" adds it to the selection. For anything else, use "trace the edge", "fill a colour" or "refine with a brush". Then use "Only inside the selection". ' + aiTiming();
+  + 'Enter or "keep" adds it to the selection. For anything else, use "trace the edge", "fill a color" or "refine with a brush". Then use "Only inside the selection". ' + aiTiming();
 async function aiStart() {
   aiBoxes = [];
   aiPrompt = { points: [], labels: [], box: null };
@@ -1954,8 +2034,8 @@ function selectMode(mode) {
   $('select-contiguous-row').hidden = on !== 'fill';
   $('select-cool-row').hidden = on !== 'trace';
   $('select-msg').textContent = on === 'trace'
-    ? 'Click past the picture\'s edge to run the outline along it. Click a point on the edge of the object, then move along it — the line follows the edge, and the part that stays put behind you is fixed for you (the small blue points). Click where it needs help. Click the first point (or press Enter) to close; drag a point to move it; Backspace removes the last; Esc stops. Then use "Only inside the selection" from the library, or `selected` in your maths.'
-    : on === 'fill' ? 'Click a colour to select everything of that colour that touches it; click more colours to add them to the set (the fill grows through any of them). Untick "connected only" to take that colour anywhere. Click a swatch to drop a colour.'
+    ? 'Click past the picture\'s edge to run the outline along it. Click a point on the edge of the object, then move along it — the line follows the edge, and the part that stays put behind you is fixed for you (the small blue points). Click where it needs help. Click the first point (or press Enter) to close; drag a point to move it; Backspace removes the last; Esc stops. Then use "Only inside the selection" from the library, or `selected` in your math.'
+    : on === 'fill' ? 'Click a color to select everything of that color that touches it; click more colors to add them to the set (the fill grows through any of them). Untick "connected only" to take that color anywhere. Click a swatch to drop a color.'
     : on === 'ai' ? 'Loading…'
     : on === 'refine' ? 'Paint over the picture: "inside" where the selection should reach, "outside" where it should not. When you let go, the edge settles on the picture\'s own edges near the stroke; the rest stays. With nothing selected, inside strokes make a selection.' : '';
 }
@@ -1979,12 +2059,15 @@ async function exportPng() {
 }
 $('record').onclick = () => {
   if (!window.MediaRecorder || !outCanvas().captureStream) { $('export-msg').textContent = 'This browser cannot record a canvas'; return; }
-  const type = ['video/webm;codecs=vp9', 'video/webm', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t));
-  const recorder = new MediaRecorder(outCanvas().captureStream(30), { mimeType: type });
+  const type = ['video/webm;codecs=vp9', 'video/webm', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported?.(t));
+  if (!type) { $('export-msg').textContent = 'This browser cannot record video in WebM or MP4 — try "Save as GIF"'; return; }
+  let recorder;
+  try { recorder = new MediaRecorder(outCanvas().captureStream(30), { mimeType: type }); }
+  catch (e) { $('export-msg').textContent = `This browser cannot record the result: ${e.message}`; return; }
   const chunks = [];
   recorder.ondataavailable = (e) => chunks.push(e.data);
   recorder.onstop = () => { download(new Blob(chunks, { type }), type.includes('mp4') ? 'filter.mp4' : 'filter.webm'); $('export-msg').textContent = 'Saved'; };
-  $('play').checked = true;
+  setPlaying(true);
   recorder.start();
   $('export-msg').textContent = `Recording 5 s at ${outCanvas().width} × ${outCanvas().height}…`;
   setTimeout(() => recorder.stop(), 5000);
@@ -2020,7 +2103,8 @@ async function saveGif() {
   const frames = gif
     ? gif.frames.map((f, i) => ({ t: i, delay: f.delay, index: i }))
     : Array.from({ length: 45 }, (_, i) => ({ t: wasT + i * 4, delay: 67 }));     // 60 t a second on screen, 15 frames a second here
-  $('play').checked = false;
+  $('play').checked = false;                                     // (the clip holds still while its frames are saved)
+  playLabel();
   clearTimeout(gifTimer);
   gifTimer = null;
   const encoder = GIFEncoder();
@@ -2045,7 +2129,8 @@ async function saveGif() {
   } finally {
     currentT = wasT;
     $('play').checked = playing;
-    if (gif) playGif(gif, wasIndex); else draw();
+    playLabel();
+    if (gif) { media.index = wasIndex; gifStep(); } else draw();
   }
 }
 $('gif').onclick = () => saveGif().catch((e) => { $('export-msg').textContent = e.message; });
@@ -2064,10 +2149,11 @@ $('export').addEventListener('toggle', () => document.body.classList.toggle('cro
 workspace = setupWorkspace({
   $,
   sharp: Boolean(gl) && QUERY.get('engine') !== 'cpu',
+  tabs: !WRITE,
   toolActive: () => selection.state.mode !== 'off',
   onPreviewSize() { fit(media.width, media.height); recompile(); showPicture(); },
 });
-// something added to the picture is a step: show it, where its words and colours are
+// something added to the picture is a step: show it, where its words and colors are
 for (const id of ['add-text', 'add-rect', 'add-oval', 'add-brush']) $(id).addEventListener('click', () => { workspace.showTab('filter'); workspace.showOriginal(); $('steps').lastElementChild?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
 for (const id of ['select-panel', 'text-section', 'track-section']) $(id).addEventListener('toggle', () => { if ($(id).open && !$(id).closest('[hidden]')) workspace.showOriginal(); });
 // On a phone the knobs are a screen or two below the result: once the result has scrolled off the top, it floats in a
@@ -2101,24 +2187,21 @@ for (const id of ['select-panel', 'text-section', 'track-section']) $(id).addEve
   for (const type of ['pointerdown', 'pointermove', 'pointerup', 'click']) output.addEventListener(type, back, true);
 }
 $('quick-download').onclick = () => exporter.save();
-$('quick-link').onclick = async () => {
-  try { await navigator.clipboard.writeText(MZ.filterToLink(shareable(), base())); $('export-msg').textContent = ''; toast('Link copied — it carries the filter, not the picture.'); }
-  catch { $('export-msg').textContent = 'Copy the address bar: it carries the filter.'; }
-};
+$('quick-link').onclick = () => { const def = shareableOrSay(); if (def) copy(MZ.filterToLink(def, base()), 'Link copied — it carries the filter, not the picture.'); };
 $('start-over').onclick = async () => {
   if (chain.steps.length && !(await ask('Remove every step? (Save first to keep this filter.)', { title: 'Clear the filter', ok: 'Clear' }))) return;
   chain.steps = [];
   rebuild();
 };
-$('play-toggle').onclick = () => { $('play').checked = !$('play').checked; playLabel(); if (video) (($('play').checked) ? video.play() : video.pause()); };
-const playLabel = () => { $('play-toggle').textContent = $('play').checked ? '❚❚' : '▶'; };
+$('play-toggle').onclick = () => setPlaying(!$('play').checked);
 
 // ---- go --------------------------------------------------------------------
 renderLibrary();
 renderSaved();
 testPicture();
+playLabel();
 // the editor opens on a filter to tune; the filters page on an empty one to write (or a saved one to open)
-const opening = () => (WRITE ? rebuild() : loadChain({ steps: [byName('Colour circle')] }));
+const opening = () => (WRITE ? rebuild() : loadChain({ steps: [byName('Color circle')] }));
 try {
   if (location.hash.length > 1) {
     const shared = MZ.filterFromLink(location.hash);
@@ -2139,7 +2222,7 @@ await loadPhotos();
 window.mzDemo = {
   BUILTIN, loadChain, addStep, draw, slots, gl, exportPng, saveGif, explain, HELP, testPicture, moveStep, rebuild, exporter, selection,
   setGraphic, bindGraphics, showExample, workspace, EXAMPLES, updateStrokes, BRUSH_EFFECTS,
-  setBrushTarget(target) { brushTarget = target; },
+  setBrushTarget(target) { brushTarget = target && { step: chain.steps[target.i], ...target }; $('input').classList.toggle('painting', Boolean(brushTarget)); },
   get track() { return track; }, pauseAt, currentFrame, ensureTrack,
   setT(value) { currentT = value; },
   bindSelection,

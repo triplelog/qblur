@@ -40,7 +40,7 @@ export function mountShell({ page = 'home', base = './', wide = false } = {}) {
     <nav class="ss-nav" id="qb-nav" aria-label="qblur's pages">${nav}</nav>
   </section>
   <footer class="ss-cell ss-p4 qb-footer ss-desktop-only">
-    <p><b>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a></b> — every filter here is maths it reads.</p>
+    <p><b>Made with <a href="${esc(MATHZETTA_URL)}">MathZetta</a></b> — every filter here is math it reads.</p>
     <p class="qb-family">${family.map((s) => `<a href="${esc(s.url)}" title="${esc(s.tagline)}">${esc(s.name)}</a>`).join('')}</p>
     <p class="qb-family"><a href="${esc(base)}privacy.html">Privacy</a><a href="${esc(base)}terms.html">Terms</a></p>
   </footer>

@@ -2,7 +2,7 @@
 /**
  * The small apps (demo/avatar/, splash/, move/, text/) in headless Chrome, each doing its one job:
  * the profile picture shows the sample's ready-made outline without fetching the model, runs the model on marks, saves a 1024 PNG with a blurred background and a cut-out
- * sticker; Colour splash keeps a clicked colour; Make it move saves a GIF; Fancy text draws a
+ * sticker; Color splash keeps a clicked color; Make it move saves a GIF; Fancy text draws a
  * transparent PNG, says which formula box has an error, and saves a GIF when a formula uses t.
  *
  *   node tools/check-apps.mjs [--site]        demo/ (default) or the built site/
@@ -46,7 +46,7 @@ const CASES = {
     splash: `const A = qblurApp, c = A.view.canvas, r = c.getBoundingClientRect();
         const kept = A.state.hues.length;
         A.pick({ clientX: r.left + r.width * 0.55, clientY: r.top + r.height * 0.6 });     // the umbrella
-        return (kept === 1 && A.state.hues.length >= 1 ? 'ok' : 'FAIL') + ' — kept ' + A.state.hues.length + ' colour(s); ' + document.getElementById('status').textContent;`,
+        return (kept === 1 && A.state.hues.length >= 1 ? 'ok' : 'FAIL') + ' — kept ' + A.state.hues.length + ' color(s); ' + document.getElementById('status').textContent;`,
     move: `const A = qblurApp; window.qblurNoDownload = true;
         A.useMotion(A.MOTIONS.find((m) => m.id === 'ripple'));
         document.getElementById('length').value = '2';

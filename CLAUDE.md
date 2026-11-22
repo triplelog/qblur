@@ -1,6 +1,6 @@
 # CLAUDE.md — qblur
 
-Image filters written as maths: the filter document format (params,
+Image filters written as math: the filter document format (params,
 pictures, chains), its compiler to WebGL passes, and the runner. Depends on
 `mathzetta/glsl` (which stays in MathZetta: `toGLSL`, `filterShader`).
 
@@ -14,21 +14,21 @@ npm run check:nowebgl   # Chrome without WebGL: the editor must fall back to the
 npm run build           # site/ — demo/app.js bundled (via the page's import map) with MathZetta; deployable as is
 npm run check:site      # build, then the checks against site/
 npm run check:docs      # every example in docs/library.md run (pages in Chrome against dist/, `js node` blocks in Node); build first
-npm run check:apps      # the small apps (profile picture, colour splash, make it move, fancy text) each doing its job; --site for site/
+npm run check:apps      # the small apps (profile picture, color splash, make it move, fancy text) each doing its job; --site for site/
 ```
 
 ## Where things are
 
 - `src/format.js` — normalize / validate / compile a filter; JSON and share links.
 - `src/runtime.js` — WebGL runner (textures, passes, live params).
-- `demo/index.html` + `demo/home.js` — the home page, light on purpose: one example (the 50 KB `photos/home.jpg`, a line of maths,
+- `demo/index.html` + `demo/home.js` — the home page, light on purpose: one example (the 50 KB `photos/home.jpg`, a line of math,
   a few filters to try — `PRESETS`, compiled by test/examples.test.js —, "Show the original", "Expand", "Use your own photo or video"
   (or a file dropped on the picture: a photo up to 1600 px, which Download saves; a video's frames at 960 px), then links: "Open this
-  filter in the editor" (the maths as a link), the small apps, the library. No Inline Math, no object model, no library list.
+  filter in the editor" (the math as a link), the small apps, the library. No Inline Math, no object model, no library list.
   A filter's old link (`qblur.com/#…`) is sent on to `editor.html#…` by the script in its <head>: keep it. `window.qblurHome` is for the checks.
 - `demo/editor.html` + `demo/app.js` — the editor; `window.MathZetta` and `window.mzDemo` are set there for `tools/check.mjs`.
   **Two pages, one editor** (decided 2026-11-20): editor.html (`data-mode="use"`) puts filters on a picture — choose one (saved or
-  library: Use / Add), tune its knobs (a step shows knobs and notes, not its maths or Edit), select & draw, download; the picture
+  library: Use / Add), tune its knobs (a step shows knobs and notes, not its math or Edit), select & draw, download; the picture
   gets the room. `demo/filters.html` (`data-mode="write"`) writes them — each step opens editing, name/author/Save, JSON and import,
   "Add a new filter", the cheat sheet, the saved filters (Open/Add/Copy link/Delete), the library — with the controls the wide
   column, the preview beside them, and no tabs. It is **made from editor.html** by `node tools/filters-page.mjs` (the build runs it;
@@ -44,14 +44,14 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   preview's own pixels: 480 × 360 "fast" (phones, the CPU), 960 × 720 "sharp" (the default with WebGL), 1440 × 1080; changing it
   fits the picture again, which clears a selection. `?preview=480` fixes it: tools/check.mjs passes it, so the checks' pixels don't move.
   The Filter tab is one card: the steps (each folds away: name,
-  maths, its page of knobs and notes, opacity, "Save this step" / "Copy its link"), a rule, "Add a new filter" (maths, the saved
+  math, its page of knobs and notes, opacity, "Save this step" / "Copy its link"), a rule, "Add a new filter" (math, the saved
   filters, the library — folded, a fold per group, a line per filter; the built-in filters have no author), a rule, the examples.
   A brush's strokes are drawn as lines over the original (`#strokes-overlay`, `drawStrokeOverlay()`) until "hide strokes". A step's knobs are Inline Math variables: each is a line (`cutoff := [[0..1 step
-  0.01 = 0.5]]`, `[[3]]` a box, `[[2 | 4 | 8]]` a menu, `#ff8800` a colour) drawn live by `@mathzetta/inlinemath/markdown`
+  0.01 = 0.5]]`, `[[3]]` a box, `[[2 | 4 | 8]]` a menu, `#ff8800` a color) drawn live by `@mathzetta/inlinemath/markdown`
   (`renderMarkdownInto`, one `createVariables()` store per step, so its notes' `{{k}}` follow the knobs); names Inline Math reads
   as products (`cx`, `dx`) get a plain slider. The lines, the page's order and saving a step on its own are `demo/knobs.js`
   (no DOM, test/knobs.test.js); in the format they are a param's `options` / `input: "box"` and a filter's `notes`.
-  A step shows its maths (a textarea that grows; Enter applies), its knobs and its notes; its **Edit** toggle (`editing`, on for a
+  A step shows its math (a textarea that grows; Enter applies), its knobs and its notes; its **Edit** toggle (`editing`, on for a
   step written in "Add a new filter") shows the editing parts: name and author, each knob's line, the add buttons, a note's tools.
   On phones the page opens on the result alone (the Result view) until Both is asked for or a panel that draws on the original opens.
   Saved filters: localStorage "qblur" (a list of filters). A link (#…) opens as a fork, with a note saying whose it was. `still` (no video/GIF, and no pass uses `t`, `random` or brush strokes — `compileCpuPass(p).uses`)
@@ -64,8 +64,8 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   (a profile picture — the person outlined by MobileSAM from a guess, then marks: a toggle under the photo (Move / Mark me /
   Mark not me: a point per click, shown as dots — few points work best; the decoder costs ~20 ms for 1 point or 30 — / Keep as is:
   painted areas (`state.lock`, `state.kept`) keep the outline they had, whatever the model answers later); or, background None and shape Cut-out, a transparent sticker with an outline drawn by the filter (`outline` picture);
-  a colour splash; a moving GIF (speed and how much can be per-pixel formulas: `withFormulas` swaps every `t` / `amount` in the motion's maths); fancy text — the words drawn by the page as masks `fill`/`border`/`glow`, coloured by one filter whose
-  letter and border colours are user formulas spliced into it (only ever parsed as maths), with `pattern` a picture). They share `demo/kit.js` (open a picture, the sample photos, `createView` = a filter
+  a color splash; a moving GIF (speed and how much can be per-pixel formulas: `withFormulas` swaps every `t` / `amount` in the motion's math); fancy text — the words drawn by the page as masks `fill`/`border`/`glow`, colored by one filter whose
+  letter and border colors are user formulas spliced into it (only ever parsed as math), with `pattern` a picture). They share `demo/kit.js` (open a picture, the sample photos, `createView` = a filter
   on the GPU or CPU, download, GIF) and `demo/apps.css`; the avatar uses `ai.js` (MobileSAM, `base` = the folder above) for the person.
   The build bundles each into `site/<app>/`. They are pages of the qblur site in `mathzetta-sites/src/sites.js` and in
   `tools/deploy/check-sites.mjs`. `window.qblurApp` is for the checks; `SHOT_READY="Boolean(window.qblurApp)"` lets tools/shot.mjs open them.
@@ -96,17 +96,17 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
   repo paths, npm scripts and the API stay on GitHub. Keep new developer-only paragraphs inside such markers.
 - The profile-picture page's opening sample has its outline worked out ahead (`"person"` in demo/photos/index.json,
   `node tools/person-outline.mjs portrait.jpg` remakes it), so the model downloads only for the user's own photo or marks.
-- Licence: MIT, Copyright (c) 2025-2026 Robert Wilcox (LICENSE, every bundle's banner, README's Licence section). The build
+- License: MIT, Copyright (c) 2025-2026 Robert Wilcox (LICENSE, every bundle's banner, README's License section). The build
   writes `site/THIRD-PARTY-NOTICES.txt` and `site/ort/LICENSE` for what the site serves that isn't qblur's (gifenc, ONNX Runtime
   Web, the model, the photos): keep it in step when adding someone else's code or files.
 - Site essentials: `docs/privacy.md` and `docs/terms.md`, rendered by the build as privacy.html and terms.html like the guide;
   their `{{KEY}}`s are filled from `docs/site-details.json` (the owner's name, email, dates…; empty = still `{{KEY}}`, and the
   "Draft" note goes when none is left);
-  `demo/404.html` (the shioh-style skill's self-contained 404 with the limerick prompt, filled for qblur: its SITE block lists home, a few pages and the MathZetta link; theme block = the base's colours; absolute addresses: the host serves it at any depth); robots.txt and sitemap.xml generated from the registry.
+  `demo/404.html` (the shioh-style skill's self-contained 404 with the limerick prompt, filled for qblur: its SITE block lists home, a few pages and the MathZetta link; theme block = the base's colors; absolute addresses: the host serves it at any depth); robots.txt and sitemap.xml generated from the registry.
 - The owner's words are on Claude UI's **Content** page (project qblur): docs/site-details.json (pattern fields, one per key),
   the site's intro and "On your own site" blurb (both on the home page now) and each app's lead (between `<!-- claude-ui:begin/end … -->` lines in
   demo/index.html and demo/<app>/index.html — keep the markers), each page's meta description, and privacy.md / terms.md whole.
-- `src/library.js` — `LIBRARY`, the built-in filters (tested by test/library.test.js). The editor opens on "Colour circle" (still, so no redraw loop).
+- `src/library.js` — `LIBRARY`, the built-in filters (tested by test/library.test.js). The editor opens on "Color circle" (still, so no redraw loop).
 - The package's three entries, each with its .d.ts (test/types.test.js checks every export is declared): `@mathzetta/qblur` (src/index.js),
   `@mathzetta/qblur/apply` (src/apply.js: `applyFilter` from src/apply-filter.js — pictures over `maxSize`, 4096 GPU / 2048 CPU, scaled down
   first — and saving: save.js, png.js) and `@mathzetta/qblur/element` (src/element.js, `<qblur-image>`). dist/: qblur.js (the main entry),
@@ -116,14 +116,14 @@ npm run check:apps      # the small apps (profile picture, colour splash, make i
 - `demo/tracker.js` — tracking (no DOM, test/tracker.test.js). The page feeds it frames from a second copy of the video (seeked; videos from the list are loaded as blobs so seeking works on any server) or the GIF's frames. tools/send-file.mjs gives the local servers byte ranges.
 - `demo/examples.js` — the guided examples (data); test/examples.test.js compiles them, tools/check.mjs runs them in the page.
 - `tools/shot.mjs` — `node tools/shot.mjs "/site/editor.html" "<js>" out.png` for a look at the page (`SHOT_SIZE=390x800` for a phone, `SHOT_READY` for a page without `mzDemo`).
-- `docs/filters.md` — the guide to what an expression can use (`px py rgb gray`, neighbourhoods, geometry, several pictures).
+- `docs/filters.md` — the guide to what an expression can use (`px py rgb gray`, neighborhoods, geometry, several pictures).
 - `docs/library.md` — the library on other people's pages: the CDN (jsDelivr: `cdn.jsdelivr.net/npm/@mathzetta/qblur@0.1/…`, also in README.md;
   `node tools/check-docs.mjs --cdn` runs the examples from there), builds, GPU/CPU/Node, knobs, video, pictures, text, sharing,
   every export. Blocks fenced ```` ```html runnable ```` / ```` ```js node ```` are run by `npm run check:docs`: keep them working.
   The build renders it as site/library.html (the editor's "On your own site" links it). `dist/cpu-worker.js` ships beside the bundles
   for drawAsync; from another origin cpu-runner.js starts it through a blob: module, and falls back to draw() if workers can't start.
 
-- `src/cpu.js` + `src/cpu-helpers.js` + `src/cpu-runner.js` + `src/cpu-worker.js` — the CPU runner: each pass compiled to typed straight-line JS (one local per vector component), neighbourhood planes computed once per pass by bands of rows; `src/auto.js` chooses: the GPU whenever WebGL is available (shaders compile once per filter), the CPU without it or when asked.
+- `src/cpu.js` + `src/cpu-helpers.js` + `src/cpu-runner.js` + `src/cpu-worker.js` — the CPU runner: each pass compiled to typed straight-line JS (one local per vector component), neighborhood planes computed once per pass by bands of rows; `src/auto.js` chooses: the GPU whenever WebGL is available (shaders compile once per filter), the CPU without it or when asked.
 
 ## Rules
 

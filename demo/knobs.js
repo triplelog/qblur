@@ -3,12 +3,12 @@
  * No DOM: test/knobs.test.js.
  *
  *   cutoff := [[0..1 step 0.01 = 0.5]]    a slider (min..max, its step, where it starts)
- *   radius := [[3]]                        a box: any maths that works out to a number
+ *   radius := [[3]]                        a box: any math that works out to a number
  *   levels := [[2 | 4 | 8]]                a menu of values
- *   tint := #ff8800                        a colour
+ *   tint := #ff8800                        a color
  *
  * Each line is what the editor shows in a knob's box; Inline Math draws the same line (but for a
- * colour) as `cutoff ≔` and its input. A filter's page (`notes` in the format) is Markdown text and
+ * color) as `cutoff ≔` and its input. A filter's page (`notes` in the format) is Markdown text and
  * `{ param }` entries for where each knob goes; knobs it doesn't place come first.
  */
 import { calculate } from 'mathzetta/calculate';
@@ -16,7 +16,7 @@ import { calculate } from 'mathzetta/calculate';
 const NUMBER = '[-+]?(?:\\d+\\.?\\d*|\\.\\d+)';
 const SLIDER = new RegExp(`^(${NUMBER})\\s*\\.\\.\\s*(${NUMBER})(?:\\s+step\\s+(${NUMBER}))?(?:\\s*=\\s*(${NUMBER}))?$`);
 const DEFINITION = /^\s*([A-Za-z][A-Za-z0-9_]*)\s*:=\s*(.*?)\s*$/;
-export const HOW = 'Write a knob as name := [[0..1 step 0.01 = 0.5]] (a slider), [[0.5]] (a box), [[2 | 4 | 8]] (a menu) or #ff8800 (a colour)';
+export const HOW = 'Write a knob as name := [[0..1 step 0.01 = 0.5]] (a slider), [[0.5]] (a box), [[2 | 4 | 8]] (a menu) or #ff8800 (a color)';
 
 /** A number as the editor writes it: at most 4 decimals. */
 export const trim = (n) => String(Math.round(Number(n) * 1e4) / 1e4);
@@ -46,7 +46,7 @@ export function inlineDefinition(name, param) {
     return definitionOf(name, param);
 }
 
-/** A number from what an input holds: `0.5`, or maths such as `1/3` or `2 pi`; null when it isn't one. */
+/** A number from what an input holds: `0.5`, or math such as `1/3` or `2 pi`; null when it isn't one. */
 export function numberOf(text) {
     const plain = Number(text);
     if (String(text).trim() !== '' && Number.isFinite(plain)) return plain;
@@ -107,8 +107,8 @@ export function freeName(taken, prefix = 'k') {
     for (let n = 1; ; n++) if (!taken.has(`${prefix}${n}`)) return `${prefix}${n}`;
 }
 
-/** `old` renamed to `name` everywhere it is a whole word in the maths (not inside other names, nor after a dot). */
-export function renameInMaths(color, old, name) {
+/** `old` renamed to `name` everywhere it is a whole word in the math (not inside other names, nor after a dot). */
+export function renameInMath(color, old, name) {
     const swap = (text) => text.replace(new RegExp(`(?<![\\w.])${old}(?![\\w])`, 'g'), name);
     if (typeof color === 'string') return swap(color);
     return Object.fromEntries(Object.entries(color).map(([k, v]) => [k, swap(v)]));

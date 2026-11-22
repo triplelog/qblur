@@ -1,6 +1,6 @@
 import { inflateSync } from 'node:zlib';
 import { suite, test, eq } from './harness.js';
-import { encodePng, colourCount, exactPalette, quantizedPalette } from '../demo/png.js';
+import { encodePng, colorCount, exactPalette, quantizedPalette } from '../demo/png.js';
 
 // The harness is synchronous, so every PNG is written up here, then the tests look at them.
 
@@ -43,20 +43,20 @@ const holes = await parsePng((await encodePng({ width: 8, height: 8, data: pictu
 const gradient = picture(32, 32, (x, y) => [x * 8, y * 8, 128, 255]);
 const plain = quantizedPalette(gradient, 16, { dither: false, width: 32 });
 const dithered = quantizedPalette(gradient, 16, { dither: true, width: 32 });
-const forced = await encodePng({ width: 32, height: 32, data: gradient, palette: 'force', colours: 16 });
+const forced = await encodePng({ width: 32, height: 32, data: gradient, palette: 'force', colors: 16 });
 const auto = await encodePng({ width: 32, height: 32, data: gradient, palette: 'auto' });
 
 suite('PNG writer', () => {
-    test('two colours become a 1-bit indexed PNG', () => {
+    test('two colors become a 1-bit indexed PNG', () => {
         eq(checkerPng.signature, [137, 80, 78, 71, 13, 10, 26, 10]);
-        eq([checker.kind, checker.colours, checker.bits], ['palette', 2, 1]);
+        eq([checker.kind, checker.colors, checker.bits], ['palette', 2, 1]);
         eq(checkerPng.chunks.map((c) => c.type), ['IHDR', 'PLTE', 'IDAT', 'IEND']);
         eq([checkerPng.header.width, checkerPng.header.height, checkerPng.header.bits, checkerPng.header.type], [W, H, 1, 3]);
         eq(checkerPng.rows.length, H * (1 + Math.ceil(W / 8)));
         eq(checkerPng.rows[0], 0);                                                  // filter: none
         if (checker.blob.size > 200) throw new Error(`${checker.blob.size} bytes for a 1-bit checkerboard`);
     });
-    test('up to 16 colours is 4-bit; more than 256 is truecolour RGB; alpha makes it RGBA', () => {
+    test('up to 16 colors is 4-bit; more than 256 is truecolor RGB; alpha makes it RGBA', () => {
         eq([sixteen.kind, sixteen.bits], ['palette', 4]);
         eq([many.kind, many.bits], ['rgb', 8]);
         eq([manyPng.header.type, manyPng.rows.length, manyPng.rows[0]], [2, 20 * (1 + 20 * 3), 4]);     // RGB, Paeth-filtered rows
@@ -66,13 +66,13 @@ suite('PNG writer', () => {
         eq(holes.chunks.map((c) => c.type), ['IHDR', 'PLTE', 'tRNS', 'IDAT', 'IEND']);
     });
     test('forcing a palette quantizes, with or without dithering', () => {
-        eq(colourCount(gradient) > 256, true);
+        eq(colorCount(gradient) > 256, true);
         eq(exactPalette(gradient), null);
         eq(plain.palette.length <= 16 && dithered.palette.length <= 16, true);
         let differ = 0;
         for (let i = 0; i < plain.indices.length; i++) if (plain.indices[i] !== dithered.indices[i]) differ++;
         if (differ === 0) throw new Error('dithering changed nothing');
-        eq([forced.kind, forced.bits, forced.colours <= 16], ['palette', 4, true]);
+        eq([forced.kind, forced.bits, forced.colors <= 16], ['palette', 4, true]);
         eq(auto.kind, 'rgb');
     });
 });

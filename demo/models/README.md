@@ -14,4 +14,4 @@ To have them again:
 | `magic_touch.tflite` | 6 MB | MediaPipe's file as published: https://storage.googleapis.com/mediapipe-models/interactive_segmenter/magic_touch/float32/1/magic_touch.tflite |
 | `magic_touch_2.task` | 31 MB | MediaPipe's MagicTouch 2 as published (int8), from the interactive segmenter's page: https://ai.google.dev/edge/mediapipe/solutions/vision/interactive_segmenter |
 
-`tools/export-model.py mobilesam` remakes MobileSAM's files. Licences: LICENSE and NOTICE in this folder.
+`tools/export-model.py mobilesam` remakes MobileSAM's files. Licenses: LICENSE and NOTICE in this folder.

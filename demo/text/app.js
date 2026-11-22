@@ -1,11 +1,11 @@
 /**
  * Fancy text: words drawn as three masks — the letters, their border (a stroke round them) and a
- * shadow or glow (blurred) — coloured by one filter. The letters' and the border's colours are
+ * shadow or glow (blurred) — colored by one filter. The letters' and the border's colors are
  * formulas (a preset fills the box; the user can write anything the filter language allows), with
- * two colour knobs each and `pattern`, a picture. The masks are black with white where they are,
+ * two color knobs each and `pattern`, a picture. The masks are black with white where they are,
  * so `luma(fill)` is how much of the pixel is letter.
  *
- * Saved as a PNG (transparent unless a background colour is chosen), or a GIF when a formula uses t.
+ * Saved as a PNG (transparent unless a background color is chosen), or a GIF when a formula uses t.
  */
 import { createView, openFile, loadPicture, samplePhotos, download, saveGif, MZ } from '../kit.js';
 
@@ -96,7 +96,7 @@ function drawMasks() {
 
 /** The filter: three layers, letters over border over glow, over the background (or nothing). */
 function filterFor(fillF, borderF) {
-  const border = borderF.replace(/\bc1\b/g, 'k1').replace(/\bc2\b/g, 'k2');      // the border's own two colours
+  const border = borderF.replace(/\bc1\b/g, 'k1').replace(/\bc2\b/g, 'k2');      // the border's own two colors
   const wf = 'luma(fill)', wb = 'luma(border) (1 - luma(fill))', wg = 'shade luma(glow) (1 - luma(fill)) (1 - luma(border))';
   const cover = `(${wf} + ${wb} + ${wg})`;
   return {
@@ -113,8 +113,8 @@ function knobs() {
   const glow = choice('glow');
   return {
     c1: hex($('c1').value), c2: hex($('c2').value), k1: hex($('k1').value), k2: hex($('k2').value),
-    g1: hex($('glow-colour').value), bg: hex($('bg-colour').value),
-    opaque: choice('bg') === 'colour' ? 1 : 0, shade: glow === 'none' ? 0 : glow === 'shadow' ? 0.75 : 1,
+    g1: hex($('glow-color').value), bg: hex($('bg-color').value),
+    opaque: choice('bg') === 'color' ? 1 : 0, shade: glow === 'none' ? 0 : glow === 'shadow' ? 0.75 : 1,
   };
 }
 
@@ -125,7 +125,7 @@ function update({ force = false } = {}) {
   if (resized) { view.resize(W, H); force = true; }
   const key = [$('fill').value, $('border').value].join('\n');
   if (force || key !== compiledKey) {
-    // each formula on its own first, as a colour, so an error says which box it is in and quotes only what was typed
+    // each formula on its own first, as a color, so an error says which box it is in and quotes only what was typed
     for (const part of ['fill', 'border']) {
       try {
         MZ.compileFilter({ name: part === 'fill' ? 'Letters' : 'Border', images: { pattern: {} }, params: { c1: [1, 1, 1], c2: [0, 0, 0] }, color: $(part).value || 'c1' }, { version: 100 });
@@ -177,7 +177,7 @@ let typing = null;
 const soon = () => { clearTimeout(typing); typing = setTimeout(update, 120); };
 for (const id of ['words', 'size', 'border-width']) $(id).addEventListener('input', soon);
 for (const part of ['fill', 'border']) $(part).addEventListener('input', () => { markPreset($(`${part}-presets`), $(part)); soon(); });
-for (const id of ['c1', 'c2', 'k1', 'k2', 'glow-colour', 'bg-colour']) $(id).addEventListener('input', () => { if (view) { view.knobs(knobs()); view.draw(t); } });
+for (const id of ['c1', 'c2', 'k1', 'k2', 'glow-color', 'bg-color']) $(id).addEventListener('input', () => { if (view) { view.knobs(knobs()); view.draw(t); } });
 for (const r of document.querySelectorAll('input[name=glow], input[name=bg]')) r.addEventListener('change', () => update());
 $('font').onchange = async () => { await useFont($('font').value); update(); };
 $('words').addEventListener('input', () => useFont($('font').value).then(soon));
@@ -200,7 +200,7 @@ $('download').onclick = async () => {
   if (!window.qblurNoDownload) await download(out, 'fancy-text.png');
   status(`Saved a ${out.width} × ${out.height} PNG${choice('bg') === 'none' ? ', transparent round the text' : ''}.`);
 };
-/** A GIF can't be partly transparent: its frames are drawn on the background colour (white when there is none). */
+/** A GIF can't be partly transparent: its frames are drawn on the background color (white when there is none). */
 $('gif').onclick = async () => {
   if (!view) return;
   const s = Math.min(1, 640 / Math.max(W, H));
@@ -213,7 +213,7 @@ $('gif').onclick = async () => {
       count: 45, delay: 67,
       frame: (i) => {
         view.draw(t0 + i * 4);
-        g.fillStyle = choice('bg') === 'colour' ? $('bg-colour').value : '#ffffff';
+        g.fillStyle = choice('bg') === 'color' ? $('bg-color').value : '#ffffff';
         g.fillRect(0, 0, small.width, small.height);
         g.drawImage(view.canvas, 0, 0, small.width, small.height);
         return small;

@@ -16,7 +16,7 @@ const photo = { width: W, height: H, data: new Uint8ClampedArray(W * H * 4) };
 for (let p = 0; p < W * H; p++) photo.data.set([p * 30, 255 - p * 30, 100, 255], p * 4);
 const settle = (promise) => promise.then((value) => ({ value }), (error) => ({ error }));
 
-const maths = await settle(applyFilter(photo, '1 - rgb'));
+const math = await settle(applyFilter(photo, '1 - rgb'));
 const named = await settle(applyFilter(photo, 'invert'));
 const doc = await settle(applyFilter(photo, { name: 'Mine', params: { k: 0.2 }, color: 'rgb * k' }));
 const link = await settle(applyFilter(photo, filterToLink('1 - rgb')));
@@ -24,18 +24,20 @@ const threshold = compileFilter(LIBRARY.find((f) => f.name === 'Threshold'));
 const low = await settle(applyFilter(photo, threshold, { params: { cutoff: 0.1 } }));
 const high = await settle(applyFilter(photo, threshold, { params: { cutoff: 0.9 } }));
 const again = await settle(applyFilter(photo, threshold));
-const colour = await settle(applyFilter(photo, 'Tint', { params: { tint: [1, 0, 0] } }));
+const color = await settle(applyFilter(photo, 'Tint', { params: { tint: [1, 0, 0] } }));
 const moving = await Promise.all([0, 5].map((t) => settle(applyFilter(photo, 'pixel(px + t, py)', { t }))));
 const badKnob = await settle(applyFilter(photo, 'Threshold', { params: { nope: 1 } }));
 const noGpu = await settle(applyFilter(photo, '1 - rgb', { engine: 'gpu' }));
 const badEngine = await settle(applyFilter(photo, '1 - rgb', { engine: 'fast' }));
 const noPicture = await settle(applyFilter({ width: 0, height: 0, data: new Uint8ClampedArray(0) }, '1 - rgb'));
 
-const png = await settle(toBlob(maths.value).then(async (b) => ({ type: b.type, bytes: new Uint8Array(await b.arrayBuffer()) })));
+const png = await settle(toBlob(math.value).then(async (b) => ({ type: b.type, bytes: new Uint8Array(await b.arrayBuffer()) })));
 const jpeg = await settle(toBlob(photo, { type: 'image/jpeg' }));
-const gif = await settle(encodeGif([photo, maths.value], { gifenc, delay: 50 }).then(async (b) => ({ type: b.type, bytes: new Uint8Array(await b.arrayBuffer()) })));
+const gif = await settle(encodeGif([photo, math.value], { gifenc, delay: 50 }).then(async (b) => ({ type: b.type, bytes: new Uint8Array(await b.arrayBuffer()) })));
 async function* frames() { for (const t of [0, 1, 2]) yield applyFilter(photo, 'pixel(px + t, py)', { t }); }
 const gifAsync = await settle(encodeGif(frames(), { gifenc }).then((b) => b.size));
+const bytesOf = async (b) => Array.from(new Uint8Array(await b.arrayBuffer()));
+const gifFew = await settle(Promise.all([encodeGif([photo], { gifenc, colors: 2 }), encodeGif([photo], { gifenc })].map((p) => p.then(bytesOf))));
 const gifBare = await settle(encodeGif([photo]));
 const gifSizes = await settle(encodeGif([photo, { width: 2, height: 2, data: new Uint8ClampedArray(16) }], { gifenc }));
 const element = await import('../src/element.js');
@@ -44,11 +46,11 @@ const px = (result, p) => [...result.value.data.subarray(p * 4, p * 4 + 4)];
 const inverted = (p) => [255 - p * 30, p * 30, 155, 255];
 
 suite('applyFilter (Node: the CPU)', () => {
-    test('maths: a picture { data, width, height } of the same size', () => {
-        if (maths.error) throw maths.error;
-        eq([maths.value.width, maths.value.height, maths.value.data.constructor.name], [W, H, 'Uint8ClampedArray']);
-        eq(px(maths, 0), inverted(0));
-        eq(px(maths, 7), inverted(7));
+    test('math: a picture { data, width, height } of the same size', () => {
+        if (math.error) throw math.error;
+        eq([math.value.width, math.value.height, math.value.data.constructor.name], [W, H, 'Uint8ClampedArray']);
+        eq(px(math, 0), inverted(0));
+        eq(px(math, 7), inverted(7));
     });
     test('a built-in filter by name, any case', () => eq(px(named, 3), inverted(3)));
     test('a filter document, its knob at its default', () => eq(px(doc, 1), [6, 45, 20, 255]));
@@ -59,7 +61,7 @@ suite('applyFilter (Node: the CPU)', () => {
         eq(px(again, 0), [255, 255, 255, 255]);                      // gray 0.63 against the default 0.5
     });
     test('the caller\'s compiled filter is left as it was', () => eq(threshold.passes[0].values.cutoff, 0.5));
-    test('a colour knob', () => eq(px(colour, 1), [30, 0, 0, 255]));
+    test('a color knob', () => eq(px(color, 1), [30, 0, 0, 255]));
     test('t moves a moving filter', () => {
         eq(px(moving[0], 0), [...photo.data.subarray(0, 4)]);
         eq(px(moving[1], 0), [...photo.data.subarray(12, 16)]);   // 5 to the right, clamped to the last column
@@ -89,6 +91,11 @@ suite('saving: toBlob and encodeGif', () => {
         eq(String.fromCharCode(...gif.value.bytes.subarray(0, 6)), 'GIF89a');
         eq([gif.value.bytes[6] | (gif.value.bytes[7] << 8), gif.value.bytes[8] | (gif.value.bytes[9] << 8)], [W, H]);
     });
+    test('encodeGif: colors sets the palette size', () => {
+        if (gifFew.error) throw gifFew.error;
+        const [colors, full] = gifFew.value;
+        eq(colors.length < full.length, true);
+    });
     test('encodeGif takes an async iterable of frames', () => { if (gifAsync.error) throw gifAsync.error; eq(gifAsync.value > 30, true); });
     test('encodeGif without gifenc explains', () => eq(/needs gifenc/.test(gifBare.error?.message), true));
     test('frames of different sizes are refused', () => eq(/Frame 2 is 2 × 2/.test(gifSizes.error?.message), true));
@@ -98,7 +105,7 @@ suite('saving: toBlob and encodeGif', () => {
 });
 
 // what a review before 0.1.0 found: values checked, graphics in Node, calls in order
-const badColour = await settle(applyFilter(photo, { params: { tint: [1, 0, 0] }, color: 'tint' }, { params: { tint: '#ff0000' } }));
+const badColor = await settle(applyFilter(photo, { params: { tint: [1, 0, 0] }, color: 'tint' }, { params: { tint: '#ff0000' } }));
 const badNumber = await settle(applyFilter(photo, { params: { k: 0.5 }, color: 'rgb * k' }, { params: { k: 'abc' } }));
 const textInNode = await settle(applyFilter(photo, { graphics: { title: { type: 'text', text: 'Hi' } }, color: 'mix(rgb, title, alpha(title))' }));
 const strokesInNode = await settle(applyFilter(photo, { graphics: { ink: { type: 'strokes', brush: 'round', size: 0.5, strokes: [{ points: [[0.1, 0.5], [0.9, 0.5]] }] } }, color: 'mix(rgb, (1, 0, 0), alpha(ink))' }));
@@ -110,7 +117,7 @@ changing.passes[0].values.k = 1;
 const second = (await applyFilter(photo, changing)).data[0];
 
 suite('applyFilter: what the review before 0.1.0 found', () => {
-    test('a colour knob given as text is refused, by name', () => eq(/knob "tint" needs a colour/.test(badColour.error?.message), true));
+    test('a color knob given as text is refused, by name', () => eq(/knob "tint" needs a color/.test(badColor.error?.message), true));
     test('a number knob given as text is refused', () => eq(/knob "k" needs a number/.test(badNumber.error?.message), true));
     test('text in Node says it needs a canvas (not a picture without it)', () => eq(/title.*needs a canvas/.test(textInNode.error?.message), true));
     test('brush strokes are drawn in Node', () => { if (strokesInNode.error) throw strokesInNode.error; eq(strokesInNode.value.data.some((v, i) => i % 4 === 0 && v > 200), true); });

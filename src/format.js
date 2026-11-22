@@ -1,7 +1,7 @@
 /**
  * Shareable image filters.
  *
- * A filter is a small JSON document anyone can publish — maths plus a
+ * A filter is a small JSON document anyone can publish — math plus a
  * name, an author, the knobs it exposes and the pictures it needs:
  *
  *   { "format": "mathzetta-filter/1",
@@ -23,8 +23,8 @@
  *
  * A chain is a filter too, so published chains nest inside new ones and
  * keep their authors' names (compileFilter() lists them as credits).
- * Because a filter is only maths, sharing one is safe: it can read the
- * picture and write colours, nothing else.
+ * Because a filter is only math, sharing one is safe: it can read the
+ * picture and write colors, nothing else.
  *
  * normalizeFilter() fills in defaults and rejects bad shapes,
  * validateFilter() lists every problem, and compileFilter() flattens a
@@ -33,7 +33,7 @@
  * to pass one around; readFilter() accepts either, or a bare expression.
  */
 import { filterShader } from 'mathzetta/glsl';
-import { FILTER_NAMES, PLACES, COLOUR_SPACES } from 'mathzetta/glsl';
+import { FILTER_NAMES, PLACES, COLOR_SPACES } from 'mathzetta/glsl';
 import { normalizeGraphic, shadowLayerNames, MAX_SHADOW_LAYERS } from './graphics.js';
 
 export const FILTER_FORMAT = 'mathzetta-filter/1';
@@ -99,7 +99,7 @@ export function normalizeFilter(def) {
 }
 
 /**
- * The filter's page: Markdown text (with maths: Inline Math draws it, and `{{k}}` is a knob's value)
+ * The filter's page: Markdown text (with math: Inline Math draws it, and `{{k}}` is a knob's value)
  * and where each knob's input goes — `["Darker below the *cutoff*:", { "param": "cutoff" }]`.
  * Knobs it doesn't place come before it.
  */
@@ -117,10 +117,10 @@ function normalizeNotes(notes, params) {
 function normalizeSpace(space) {
     if (space === undefined || space === null) return null;
     const pair = typeof space === 'string' ? { in: space, out: space } : space;
-    if (!isObject(pair)) throw new Error(`"space" is a colour space (${COLOUR_SPACES.join(', ')}) or { "in": …, "out": … }`);
+    if (!isObject(pair)) throw new Error(`"space" is a color space (${COLOR_SPACES.join(', ')}) or { "in": …, "out": … }`);
     const out = { in: pair.in ?? 'srgb', out: pair.out ?? 'srgb' };
     for (const key of ['in', 'out']) {
-        if (!COLOUR_SPACES.includes(out[key])) throw new Error(`"space": "${out[key]}" is not a colour space; they are ${COLOUR_SPACES.join(', ')}`);
+        if (!COLOR_SPACES.includes(out[key])) throw new Error(`"space": "${out[key]}" is not a color space; they are ${COLOR_SPACES.join(', ')}`);
     }
     return out.in === 'srgb' && out.out === 'srgb' ? null : out;
 }
@@ -216,7 +216,7 @@ function normalizeParams(params) {
     return out;
 }
 
-/** `0.5` → a number 0–1; `[1, 0, 0]` → a colour; or the full `{ type, default, min, max, step, label }`. */
+/** `0.5` → a number 0–1; `[1, 0, 0]` → a color; or the full `{ type, default, min, max, step, label }`. */
 function normalizeParam(name, spec) {
     if (typeof spec === 'number') spec = { default: spec };
     else if (Array.isArray(spec)) spec = { type: 'color', default: spec };
@@ -226,12 +226,12 @@ function normalizeParam(name, spec) {
     if (spec.label !== undefined) out.label = String(spec.label);
     if (type === 'color') {
         const value = spec.default ?? [1, 1, 1];
-        if (!isColor(value)) throw new Error(`Colour parameter "${name}" needs a default of three numbers, 0–1`);
+        if (!isColor(value)) throw new Error(`Color parameter "${name}" needs a default of three numbers, 0–1`);
         out.default = value.map(Number);
         return out;
     }
     if (type !== 'number') throw new Error(`Parameter "${name}": the type is "number" or "color", not "${type}"`);
-    // `options`: a choice of values (a menu); `input: "box"`: typed in, as maths; otherwise a slider
+    // `options`: a choice of values (a menu); `input: "box"`: typed in, as math; otherwise a slider
     let options = null;
     if (spec.options !== undefined) {
         if (!Array.isArray(spec.options) || !spec.options.length || !spec.options.every((n) => n !== '' && Number.isFinite(Number(n)))) throw new Error(`Parameter "${name}": "options" is a list of numbers`);
@@ -317,7 +317,7 @@ function check(step, path, problems, shaders) {
         const param = Object.hasOwn(params, name) ? params[name] : null;
         if (!param) problems.push(`${where}: "with" sets "${name}", but there is no parameter called that`);
         else if (param.type === 'color' ? !isColor(value) : !Number.isFinite(Number(value))) {
-            problems.push(`${where}: "${name}" should be a ${param.type === 'color' ? 'colour: three numbers, 0–1' : 'number'}`);
+            problems.push(`${where}: "${name}" should be a ${param.type === 'color' ? 'color: three numbers, 0–1' : 'number'}`);
         }
     }
     if (filter.steps) {
@@ -377,7 +377,7 @@ function flatten(step, path, outer, context) {
         if (!context.problems.includes(problem)) context.problems.push(problem);
         return;
     }
-    const rewritten = inColourSpace(step.filter) ?? separableBlur(step.filter);
+    const rewritten = inColorSpace(step.filter) ?? separableBlur(step.filter);
     if (rewritten) {
         if (step.filter === context.top) context.top = rewritten;     // still the filter itself, not something it uses
         flatten({ ...step, filter: rewritten }, path, outer, context);
@@ -407,7 +407,7 @@ function flatten(step, path, outer, context) {
 }
 
 /**
- * A step whose whole colour is just `gaussian(s)` or `blur(r)` is computed
+ * A step whose whole color is just `gaussian(s)` or `blur(r)` is computed
  * separably — one pass along x, one along y: the same blur for 2n taps
  * instead of n², and reaching further (±24 pixels instead of ±8). The
  * step keeps its name, params, pictures and opacity; the two passes share
@@ -420,7 +420,7 @@ function flatten(step, path, outer, context) {
  * converted too — then convert back. Opacity blends the result over
  * the input in sRGB, as any chain's does.
  */
-function inColourSpace(filter) {
+function inColorSpace(filter) {
     if (!filter.space || typeof filter.color === 'undefined') return null;
     const { space, name, author, description, ...core } = filter;     // the chain carries the name; the middle step is nameless, so it is not a credit
     const step = (f) => ({ filter: f, with: {}, opacity: 1, skip: false });

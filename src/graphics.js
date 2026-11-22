@@ -3,8 +3,8 @@
  *
  * A filter's `graphics` names things to draw — text, rectangles, ovals —
  * each rasterized into a transparent picture the size of the frame under
- * its name. The maths then treats it like any picture: `title` is its
- * colour, `alpha(title)` where it is, so
+ * its name. The math then treats it like any picture: `title` is its
+ * color, `alpha(title)` where it is, so
  *
  *   mix(rgb, title, alpha(title))                      lays the text on
  *   mix(rgb, gaussian(6) * 0.8, alpha(panel))          frosts the picture behind a panel
@@ -12,7 +12,7 @@
  *
  * A graphic's `shadow` is drawn into it. Its `shadows` — a list, back to
  * front — are drawn each into a picture of its own, `title_shadow1`,
- * `title_shadow2`…, so every shadow layer can have its own maths:
+ * `title_shadow2`…, so every shadow layer can have its own math:
  *
  *   mix(mix(rgb, gaussian(4), alpha(title_shadow1)), title, alpha(title))
  *   mix(mix(rgb, (1, 0.3, 0.6) , alpha(shift(title_shadow1, 2 sin(t / 9), 0))), title, alpha(title))
@@ -49,23 +49,23 @@ export const MAX_SHADOW_LAYERS = 8;
 /**
  * The picture names of a graphic's separate shadow layers, back to front:
  * title_shadow1, title_shadow2… Each is a picture of that shadow alone, so
- * the maths can treat it on its own (blur it, colour it, move it with t).
+ * the math can treat it on its own (blur it, color it, move it with t).
  */
 export const shadowLayerNames = (name, spec) => (spec.shadows ?? []).map((_, k) => `${name}_shadow${k + 1}`);
 
-/** The maths that lays a graphic on with its shadow layers, back to front — what a new text step starts with. */
+/** The math that lays a graphic on with its shadow layers, back to front — what a new text step starts with. */
 export function layeredExpression(name, spec) {
     let base = 'rgb';
     for (const layer of shadowLayerNames(name, spec)) base = `mix(${base}, ${layer}, alpha(${layer}))`;
     return `mix(${base}, ${name}, alpha(${name}))`;
 }
 
-const COLOUR = /^(#[0-9a-f]{3,8}|(rgb|hsl)a?\([\d.,\s%deg/]+\)|[a-z]{3,20}|transparent)$/i;
+const COLOR = /^(#[0-9a-f]{3,8}|(rgb|hsl)a?\([\d.,\s%deg/]+\)|[a-z]{3,20}|transparent)$/i;
 const FAMILY = /^[\w\s,'"-]{1,80}$/;
 const WEIGHTS = ['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900'];
 
-function colour(name, key, value) {
-    if (typeof value !== 'string' || !COLOUR.test(value.trim())) throw new Error(`Graphic "${name}": "${key}" is a colour like "#ffcc00", "rgba(0,0,0,0.5)" or "white"`);
+function color(name, key, value) {
+    if (typeof value !== 'string' || !COLOR.test(value.trim())) throw new Error(`Graphic "${name}": "${key}" is a color like "#ffcc00", "rgba(0,0,0,0.5)" or "white"`);
     return value.trim();
 }
 
@@ -79,7 +79,7 @@ function number(name, key, value, min = -Infinity, max = Infinity) {
 function outline(name, value) {
     if (value === null || value === false) return null;
     if (typeof value !== 'object') throw new Error(`Graphic "${name}": "outline" is { "color", "width" } or null`);
-    return { color: colour(name, 'outline.color', value.color ?? '#000000'), width: number(name, 'outline.width', value.width ?? 0.06, 0, 1) };
+    return { color: color(name, 'outline.color', value.color ?? '#000000'), width: number(name, 'outline.width', value.width ?? 0.06, 0, 1) };
 }
 
 /** `{ color, blur, dx, dy }` behind it; blur and offsets are fractions of the text size (frame height for shapes). */
@@ -87,7 +87,7 @@ function shadow(name, value) {
     if (value === null || value === false) return null;
     if (typeof value !== 'object') throw new Error(`Graphic "${name}": "shadow" is { "color", "blur", "dx", "dy" } or null`);
     return {
-        color: colour(name, 'shadow.color', value.color ?? 'rgba(0,0,0,0.6)'),
+        color: color(name, 'shadow.color', value.color ?? 'rgba(0,0,0,0.6)'),
         blur: number(name, 'shadow.blur', value.blur ?? 0.15, 0, 2),
         dx: number(name, 'shadow.dx', value.dx ?? 0, -2, 2),
         dy: number(name, 'shadow.dy', value.dy ?? 0, -2, 2),
@@ -106,7 +106,7 @@ export function normalizeGraphic(name, spec) {
     for (const [key, fallback] of Object.entries(base)) {
         if (key === 'type') continue;
         const value = key in spec && spec[key] !== undefined ? spec[key] : fallback;     // null is a value: "no shadow"
-        if (key === 'color') out.color = colour(name, key, value);
+        if (key === 'color') out.color = color(name, key, value);
         else if (key === 'outline') out.outline = outline(name, value);
         else if (key === 'shadow') out.shadow = shadow(name, value);
         else if (key === 'shadows') {

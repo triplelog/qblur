@@ -1,9 +1,9 @@
 /**
  * Selecting an object by tracing its edge — intelligent scissors
- * (Mortensen & Barrett's "livewire"), plus a colour fill for flat objects.
+ * (Mortensen & Barrett's "livewire"), plus a color fill for flat objects.
  *
  * Every pixel gets a cost: low on an edge (a strong gradient of the
- * brightness), high on flat colour. Clicking a point runs Dijkstra from
+ * brightness), high on flat color. Clicking a point runs Dijkstra from
  * it once, which yields the cheapest path to *every* pixel (a tree of
  * predecessors); the wire to the cursor is then just a walk back along
  * that tree, so it follows the mouse in real time, and the next click
@@ -38,7 +38,7 @@ export function costFromGray(gray, w, h) {
             if (m > max) max = m;
         }
     }
-    // Normalise by the 98th percentile — so one very strong edge does not make every other edge
+    // Normalize by the 98th percentile — so one very strong edge does not make every other edge
     // look flat — but never below 30% of the strongest, so noise in flat areas stays expensive.
     const hist = new Uint32Array(256);
     for (let p = 0; p < mag.length; p++) hist[Math.min(255, (mag[p] / max * 255) | 0)]++;
@@ -145,16 +145,16 @@ export function snap(cost, w, h, x, y, radius = 6) {
 }
 
 /**
- * A magic wand that knows several colours: every pixel within `tolerance`
- * (0–1) of any of `colours` counts, and the fill grows from every seed
- * through such pixels — so a striped shirt is two clicks. `colours` is the
- * seeds' own colours unless given. With `contiguous` off, every matching
+ * A magic wand that knows several colors: every pixel within `tolerance`
+ * (0–1) of any of `colors` counts, and the fill grows from every seed
+ * through such pixels — so a striped shirt is two clicks. `colors` is the
+ * seeds' own colors unless given. With `contiguous` off, every matching
  * pixel anywhere is taken.
  */
-export function floodFill(rgba, w, h, seeds, tolerance = 0.15, { colours = null, contiguous = true } = {}) {
+export function floodFill(rgba, w, h, seeds, tolerance = 0.15, { colors = null, contiguous = true } = {}) {
     const mask = new Uint8Array(w * h);
     const at = ([x, y]) => Math.round(y) * w + Math.round(x);
-    const set = colours ?? seeds.map((s) => { const i = at(s) * 4; return [rgba[i], rgba[i + 1], rgba[i + 2]]; });
+    const set = colors ?? seeds.map((s) => { const i = at(s) * 4; return [rgba[i], rgba[i + 1], rgba[i + 2]]; });
     const limit = (tolerance * 255) ** 2 * 3;
     const matches = (q) => {
         const i = q * 4;
@@ -211,8 +211,8 @@ export function coolPath(previous, path, now, { ms = 600, moves = 12, margin = 4
     return { record: { path, first, count }, freeze };
 }
 
-/** How different two pixels' colours are, 0…1. */
-const colourDiff = (rgba, p, q) => {
+/** How different two pixels' colors are, 0…1. */
+const colorDiff = (rgba, p, q) => {
     const a = p * 4, b = q * 4;
     return Math.hypot(rgba[a] - rgba[b], rgba[a + 1] - rgba[b + 1], rgba[a + 2] - rgba[b + 2]) / 441.7;
 };
@@ -224,8 +224,8 @@ const colourDiff = (rgba, p, q) => {
  * Only a band round the stroke (`reach` pixels) is reconsidered. Its pixels
  * go to whichever side reaches them more easily: the stroke (its side), or
  * the band's rim (keeping what the selection was there). Stepping between
- * neighbours costs more the more their colours differ, so each side spreads
- * through even colour and stops at edges — the new boundary lands on the
+ * neighbors costs more the more their colors differ, so each side spreads
+ * through even color and stops at edges — the new boundary lands on the
  * nearest real edge, and nothing outside the band moves. With an empty
  * selection, inside strokes make one from scratch.
  *
@@ -304,14 +304,14 @@ export function refineMask(rgba, w, h, mask, stroke, inside, reach = 16) {
             // the step's edge strength, also measured across three pixels so a soft (antialiased) edge counts in full
             const pb = qx - 2 * dx >= 0 && qx - 2 * dx < w && qy - 2 * dy >= 0 && qy - 2 * dy < h ? q - 2 * (dy * w + dx) : p;
             const qf = qx + dx >= 0 && qx + dx < w && qy + dy >= 0 && qy + dy < h ? q + dy * w + dx : q;
-            const diff = Math.max(colourDiff(rgba, p, q), colourDiff(rgba, pb, qf) / 1.5);
+            const diff = Math.max(colorDiff(rgba, p, q), colorDiff(rgba, pb, qf) / 1.5);
             const nd = d + step + 200 * Math.max(0, diff - 0.07);   // distance nearly free, noise-sized differences free, an edge dear
             if (nd < dist[q]) { dist[q] = nd; label[q] = label[p]; push(q, nd); }
         }
     }
     const out = mask.slice();
     for (let i = 0; i < n; i++) if (band[i] && label[i] >= 0) out[i] = label[i];
-    // tidy: a pixel in the band takes the side most of its neighbours are on
+    // tidy: a pixel in the band takes the side most of its neighbors are on
     const tidy = out.slice();
     for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
         const i = y * w + x;
@@ -329,7 +329,7 @@ export function refineMask(rgba, w, h, mask, stroke, inside, reach = 16) {
  * @param {object} o { $, source: () => HTMLCanvasElement (the picture at preview size), overlay: HTMLCanvasElement over it, onChange }
  */
 export function setupSelection({ $, source, overlay, surface = overlay, onChange }) {   // surface: takes the pointer, and may reach past the picture
-    const state = { mode: 'off', points: [], segments: [], closed: false, live: null, wand: null, extra: null, preview: null, feather: 0, invert: false, tolerance: 0.15, seeds: [], colours: [], contiguous: true, cooling: true, refine: { inside: true, size: 0.04 } };
+    const state = { mode: 'off', points: [], segments: [], closed: false, live: null, wand: null, extra: null, preview: null, feather: 0, invert: false, tolerance: 0.15, seeds: [], colors: [], contiguous: true, cooling: true, refine: { inside: true, size: 0.04 } };
     let painting = null;             // the refine brush's stroke: { mask, canvas }
     let aiClick = null;              // (x, y, negative) → the AI tool, when its mode is on
     let aiKey = null;                // (key) → the AI tool
@@ -345,7 +345,7 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
     function reset(width, height) {
         w = width; h = height;
         overlay.width = w; overlay.height = h;
-        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colours = []; state.extra = null; state.preview = null;
+        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colors = []; state.extra = null; state.preview = null;
         cost = null; tree = null;
         draw();
     }
@@ -445,21 +445,21 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
         cooled = null;
         changed();
     }
-    /** Another click adds that pixel's colour to the set; the fill is redone from every click with every colour. */
+    /** Another click adds that pixel's color to the set; the fill is redone from every click with every color. */
     function wandAt(x, y) {
         const data = pixels();
         const i = (y * w + x) * 4;
         state.seeds.push([x, y]);
-        state.colours.push([data[i], data[i + 1], data[i + 2]]);
+        state.colors.push([data[i], data[i + 1], data[i + 2]]);
         refill(data);
     }
     function refill(data = pixels()) {
-        state.wand = state.seeds.length ? floodFill(data, w, h, state.seeds, state.tolerance, { colours: state.colours, contiguous: state.contiguous }) : null;
+        state.wand = state.seeds.length ? floodFill(data, w, h, state.seeds, state.tolerance, { colors: state.colors, contiguous: state.contiguous }) : null;
         changed();
     }
-    function removeColour(i) {
+    function removeColor(i) {
         state.seeds.splice(i, 1);
-        state.colours.splice(i, 1);
+        state.colors.splice(i, 1);
         refill();
     }
     /** A mask from another tool (the AI) joins the selection. */
@@ -471,7 +471,7 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
     /** A mask being considered, shown but not yet part of the selection. */
     function setPreview(mask) { state.preview = mask; draw(); }
     function clear() {
-        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colours = []; state.extra = null; state.preview = null;
+        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colors = []; state.extra = null; state.preview = null;
         tree = null;
         changed();
     }
@@ -550,11 +550,11 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
             layer.getContext('2d').putImageData(image, 0, 0);
             ctx.drawImage(layer, 0, 0);
         }
-        const line = (pixels, colour, width) => {
+        const line = (pixels, color, width) => {
             if (!pixels || !pixels.length) return;
             ctx.beginPath();
             pixels.forEach((p, i) => { const x = p % w + 0.5, y = (p - p % w) / w + 0.5; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
-            ctx.lineWidth = width; ctx.strokeStyle = colour; ctx.stroke();
+            ctx.lineWidth = width; ctx.strokeStyle = color; ctx.stroke();
         };
         for (const segment of state.segments) { line(segment, '#000', 3); line(segment, '#fff', 1.5); }
         if (state.live) { line(state.live, '#000', 3); line(state.live, '#ffd54f', 1.5); }
@@ -566,10 +566,10 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
             ctx.fillStyle = i === dragging ? '#ffd54f' : auto ? '#9ecbff' : '#fff'; ctx.fill();    // cooled points in blue
             ctx.lineWidth = 1.5; ctx.strokeStyle = '#000'; ctx.stroke();
         });
-        state.seeds.forEach(([x, y], i) => {                              // where the wand was clicked, in that colour
+        state.seeds.forEach(([x, y], i) => {                              // where the wand was clicked, in that color
             ctx.beginPath();
             ctx.arc(x + 0.5, y + 0.5, 5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgb(${state.colours[i].join(',')})`; ctx.fill();
+            ctx.fillStyle = `rgb(${state.colors[i].join(',')})`; ctx.fill();
             ctx.lineWidth = 1.5; ctx.strokeStyle = '#fff'; ctx.stroke();
         });
         if (painting) ctx.drawImage(painting.canvas, 0, 0);
@@ -648,8 +648,8 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
         const now = new Uint8Array(w * h);
         for (let i = 0; i < now.length; i++) now[i] = d[i * 4] > 127 ? 1 : 0;
         const next = refineMask(pixels(), w, h, now, stroke, state.refine.inside, Math.round(Math.max(16, brushRadius() * 4)));
-        // it is a painted selection now: the traced points and the wand's colours give way to it
-        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colours = [];
+        // it is a painted selection now: the traced points and the wand's colors give way to it
+        state.points = []; state.segments = []; state.closed = false; state.live = null; state.wand = null; state.seeds = []; state.colors = [];
         state.extra = next.some(Boolean) ? next : null;
         tree = null;
         changed();
@@ -698,7 +698,7 @@ export function setupSelection({ $, source, overlay, surface = overlay, onChange
         click(x, y) { if (!cost) refreshCost(); addPoint(x, y); },
         moveTo,
         setContiguous(on) { state.contiguous = on; if (state.seeds.length) refill(); },
-        removeColour,
+        removeColor,
         /** The picture changed: the costs are stale (the selection stays if the size did). */
         pictureChanged() { cost = null; },
         /** For scripts: trace these points (preview pixels) and close. */

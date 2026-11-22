@@ -2,17 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>qblur · image filters written as maths</title>
-<meta name="description" content="Image filters written as maths. Chain them, tune them, share them as a link — everything runs in your browser, on the GPU or the CPU.">
+<title>qblur · image filters written as math</title>
+<meta name="description" content="Image filters written as math. Chain them, tune them, share them as a link — everything runs in your browser, on the GPU or the CPU.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Image filters written as maths">
+<meta property="og:title" content="Image filters written as math">
 <meta property="og:description" content="Chain filters, tune their knobs, and share the result as a link. Runs in the browser, on photos, video and GIFs.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>
-/* a filter's link used to open here (qblur.com/#…): the editor has its own page now */
-if (location.hash.length > 1) location.replace('editor.html' + location.search + location.hash);
+/* a filter's link used to open here (qblur.com/#…): the editor has its own page now. Only a filter goes on — base64url
+   JSON, as filterToLink writes it (src/format.js) —, not the page's own anchors (#main …) */
+(function () {
+  var hash = location.hash.slice(1);
+  if (!/^[A-Za-z0-9_-]{8,}$/.test(hash)) return;
+  try {
+    var binary = atob(hash.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((hash.length + 3) % 4));
+    var value = JSON.parse(new TextDecoder().decode(Uint8Array.from(binary, function (c) { return c.charCodeAt(0); })));
+    if (value && (typeof value === 'object' || typeof value === 'string')) location.replace('editor.html' + location.search + location.hash);
+  } catch (e) { /* not a filter: stay */ }
+})();
 </script>
 <script type="importmap">
 { "imports": {
@@ -41,7 +50,7 @@ if (location.hash.length > 1) location.replace('editor.html' + location.search +
   .home button:hover { border-color: var(--mz-accent); }
   .home button[aria-pressed="true"] { background: var(--mz-accent); border-color: var(--mz-accent); color: #fff; }
 
-  /* the example: a picture beside the maths that made it */
+  /* the example: a picture beside the math that made it */
   .try { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 1.4rem; align-items: start; }
   @media (max-width: 860px) { .try { grid-template-columns: minmax(0, 1fr); gap: .9rem; } }
   .try-picture { margin: 0; min-width: 0; }
@@ -53,8 +62,8 @@ if (location.hash.length > 1) location.replace('editor.html' + location.search +
   .try-picture figcaption .hint { margin-left: auto; }
   .try-side > :first-child { margin-top: 0; }
   .try-side label { display: block; font-weight: 700; margin-bottom: .25rem; }
-  #maths { width: 100%; box-sizing: border-box; font: 1rem/1.4 var(--ss-font-mono); padding: .5rem .6rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); resize: vertical; min-height: 4.4rem; }
-  #maths[aria-invalid="true"] { outline: 2px solid #6b0000; }
+  #math { width: 100%; box-sizing: border-box; font: 1rem/1.4 var(--ss-font-mono); padding: .5rem .6rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); resize: vertical; min-height: 4.4rem; }
+  #math[aria-invalid="true"] { outline: 2px solid #6b0000; }
   #error { color: #6b0000; font-size: .88rem; min-height: 1.4em; margin: .25rem 0 .5rem; }
   #presets { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
   .try-side .more { margin: .8rem 0 0; }
@@ -85,10 +94,10 @@ if (location.hash.length > 1) location.replace('editor.html' + location.search +
 <body>
 <main class="home">
 <section class="ss-cell ss-p1 qb-head">
-  <h1>Image filters written as maths</h1>
+  <h1>Image filters written as math</h1>
   <p class="intro">
 <!-- claude-ui:begin editor-intro -->
-Write a filter as maths, give it knobs and notes, save it, and share it as a link anyone can open, change and keep as their own. Everything runs in your browser — nothing is uploaded.
+Write a filter as math, give it knobs and notes, save it, and share it as a link anyone can open, change and keep as their own. Everything runs in your browser — nothing is uploaded.
 <!-- claude-ui:end editor-intro -->
   </p>
   <p class="ways"><a class="ss-btn ss-btn-primary" href="editor.html">Open the editor</a> <a class="ss-btn" id="guide-link" href="../docs/filters.md">Read the guide</a></p>
@@ -108,10 +117,10 @@ Write a filter as maths, give it knobs and notes, save it, and share it as a lin
       </figcaption>
     </figure>
     <div class="try-side">
-      <p>A filter is maths run on every pixel: <code>r g b</code> the pixel's colour, <code>x y</code> its position (0–1), <code>px py</code> in pixels,
-        <code>gray</code> its brightness, <code>t</code> the frame. Change the maths and the picture follows.</p>
-      <label for="maths">The filter</label>
-      <textarea id="maths" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="error">rgb * (1 - 1.6 ((x - 0.5)^2 + (y - 0.5)^2))</textarea>
+      <p>A filter is math run on every pixel: <code>r g b</code> the pixel's color, <code>x y</code> its position (0–1), <code>px py</code> in pixels,
+        <code>gray</code> its brightness, <code>t</code> the frame. Change the math and the picture follows.</p>
+      <label for="math">The filter</label>
+      <textarea id="math" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="error">rgb * (1 - 1.6 ((x - 0.5)^2 + (y - 0.5)^2))</textarea>
       <div id="error" role="status"></div>
       <div id="presets" role="group" aria-label="Filters to try"></div>
       <p class="ways"><a class="ss-btn ss-btn-primary" id="open-editor" href="editor.html">Open this filter in the editor →</a></p>
@@ -123,8 +132,8 @@ Write a filter as maths, give it knobs and notes, save it, and share it as a lin
 <section class="ss-cell ss-p3" aria-labelledby="apps-heading">
   <h2 class="ss-band" id="apps-heading">Just want one thing done?</h2>
   <div class="apps">
-    <a href="avatar/"><b>Profile picture</b>Centred on you, in a style, the background blurred, replaced or removed.</a>
-    <a href="splash/"><b>Colour splash</b>Click a colour to keep it; the rest of the photo turns grey.</a>
+    <a href="avatar/"><b>Profile picture</b>Centered on you, in a style, the background blurred, replaced or removed.</a>
+    <a href="splash/"><b>Color splash</b>Click a color to keep it; the rest of the photo turns gray.</a>
     <a href="move/"><b>Make it move</b>A wave, a ripple, a slow zoom: a photo saved as a GIF or a video.</a>
     <a href="text/"><b>Fancy text</b>Words as a picture: gold, chrome, fire, a photo inside the letters.</a>
   </div>
@@ -134,7 +143,7 @@ Write a filter as maths, give it knobs and notes, save it, and share it as a lin
   <h2 class="ss-band" id="embed-heading">On your own site</h2>
   <p style="margin:0">
 <!-- claude-ui:begin embed-blurb -->
-qblur is a JavaScript library: one <code>&lt;script&gt;</code> from a CDN puts these filters — or your own maths — on your pages,
+qblur is a JavaScript library: one <code>&lt;script&gt;</code> from a CDN puts these filters — or your own math — on your pages,
 live on photos, video or a webcam, with knobs, share links and text. It runs on the GPU, or the CPU where there is none (Node too). Free, MIT.
 <!-- claude-ui:end embed-blurb -->
     <a href="../docs/library.md">How to use it →</a></p>

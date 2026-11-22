@@ -1,9 +1,9 @@
 /**
  * What the generated CPU filter code calls: sampling the picture the way a
- * WebGL texture does, and the neighbourhood functions as whole planes.
+ * WebGL texture does, and the neighborhood functions as whole planes.
  *
  * Pictures are { data: Float32Array RGBA 0–1, width, height }, rows top
- * down. Positions are pixel centres in that frame: (px, py) is pixel px of
+ * down. Positions are pixel centers in that frame: (px, py) is pixel px of
  * row py, so sampling there returns that pixel exactly and a fractional
  * position blends the four around it (bilinear, edges clamped) — what
  * texture2D does with LINEAR filtering and CLAMP_TO_EDGE.
@@ -21,7 +21,7 @@ const PLACE = { cover: 0, fit: 1, stretch: 2, tile: 3 };
 export function placeCode(place) { return PLACE[place ?? 'cover'] ?? 0; }
 
 export function scratch() { return new Float64Array(4); }
-/** P[i][k], for colour params (the generated code may not index twice). */
+/** P[i][k], for color params (the generated code may not index twice). */
 export function at(P, i, k) { return Number(P[i][k]); }
 
 export function fmod(a, b) { return a - b * Math.floor(a / b); }
@@ -42,7 +42,7 @@ export function random(px, py, h, seed) {
 
 const clampi = (v, max) => (v < 0 ? 0 : v > max ? max : v);
 
-/** Bilinear sample of picture data at pixel-centre position (X, Y), edges clamped, into out[0..3]. */
+/** Bilinear sample of picture data at pixel-center position (X, Y), edges clamped, into out[0..3]. */
 export function sample(D, w, h, X, Y, out) {
     const x0f = Math.floor(X);
     const y0f = Math.floor(Y);
@@ -69,7 +69,7 @@ export function sampleOrZero(D, w, h, X, Y, out) {
 
 /**
  * A named picture laid over the frame (the shader's mz_sample_<name>): scaled by `place`
- * (0 cover, 1 fit, 2 stretch, 3 tile) times zoom, centred at (x, y) of the frame, turned by
+ * (0 cover, 1 fit, 2 stretch, 3 tile) times zoom, centered at (x, y) of the frame, turned by
  * angle; transparent outside unless tiled.
  */
 export function picture(Q, qw, qh, w, h, zoom, x, y, angle, mode, X, Y, out) {
@@ -91,7 +91,7 @@ export function picture(Q, qw, qh, w, h, zoom, x, y, angle, mode, X, Y, out) {
     return sample(Q, qw, qh, qx - 0.5, qy - 0.5, out);
 }
 
-// ---- neighbourhoods: whole planes, computed once per pass ------------------------------
+// ---- neighborhoods: whole planes, computed once per pass ------------------------------
 //
 // Taps are whole-pixel offsets, edges clamped; dy runs downwards. Square windows are done as a
 // horizontal pass then a vertical one — the same sums, maxima and weights as the shader's
@@ -341,7 +341,7 @@ export function convolve(I, w, h, px, py, k00, k01, k02, k10, k11, k12, k20, k21
     return out;
 }
 
-// ---- colour spaces: the shader's to<space> / from<space> (mathzetta render/glsl.js colourGlsl), sRGB on the other side ----
+// ---- color spaces: the shader's to<space> / from<space> (mathzetta render/glsl.js colorGlsl), sRGB on the other side ----
 const toLin = (c) => (c < 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
 const fromLin = (c) => { c = Math.max(c, 0); return c < 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; };
 const hue = (r, g, b, v, d) => { const h = v === r ? (g - b) / d : v === g ? 2 + (b - r) / d : 4 + (r - g) / d; return h / 6 - Math.floor(h / 6); };

@@ -5,7 +5,7 @@
  * code / bold / italic / links. No dependencies.
  */
 
-/** A heading's id the way GitHub makes it: "Results: numbers, colours, true/false" → results-numbers-colours-truefalse */
+/** A heading's id the way GitHub makes it: "Results: numbers, colors, true/false" → results-numbers-colors-truefalse */
 export function slug(text) {
     return text.toLowerCase().replace(/`/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
 }

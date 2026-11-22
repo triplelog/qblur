@@ -2,8 +2,8 @@
  * Make it move: a photo, one motion (a filter that uses t), speed and "how much", saved as a GIF
  * or a video. Each motion has one knob, `amount`; the slider maps 0–1 onto its range. Speed scales
  * t. Both can be formulas worked out per pixel (`speed (0.3 + y)`, `amount gray`): every `t` in the
- * motion's maths becomes `(t (speed formula))` and every `amount` `(amount formula)`, with the two
- * sliders as the knobs `speed` and `amount` — so the user's text only ever reaches the filter as maths. The picture is shown at most 720 on its long side (it redraws every frame); GIFs are at most
+ * motion's math becomes `(t (speed formula))` and every `amount` `(amount formula)`, with the two
+ * sliders as the knobs `speed` and `amount` — so the user's text only ever reaches the filter as math. The picture is shown at most 720 on its long side (it redraws every frame); GIFs are at most
  * 480, which keeps them a sensible size.
  */
 import { createView, openFile, loadPicture, samplePhotos, showCredit, download, saveGif, byName, MZ } from '../kit.js';
@@ -12,7 +12,7 @@ const $ = (id) => document.getElementById(id);
 const SHOW = 720, GIF = 480, FPS = 15;
 const STEP = 60 / FPS;                                  // t moves 60 a second on screen
 
-// around the centre, by an angle that falls to 0 at the edge of a circle half the picture across
+// around the center, by an angle that falls to 0 at the edge of a circle half the picture across
 const SWIRL_A = 'amount sin(t / 25) max(0, 1 - sqrt((px - w/2)^2 + (py - h/2)^2) / (0.5 min(w, h)))^2';
 const MOTIONS = [
   { id: 'wave', name: 'Wave', amount: [0, 30, 8], def: { params: { amount: 8 }, color: 'pixel(px + amount sin(py / 10 + t / 5), py)' } },
@@ -91,7 +91,7 @@ function useMotion(m) {
 }
 function frame() {
   if (state.playing && view && !state.busy) {
-    state.t += 1;                                     // a frame at 60 a second moves t by 1; the speed is in the maths
+    state.t += 1;                                     // a frame at 60 a second moves t by 1; the speed is in the math
     view.knobs(knobs());
     view.draw(state.t);
   }

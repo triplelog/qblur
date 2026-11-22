@@ -4,7 +4,7 @@
  * lines, no dependencies, so it works wherever the editor does.
  *
  *   const { width, height, frames, loop } = decodeGif(arrayBuffer);
- *   frames[i].data   Uint8ClampedArray, width × height × 4, composited (disposal honoured)
+ *   frames[i].data   Uint8ClampedArray, width × height × 4, composited (disposal honored)
  *   frames[i].delay  milliseconds (GIFs saying 0–10 ms are shown at 100 ms, as browsers do)
  *   loop             0 = for ever
  *
@@ -70,7 +70,7 @@ export function decodeGif(buffer) {
         pos += 9;
         const palette = flags & 0x80 ? readPalette(bytes, pos, 1 << ((flags & 7) + 1)) : globalPalette;
         if (flags & 0x80) pos += palette.length;
-        if (!palette) throw new Error('The GIF has no colour table');
+        if (!palette) throw new Error('The GIF has no color table');
         const minCodeSize = bytes[pos++];
         const chunks = [];
         let total = 0;

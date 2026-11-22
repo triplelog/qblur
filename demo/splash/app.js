@@ -1,5 +1,5 @@
 /**
- * Colour splash: up to three colours kept, the rest grey. The colours are hues (0–1 round the
+ * Color splash: up to three colors kept, the rest gray. The colors are hues (0–1 round the
  * wheel), picked by clicking the photo; one filter with knobs, so clicking and sliding never
  * recompile. Saved at the photo's own size (up to 2048 on the long side).
  */
@@ -8,15 +8,15 @@ import { createView, openFile, loadPicture, samplePhotos, showCredit, download }
 const $ = (id) => document.getElementById(id);
 const MAX = 2048;
 
-// how near a pixel's hue is to colour k: 1 within `range`, fading to 0 just past it
+// how near a pixel's hue is to color k: 1 within `range`, fading to 0 just past it
 const near = (k) => `on${k} (1 - smoothstep(range, range + 0.03, abs(fract(red(tohsv(rgb)) - h${k} + 0.5) - 0.5)))`;
 const SPLASH = {
-  name: 'Colour splash',
+  name: 'Color splash',
   params: {
     h1: 0, h2: 0, h3: 0, on1: 0, on2: 0, on3: 0,
     range: { default: 0.05, min: 0.01, max: 0.2 }, dull: { default: 0.3, min: 0, max: 0.9 }, fade: { default: 0, min: 0, max: 1 },
   },
-  // the rest: grey (with `fade` of its colour left); kept: near one of the hues and colourful enough
+  // the rest: gray (with `fade` of its color left); kept: near one of the hues and colorful enough
   color: `mix(mix((gray, gray, gray), rgb, fade), rgb, max(${near(1)}, max(${near(2)}, ${near(3)})) smoothstep(dull - 0.08, dull, green(tohsv(rgb))))`,
 };
 
@@ -37,17 +37,17 @@ function render() {
 function showKept() {
   const box = $('kept');
   box.textContent = '';
-  if (!state.hues.length) box.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: 'none yet — the whole photo is grey' }));
+  if (!state.hues.length) box.append(Object.assign(document.createElement('span'), { className: 'hint', textContent: 'none yet — the whole photo is gray' }));
   state.hues.forEach((c, i) => {
-    const b = Object.assign(document.createElement('button'), { type: 'button', title: 'remove this colour', textContent: '×' });
-    b.setAttribute('aria-label', `remove colour ${i + 1}`);
+    const b = Object.assign(document.createElement('button'), { type: 'button', title: 'remove this color', textContent: '×' });
+    b.setAttribute('aria-label', `remove color ${i + 1}`);
     b.style.cssText = `background: rgb(${c.rgb.join(',')}); color: #fff; text-shadow: 0 0 2px #000; min-width: 2.6rem;`;
     b.onclick = () => { state.hues.splice(i, 1); showKept(); render(); };
     box.append(b);
   });
 }
 
-/** The colour under a click: the average of a small square, as a hue. */
+/** The color under a click: the average of a small square, as a hue. */
 function pick(e) {
   if (!state.picture) return;
   const r = view.canvas.getBoundingClientRect();
@@ -57,7 +57,7 @@ function pick(e) {
   for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) sum[k] += d[i + k];
   const rgb = sum.map((v) => Math.round(v / (d.length / 4)));
   const [R, G, B] = rgb.map((v) => v / 255), max = Math.max(R, G, B), min = Math.min(R, G, B), c = max - min;
-  if (c < 0.12 || max < 0.15) { status('That spot is grey, black or white — click somewhere more colourful.', true); return; }
+  if (c < 0.12 || max < 0.15) { status('That spot is gray, black or white — click somewhere more colorful.', true); return; }
   let h = max === R ? ((G - B) / c) % 6 : max === G ? (B - R) / c + 2 : (R - G) / c + 4;
   h = ((h / 6) + 1) % 1;
   if (state.hues.length >= 3) state.hues.shift();         // three at most: the oldest goes
@@ -68,7 +68,7 @@ function pick(e) {
   render();
 }
 
-/** "Skip dull" follows the colours picked: a vivid red keeps only vivid reds, so a brick wall of the same hue stays grey. */
+/** "Skip dull" follows the colors picked: a vivid red keeps only vivid reds, so a brick wall of the same hue stays gray. */
 function autoDull() {
   if (!state.hues.length) return;
   $('dull').value = String(Math.min(0.75, Math.max(0.15, Math.min(...state.hues.map((c) => c.sat)) * 0.7)));
@@ -77,7 +77,7 @@ function autoDull() {
 async function usePicture(canvas, credit = '', hues = []) {
   state.picture = canvas;
   if (!view) {
-    view = createView($('frame'), canvas.width, canvas.height, { label: 'the photo with the colours kept' });
+    view = createView($('frame'), canvas.width, canvas.height, { label: 'the photo with the colors kept' });
     view.set(SPLASH);
   } else view.resize(canvas.width, canvas.height);
   view.setImage('source', canvas);
@@ -90,9 +90,9 @@ async function usePicture(canvas, credit = '', hues = []) {
 
 $('frame').addEventListener('click', pick);
 for (const id of ['range', 'dull', 'fade']) $(id).oninput = render;
-$('fade').addEventListener('input', () => $('fade').setAttribute('aria-valuetext', Number($('fade').value) ? `${Math.round($('fade').value * 100)}% of the colour` : 'grey'));
+$('fade').addEventListener('input', () => $('fade').setAttribute('aria-valuetext', Number($('fade').value) ? `${Math.round($('fade').value * 100)}% of the color` : 'gray'));
 $('file').onchange = async () => {
-  try { await usePicture(await openFile($('file').files[0], MAX)); $('sample').value = ''; status('Now click a colour to keep.'); }
+  try { await usePicture(await openFile($('file').files[0], MAX)); $('sample').value = ''; status('Now click a color to keep.'); }
   catch (e) { status(e.message, true); }
 };
 const samples = await samplePhotos();
@@ -105,7 +105,7 @@ $('download').onclick = async () => {
   if (!state.picture) return;
   render();
   const out = view.snapshot();
-  if (!window.qblurNoDownload) await download(out, 'colour-splash.png');
+  if (!window.qblurNoDownload) await download(out, 'color-splash.png');
   status(`Saved a ${out.width} × ${out.height} PNG.`);
 };
 

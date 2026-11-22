@@ -1,12 +1,12 @@
 /**
  * One call: a picture and a filter in, the filtered picture out.
  *
- *   const canvas = await applyFilter(img, '1 - rgb');                       // maths
+ *   const canvas = await applyFilter(img, '1 - rgb');                       // math
  *   const canvas = await applyFilter(img, 'Sepia');                         // a built-in filter, by name
  *   const canvas = await applyFilter(img, 'Threshold', { params: { cutoff: 0.3 } });
  *   const picture = await applyFilter(imageData, filterDoc);                // in Node: { data, width, height }
  *
- * `filter` is maths, a filter document, JSON or a share link (readFilter), a
+ * `filter` is math, a filter document, JSON or a share link (readFilter), a
  * compiled filter (compileFilter), or the name of a filter in LIBRARY. The
  * result is the picture's size — up to a limit: a picture longer than
  * `maxSize` on its long side (MAX_SIZE, 4096 px, on the GPU; MAX_SIZE_CPU,
@@ -21,7 +21,7 @@
  * same pixels either way. The GPU work happens on one hidden WebGL canvas the
  * module keeps (browsers allow only a few contexts), and a filter's shaders
  * are compiled once and kept for the next call with the same filter (the
- * same maths or document — by what it says, so a changed document is a new
+ * same math or document — by what it says, so a changed document is a new
  * filter — or the same compiled filter, whose knob values are read again on
  * every call). Calls run one at a time, in the order they were made.
  */
@@ -40,7 +40,8 @@ const newCanvas = (width, height) => (typeof document !== 'undefined'
 export function toCompiled(filter) {
     if (filter && typeof filter === 'object' && Array.isArray(filter.passes)) return filter;   // (isCompiled, below)
     if (typeof filter === 'string') {
-        const named = LIBRARY.find((f) => f.name.toLowerCase() === filter.trim().toLowerCase());
+        const wanted = filter.trim().toLowerCase();
+        const named = LIBRARY.find((f) => f.name.toLowerCase() === wanted);
         return compileFilter(named ?? readFilter(filter));
     }
     return compileFilter(filter);
@@ -153,9 +154,9 @@ let queue = Promise.resolve();         // one drawing at a time: they share the 
 
 /**
  * @param {CanvasImageSource|ImageData|{ data, width, height }} image the picture (loaded)
- * @param {string|object} filter maths, a filter document, JSON, a link, a compiled filter, or a LIBRARY name
+ * @param {string|object} filter math, a filter document, JSON, a link, a compiled filter, or a LIBRARY name
  * @param {object} [options]
- *   params  { name: value } — knob values (a colour is [r, g, b], 0–1); the rest keep their defaults.
+ *   params  { name: value } — knob values (a color is [r, g, b], 0–1); the rest keep their defaults.
  *           In a chain, every step with a knob of that name takes it.
  *   t       the frame, for filters that move (default 0)
  *   images  { name: picture } — the other pictures the filter asks for (compiled.images)
@@ -192,7 +193,7 @@ async function apply(picture, filter, { params = {}, t = 0, images = {}, engine 
         for (const [name, value] of Object.entries(params)) {
             if (!known.has(name)) throw new Error(`applyFilter: the filter has no knob called "${name}" (it has ${[...known.keys()].join(', ') || 'none'})`);
             if (known.get(name).type === 'color' ? !isColor(value) : !Number.isFinite(Number(value)) || typeof value === 'object' || value === '') {
-                throw new Error(`applyFilter: the knob "${name}" needs ${known.get(name).type === 'color' ? 'a colour, [r, g, b] with each 0–1' : 'a number'}, not ${JSON.stringify(value)}`);
+                throw new Error(`applyFilter: the knob "${name}" needs ${known.get(name).type === 'color' ? 'a color, [r, g, b] with each 0–1' : 'a number'}, not ${JSON.stringify(value)}`);
             }
         }
         // the filter's graphics (text, shapes, strokes) are drawn first: nothing below waits, so a kept runner is set and drawn in one go

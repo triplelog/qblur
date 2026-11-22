@@ -57,7 +57,7 @@ suite('filter validation', () => {
         eq(problems.length, 3);
         has(problems[0], '"Threshold": "with" sets "nope"');
         has(problems[1], '"Broken": ');
-        has(problems[2], '"Tint": "tint" should be a colour');
+        has(problems[2], '"Tint": "tint" should be a color');
         has(validateFilter({ steps: ['gray', 'x +'] })[0], 'step 2: ');
     });
     test('compileFilter throws the problems', () => throws(() => compileFilter({ color: 'sin(' }), /the filter: /));
@@ -78,7 +78,7 @@ suite('filter compiling', () => {
     test('a parameter next to a bracket is a product, not a call', () => {
         has(compileFilter(vignette).passes[0].fragment, 'rgb * (1.0 - strength * (mz_sq(x - 0.5) + mz_sq(y - 0.5)))');
     });
-    test('colour parameters are vec3 uniforms', () => {
+    test('color parameters are vec3 uniforms', () => {
         const [pass] = compileFilter(tint).passes;
         has(pass.fragment, 'uniform vec3 tint;');
         has(pass.fragment, 'mz_rgba(rgb * tint)');
@@ -172,7 +172,7 @@ suite('filters with several pictures', () => {
         throws(() => normalizeFilter({ params: { k: 1 }, images: ['k'], color: 'rgb' }), /both a parameter and an image/);
         throws(() => normalizeFilter({ images: ['mz_x'], color: 'rgb' }), /letters, digits/);
     });
-    test('a picture is a colour, a function, and a channel source', () => {
+    test('a picture is a color, a function, and a channel source', () => {
         const [pass] = compileFilter(through).passes;
         has(pass.fragment, 'uniform sampler2D mz_img_mask;');
         has(pass.fragment, 'uniform sampler2D mz_img_source;');
@@ -241,7 +241,7 @@ suite('filter compiling reports everything, once', () => {
         has(message, '"B": Failed to parse');
         throws(() => compileFilter({ steps: [{ filter: { name: 'A', params: { k: 1 }, color: 'k' }, with: { nope: 2 } }] }), /"A": "with" sets "nope"/);
     });
-    test('neighbourhood loops stop at the radius asked for', () => {
+    test('neighborhood loops stop at the radius asked for', () => {
         const shader = filterShader('blur(2)');
         has(shader, 'float mz_r = min(max(ceil(radius), 0.0), 8.0);');
         has(shader, 'if (fi > mz_r) break;');
@@ -295,7 +295,7 @@ suite('skipping steps, separable blurs, transparency outside', () => {
         eq(compileFilter('gaussian(2) - blur(1)').passes.length, 1);
         eq(compileFilter('rgb - gaussian(2)').passes.length, 1);
     });
-    test('a geometry read as the whole colour is transparent outside; alpha() says where the picture is', () => {
+    test('a geometry read as the whole color is transparent outside; alpha() says where the picture is', () => {
         has(compileFilter('zoom(0.5)').passes[0].fragment, 'mz_rgba(mz_sample_image(mz_zoom(0.5)))');
         has(compileFilter('mix(rgb, zoom(0.5), alpha(zoom(0.5)))').passes[0].fragment, 'alpha(mz_sample_image(mz_zoom(0.5)))');
         has(compileFilter({ images: ['inset'], color: 'inset' }).passes[0].fragment, 'mz_rgba(mz_px_inset)');
@@ -305,12 +305,12 @@ suite('skipping steps, separable blurs, transparency outside', () => {
     });
 });
 
-suite('colour spaces', () => {
+suite('color spaces', () => {
     test('"space" normalizes, validates and shares', () => {
         eq(normalizeFilter({ space: 'hsv', color: 'rgb' }).space, { in: 'hsv', out: 'hsv' });
         eq(normalizeFilter({ space: { in: 'lab' }, color: 'rgb' }).space, { in: 'lab', out: 'srgb' });
         eq('space' in normalizeFilter({ space: 'srgb', color: 'rgb' }), false);
-        throws(() => normalizeFilter({ space: 'cmyk', color: 'rgb' }), /not a colour space/);
+        throws(() => normalizeFilter({ space: 'cmyk', color: 'rgb' }), /not a color space/);
         eq(JSON.parse(filterToJSON({ space: 'hsv', color: 'rgb' })).space, 'hsv');
         eq(JSON.parse(filterToJSON({ space: { in: 'lab' }, color: 'rgb' })).space, { in: 'lab', out: 'srgb' });
     });

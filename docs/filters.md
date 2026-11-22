@@ -1,8 +1,9 @@
 # Writing image filters
 
-A filter is a bit of maths that runs on every pixel of a picture. It reads the pixel — its
-colour `r` `g` `b`, its brightness `gray`, where it is (`x` `y`, or `px` `py` in pixels) — and works
-out the new colour. Type one into the editor's *Add a new filter* box and press *Add*:
+A filter is a bit of math that runs on every pixel of a picture. It reads the pixel — its
+color `r` `g` `b`, its brightness `gray`, where it is (`x` `y`, or `px` `py` in pixels) — and works
+out the new color. Type one into the *Add a new filter* box on the filters page (`filters.html`, where filters
+are written; the editor puts them on your pictures) and press *Add*:
 
 | Write | You get |
 | --- | --- |
@@ -15,36 +16,38 @@ out the new colour. Type one into the editor's *Add a new filter* box and press 
 | `gaussian(3)` | a soft blur |
 
 Then give it knobs: with the step's *Edit* on, *+ slider* adds a line like
-`strength := [[0..1 step 0.01 = 0.5]]` — a slider the maths can use as `strength` (*Edit* also shows
+`strength := [[0..1 step 0.01 = 0.5]]` — a slider the math can use as `strength` (*Edit* also shows
 the step's name and author, and lets you write notes). Steps run top to bottom, each on the result of the one
 above, so filters chain; *Copy link* puts the whole thing in a link anyone can open, change and
-keep (see [Sharing filters](#sharing-filters)). Everything runs in your browser — nothing is
-uploaded. The rest of this guide is everything an expression can use; the editor's *Examples* each
-explain one idea, and the *Library* has dozens of filters to open and read.
+keep (see [Sharing filters](#sharing-filters)). *Use it in the editor* takes the filter to the editor, where a
+step shows just its knobs and notes beside a large picture (its *Edit this filter* brings it back here). Everything
+runs in your browser — nothing is uploaded. The rest of this guide is everything an expression can use; the
+*Examples* (under the steps, on both pages) each explain one idea, and *From the library* has dozens of filters to
+open and read.
 
-**Saving the result.** *Download* draws the filter at the picture's own size. *Download options*
-choose the format — PNG, JPEG or WebP, or *auto*, which picks the smallest sensible one (a result
-with few colours becomes a small indexed PNG; one with transparency stays lossless; a photo goes to
+**Saving the result.** In the editor, *Download* (at the top) draws the filter at the picture's own size. The
+*Download* tab's options choose the format — PNG, JPEG or WebP, or *auto*, which picks the smallest sensible one (a result
+with few colors becomes a small indexed PNG; one with transparency stays lossless; a photo goes to
 whichever of JPEG and WebP is smaller) — the size, a crop you drag on the result, and for moving
 pictures *Save as GIF* (at the preview size; a GIF plays through once with its own delays, anything
 else gets 3 seconds) or *Record* (video). Effects measured in pixels — blur radii, `px` — stay the
 same number of pixels, so they look finer on a big picture.
 
 <!-- dev -->
-**For developers.** MathZetta turns the maths into GLSL, and `filterShader()` wraps it in a complete
+**For developers.** MathZetta turns the math into GLSL, and `filterShader()` wraps it in a complete
 fragment shader, so a filter runs on the GPU — fast enough for video:
 
 ```js
 import { filterShader, filterVertexShader } from 'mathzetta/glsl';
 
 filterShader('(1 - r, 1 - g, 1 - b)')                    // invert
-filterShader('gray')                                     // greyscale
+filterShader('gray')                                     // grayscale
 filterShader({ r: 'g', g: 'r' })                         // swap red and green; b and a unchanged
 filterShader('if gray > 0.5 then 1 else 0')              // threshold
 filterShader('pixel(px + 8 sin(py / 10 + t / 5), py)')   // a wave that moves with t
 ```
 
-`demo/editor.html` is the editor; `LIBRARY` (exported by the package) is the built-in catalogue it
+`demo/editor.html` is the editor; `LIBRARY` (exported by the package) is the built-in catalog it
 shows. [qblur on your own pages](library.md) is how to use the package.
 <!-- /dev -->
 
@@ -68,15 +71,15 @@ And everything GLSL has: `clamp(v, 0, 1)`, `mix(a, b, 0.5)`, `smoothstep(0, 1, x
 `step(0.5, x)`, `fract(x)`, `length((x, y))`, `distance(…)`, `floor`, `abs`,
 `min`, `max`, `sin`, `cos`, `exp`, `log`, `sqrt`, `pow`, `atan2(y, x)`, `mod`.
 
-## Results: numbers, colours, true/false
+## Results: numbers, colors, true/false
 
 The shader accepts whatever the expression works out to:
 
-- a **number** is grey (or, for a channel, that channel's value);
-- a **tuple** `(r, g, b)` or `(r, g, b, a)` is the colour;
+- a **number** is gray (or, for a channel, that channel's value);
+- a **tuple** `(r, g, b)` or `(r, g, b, a)` is the color;
 - a **comparison** is 1 or 0 — `r > 0.5` is a mask you can multiply by.
 
-Give one expression for the whole colour, or an object with any of
+Give one expression for the whole color, or an object with any of
 `r`, `g`, `b`, `a`, `rgb`, `rgba`. Channels you don't mention keep their
 value. In a per-channel expression, `r g b a` are always the *original*
 pixel, so `{ r: 'g', g: 'r' }` swaps rather than copies.
@@ -117,7 +120,7 @@ rgb * (1 - 1.6 ((x - 0.5)^2 + (y - 0.5)^2))          vignette (no t)
 For time in seconds instead, set `t` to `performance.now() / 1000` and
 write `sin(2π t)` for one cycle a second.
 
-## Neighbouring pixels
+## Neighboring pixels
 
 `pixel(px, py)` reads any pixel, so blurs, edges and distortions are
 expressions too:
@@ -141,7 +144,7 @@ still picture moves:
 
 | Function | Result |
 | --- | --- |
-| `zoom(s)` `zoom(s, cx, cy)` | the picture `s` times larger, about its centre or the point (cx, cy) in 0–1 |
+| `zoom(s)` `zoom(s, cx, cy)` | the picture `s` times larger, about its center or the point (cx, cy) in 0–1 |
 | `shift(dx, dy)` | moved right and down by that many pixels, wrapping around |
 | `rotate(a)` `rotate(a, cx, cy)` | turned clockwise by `a` radians (`rotate(10°)` works) |
 | `crop(x0, y0, x1, y1)` | that part of the picture, in 0–1 fractions, filling the frame |
@@ -159,9 +162,9 @@ tile(2)                                       four copies
 Each is one transform about the frame; to combine them, chain steps
 (`Zoom` then `Spin`). Where a transform leaves the frame — zoomed out,
 rotated corners — the picture is **transparent** when the transform is
-the whole colour (`zoom(0.5)` alone: the page, or a PNG's transparency,
+the whole color (`zoom(0.5)` alone: the page, or a PNG's transparency,
 shows through; a later step sees `a` = 0 there and can fill it:
-`mix(background, rgb, a)`). Inside a bigger expression it is a colour,
+`mix(background, rgb, a)`). Inside a bigger expression it is a color,
 black there, and `alpha(zoom(0.5))` is 1 inside the picture and 0
 outside, so `mix(rgb, zoom(0.5), alpha(zoom(0.5)))` lays the small copy
 over the original. `shift` and `tile` wrap instead.
@@ -180,13 +183,13 @@ A named picture is laid over the frame according to its own size:
 - `place` — `cover` (fills the frame keeping the aspect ratio, the
   default), `fit` (shows all of it), `stretch` (ignores the ratio), or
   `tile` (repeats it at its own size).
-- `zoom`, `x`, `y`, `angle` — then scaled, centred at (x, y) in 0–1 of
+- `zoom`, `x`, `y`, `angle` — then scaled, centered at (x, y) in 0–1 of
   the frame, and turned. Outside the picture it is transparent, so
   `mix(rgb, inset, alpha(inset))` composites it — a picture in picture.
 
 Whoever uses the filter can move it: `"with": { "inset": { "x": 0.2,
 "zoom": 0.5 } }` in a chain step (the demo shows these as knobs beside
-each picture), and `zoom(inset, 1 + t / 500)` in the maths animates on
+each picture), and `zoom(inset, 1 + t / 500)` in the math animates on
 top of that. The `source` picture is the frame's size, so it has no
 placement.
 
@@ -194,7 +197,7 @@ placement.
 
 A filter can draw text, rectangles and ovals. Each is named in
 `graphics`, drawn by the browser into a transparent picture the size of
-the frame, and read by the maths like any picture:
+the frame, and read by the math like any picture:
 
 ```json
 { "name": "Caption",
@@ -202,10 +205,10 @@ the frame, and read by the maths like any picture:
   "color": "mix(rgb, title, alpha(title))" }
 ```
 
-- `title` is the graphic's colour at this pixel, `alpha(title)` where it
-  is — so the maths decides how it lands: `mix(rgb, title, alpha(title))`
+- `title` is the graphic's color at this pixel, `alpha(title)` where it
+  is — so the math decides how it lands: `mix(rgb, title, alpha(title))`
   lays it on; `mix(rgb, mix((1, 0.35, 0.3), (1, 0.85, 0.25), x), alpha(title))`
-  colours the letters with a gradient; `mix(rgb, gaussian(5) * 0.7, alpha(panel))`
+  colors the letters with a gradient; `mix(rgb, gaussian(5) * 0.7, alpha(panel))`
   frosts the picture behind a panel (a shape with its own filter);
   `mix(rgb * 0.3, rgb, alpha(spot))` darkens all but an oval.
 - **Animated** through the same geometry as any picture, with `t`:
@@ -216,9 +219,9 @@ the frame, and read by the maths like any picture:
 | Setting | For | Meaning |
 | --- | --- | --- |
 | `type` | all | `text` (the default), `rect` or `ellipse` |
-| `x`, `y` | all | the centre, 0–1 across and down the frame |
+| `x`, `y` | all | the center, 0–1 across and down the frame |
 | `angle` | all | turned clockwise, radians |
-| `color` | all | any CSS colour: `#ffcc00`, `rgba(0,0,0,0.5)`, `white` |
+| `color` | all | any CSS color: `#ffcc00`, `rgba(0,0,0,0.5)`, `white` |
 | `shadow` | all | `{ "color", "blur", "dx", "dy" }` drawn into the graphic (sizes as fractions of the text size, or the frame height for shapes), or `null` |
 | `shadows` | all | a list of up to 8 shadow layers, back to front, each drawn into a picture of its own (see below) |
 | `outline` | all | `{ "color", "width" }`, or `null` |
@@ -230,10 +233,10 @@ the frame, and read by the maths like any picture:
 
 ### Shadow layers, each with its own filter
 
-`shadow` is drawn into the graphic, so whatever the maths does to the
+`shadow` is drawn into the graphic, so whatever the math does to the
 text it does to that shadow too. `shadows` keeps them apart: each layer
 is drawn into a picture of its own — `title_shadow1`, `title_shadow2`…,
-back to front — and the maths lays each on as it likes:
+back to front — and the math lays each on as it likes:
 
 ```json
 { "graphics": { "title": { "text": "LAYERS", "shadow": null,
@@ -242,13 +245,13 @@ back to front — and the maths lays each on as it likes:
 ```
 
 Here the first layer darkens the picture under a soft glow that breathes
-with `t`, and the second is a hard offset shadow coloured by a gradient
-whatever colour it was cast in ("Layered shadow" in the library). The
+with `t`, and the second is a hard offset shadow colored by a gradient
+whatever color it was cast in ("Layered shadow" in the library). The
 plain way to lay them all on is `mix(mix(mix(rgb, title_shadow1,
 alpha(title_shadow1)), title_shadow2, alpha(title_shadow2)), title,
 alpha(title))`; the editor writes that for you when you add a layer to
-a step whose maths is still the plain one, and points out a layer your
-own maths doesn't use yet.
+a step whose math is still the plain one, and points out a layer your
+own math doesn't use yet.
 
 ### Fonts
 
@@ -267,9 +270,9 @@ a graphic with `with`, merging settings: `{ "filter": …Caption…, "with":
 graphics are not shared between steps: two steps whose text is called
 `title` draw two texts (the compiler binds them as `title`, `title~2`…).
 
-In the editor, *+ text*, *+ rectangle* and *+ oval* add a step with an
+In the editor's *Select & draw* tab, *+ text*, *+ rectangle* and *+ oval* add a step with an
 editable expression; each graphic gets controls for its words, font,
-size, place, angle, colour, shadow and outline, and can be dragged on
+size, place, angle, color, shadow and outline, and can be dragged on
 the picture. A font file loaded from the computer works there but can't
 travel in a link; a font URL can (the browser of whoever opens the link
 fetches it from that address).
@@ -290,7 +293,7 @@ A brush is a graphic of type `strokes`: what the user paints on the
 picture, recorded point by point (`[x, y, milliseconds, pressure]`, x and
 y as fractions of the frame) and drawn again for every frame — only the
 paint laid down by frame `t` is there, so the painting animates. Its
-picture carries data rather than colour:
+picture carries data rather than color:
 
 | Channel | Meaning |
 | --- | --- |
@@ -299,15 +302,15 @@ picture carries data rather than colour:
 | `green(brush)` | passes ÷ 4: how many strokes have gone over it (`4 green(brush)` counts them) |
 | `blue(brush)` | progress: how far through the whole drawing it was painted, 0 → 1 |
 
-So the maths decides what the paint does, and how it changes:
+So the math decides what the paint does, and how it changes:
 
 ```
-mix(rgb, ink, alpha(brush))                                           ink in a colour (a knob)
+mix(rgb, ink, alpha(brush))                                           ink in a color (a knob)
 mix(rgb, gaussian(2 + 3 min(4 green(brush), 3)), alpha(brush))        a blur, stronger with every pass
 rgb (1 - 0.22 min(4 green(brush), 4) alpha(brush))                    darker with every pass, like a wash
 mix(rgb, mix((1, 0.9, 0.5), (0.1, 0.07, 0.06), red(brush)), alpha(brush))   glowing as it goes down, then cooling
 mix(rgb, fromhsv(blue(brush), 0.85, 1), alpha(brush))                 a rainbow along the drawing
-mix((gray, gray, gray), rgb, alpha(brush))                            the picture's colour painted back in
+mix((gray, gray, gray), rgb, alpha(brush))                            the picture's color painted back in
 ```
 
 | Setting | Meaning |
@@ -323,7 +326,7 @@ mix((gray, gray, gray), rgb, alpha(brush))                            the pictur
 | `clip` | `none`, `inside` or `outside`: paint only inside (or outside) the user's selection |
 
 A stroke counts once wherever it goes, however often it crosses itself,
-so `green` counts separate passes. In the editor, "+ brush" adds a step
+so `green` counts separate passes. In the editor (*Select & draw*), "+ brush" adds a step
 and starts drawing (the picture shows the painting finished while you
 draw; "replay" plays it); each brush's panel chooses what the paint does,
 the brush, the timing and where it may paint, and "outline the
@@ -334,7 +337,7 @@ takes `{ t, mask }`.
 
 ## Several pictures: masks and blending
 
-A filter can ask for more pictures by name, and the maths treats each
+A filter can ask for more pictures by name, and the math treats each
 like the main one:
 
 ```json
@@ -343,8 +346,8 @@ like the main one:
   "color": "mix(source, rgb, luma(mask))" }
 ```
 
-- `mask` is that picture's colour at this pixel (like `rgb`);
-  `mask(px, py)` is any pixel of it, also a colour; `red(mask)` …
+- `mask` is that picture's color at this pixel (like `rgb`);
+  `mask(px, py)` is any pixel of it, also a color; `red(mask)` …
   `alpha(mask)` and `luma(mask)` read one channel.
 - `source` is always available: the picture the chain started from,
   before any step. So "Through a mask" as the last step shows everything
@@ -371,11 +374,11 @@ outside — 1 everywhere when nothing is selected, so a filter that uses
 it works unchanged. `mix(source, rgb, selected)` as a last step keeps
 the chain's result only inside the selection ("Only inside the
 selection" in the library); `selection(px, py)` reads the mask elsewhere.
-It is a mask, so a colour space leaves it alone. The runner takes it as
+It is a mask, so a color space leaves it alone. The runner takes it as
 a picture named `selection` (white = in): `runner.setImage('selection',
 maskCanvas)`.
 
-The editor makes one two ways. *Trace the edge* is intelligent scissors
+The editor's *Select & draw* tab makes one. *Trace the edge* is intelligent scissors
 (livewire): click a few points around the object and the line between
 them follows the edge — every pixel has a cost, low where the brightness
 changes sharply, and the line is the cheapest path (Dijkstra) between
@@ -409,24 +412,24 @@ object. The model and its runtime (ONNX Runtime Web) are
 served by the site itself — no CDN, no Hugging Face — load only when
 asked and are then cached by the browser; the rest of the editor never
 depends on them. Anything not among the 80 kinds is for the edge tracer,
-the colour fill or the refine brush.
+the color fill or the refine brush.
 
 The *refine* brush fixes any selection, however it was made. Paint with
 *inside* over a part that was missed, or with *outside* over a part that
 leaked; the boundary then settles on the nearest real edge near the
 stroke. Under the hood, the stroke and the rim of a band round it are
 seeds, and each side grows through the band with a cost that is tiny in
-even colour and steep across an edge (measured over three pixels, so a
+even color and steep across an edge (measured over three pixels, so a
 soft edge counts in full) — whichever side reaches a pixel first claims it
 (a seeded region competition, Dijkstra again); nothing outside the band
 moves. With nothing selected, an inside stroke makes a selection from
 scratch: the whole picture is in play and its border is "outside", so the
-stroke grows to the object's edges. The size slider sets the brush. *Fill a colour* is a magic wand that
-knows several colours: each click adds that pixel's colour to a set,
+stroke grows to the object's edges. The size slider sets the brush. *Fill a color* is a magic wand that
+knows several colors: each click adds that pixel's color to a set,
 and the fill grows from every click through any pixel within the
-tolerance of *any* colour in the set — a striped shirt is two clicks;
-"connected only" off takes those colours anywhere in the picture;
-click a swatch to drop a colour, and the tolerance slider refills live. Feather softens the edge,
+tolerance of *any* color in the set — a striped shirt is two clicks;
+"connected only" off takes those colors anywhere in the picture;
+click a swatch to drop a color, and the tolerance slider refills live. Feather softens the edge,
 invert swaps inside and out; the selection is drawn at any export size.
 It belongs to the picture, not the filter, so share links don't carry it.
 
@@ -471,7 +474,7 @@ forward and backward a frame at a time:
   disagree with the rest are pulled back to the group's movement, and
   each may stray only a few pixels from the group's overall move, scale
   and turn, so the outline can't wander off;
-- the keyframe teaches it the object's colours against a band just
+- the keyframe teaches it the object's colors against a band just
   outside, so each frame has a map of how object-like every pixel is;
   the outline between the points follows the edge of that map (and some
   plain brightness edges) — not every leaf behind the object;
@@ -480,7 +483,7 @@ forward and backward a frame at a time:
   jumped. Between two keyframes, each frame keeps the direction that
   scored higher.
 
-The timeline under the picture shows confidence (green sure, red not):
+In the editor's *Select & draw* tab, under *Follow the selection through the clip*, the timeline shows confidence (green sure, red not):
 click a frame to go there, fix it ("edit this frame" puts the outline into
 the edge tracer to drag its points, or select again), and use it as another
 keyframe. "Fix red frames with AI" runs the chosen model on each unsure frame
@@ -500,7 +503,7 @@ The runner takes them with `runner.setImage('mask', image)`; a picture
 not given is white, so a missing mask lets everything through. Pictures
 are stretched to the canvas, so size them like the main picture.
 
-## Colour spaces
+## Color spaces
 
 The frame holds sRGB — the numbers a screen shows. A filter can work in
 another space instead:
@@ -520,28 +523,28 @@ on the way in only, when the expression writes sRGB itself.
 | `srgb` | what the picture holds (the default) |
 | `linear` | light rather than gamma-encoded values: blurs and mixes in it behave like a lens, bright spots stay bright |
 | `hsv`, `hsl` | hue (0–1 around the wheel), saturation, value / lightness |
-| `lab` | L 0–1, then a and b centred on 0.5 (0.5 ± value/256) |
-| `oklab` | L 0–1, then a and b centred on 0.5 (0.5 + value) — perceptually even |
-| `ycbcr` | luma, then Cb and Cr centred on 0.5 |
+| `lab` | L 0–1, then a and b centered on 0.5 (0.5 ± value/256) |
+| `oklab` | L 0–1, then a and b centered on 0.5 (0.5 + value) — perceptually even |
+| `ycbcr` | luma, then Cb and Cr centered on 0.5 |
 
 Every space keeps its values in 0–1 so they survive the 8-bit texture
 between passes — but 8 bits of Lab or OKLab is coarse for dark, saturated
-colours (up to ~20/255 off after the round trip), so the editor uses
-half-float textures for a chain with a colour space where the GPU
+colors (up to ~20/255 off after the round trip), so the editor uses
+half-float textures for a chain with a color space where the GPU
 allows (`createFilterRunner(gl, c, { precision: 'half' })`,
 `createCpuRunner(c, { precision: 'float' })`). A step's opacity blends
 the result over its input in sRGB. The conversions are also functions you can use anywhere —
 `tohsv(c)`, `fromhsv(c)`, `tolinear`, `fromlinear`, `tohsl`, `tolab`,
 `tooklab`, `toycbcr` and their inverses, sRGB on the other side —
 so a single expression can do it: `fromhsv(fract(red(tohsv(rgb)) + t /
-300), green(tohsv(rgb)), blue(tohsv(rgb)))` cycles the hue. The editor
-has a space chooser beside the expression box.
+300), green(tohsv(rgb)), blue(tohsv(rgb)))` cycles the hue. On the filters
+page, a step's space chooser sits beside its expression box (and beside *Add a new filter*'s).
 
-## Blur, edges and other neighbourhood functions
+## Blur, edges and other neighborhood functions
 
 The classic image-processing operations are functions you can use in
 any expression, so they combine with everything else and with each
-other. Colour-valued ones return a colour like `rgb` (alpha is left
+other. Color-valued ones return a color like `rgb` (alpha is left
 alone); the edge detectors work on brightness and return a number.
 
 | Function | Result |
@@ -550,10 +553,10 @@ alone); the edge detectors work on brightness and return a number.
 | `gaussian(sigma)` | Gaussian blur, weights falling off with `sigma` |
 | `blurx(r)` `blury(r)` `gaussianx(s)` `gaussiany(s)` | the same along one axis — chain an x then a y step for a wide, fast blur |
 | `sharpen(amount)` | the 3×3 sharpen kernel, scaled by `amount` |
-| `dilate(radius)` `erode(radius)` | the brightest / darkest colour within ±radius: light or dark areas grow |
+| `dilate(radius)` `erode(radius)` | the brightest / darkest color within ±radius: light or dark areas grow |
 | `convolve(k1, …, k9)` | your own 3×3 kernel, row by row |
 | `sobel()` `sobelx()` `sobely()` | Sobel edge strength (and its horizontal / vertical parts) |
-| `laplacian()` | the 4-neighbour Laplacian of brightness |
+| `laplacian()` | the 4-neighbor Laplacian of brightness |
 | `emboss()` | brightness relief lit from the top-left, around 0.5 |
 
 ```
@@ -561,14 +564,14 @@ gaussian(3)                                   a blur
 rgb + 1.5 (rgb - gaussian(2))                 unsharp mask
 rgb + 0.8 max(gaussian(3) - 0.6, 0)           bloom: bright parts glow
 if sobel() > 0.3 then 1 else 0                an edge map
-rgb (1 - 3 sobel())                           ink outline over the colour
+rgb (1 - 3 sobel())                           ink outline over the color
 convolve(0, -1, 0, -1, 5, -1, 0, -1, 0)       sharpen, as a kernel
 dilate(2) - erode(2)                          morphological gradient: outlines of shapes
 ```
 
 Every one of them takes expressions, so a parameter can drive it
 (`gaussian(sigma)`), and `t` can too (`gaussian(2 + 2 sin(t / 20))`).
-In a per-channel expression a colour result gives that channel:
+In a per-channel expression a color result gives that channel:
 `{ "r": "gaussian(4)" }` blurs only red. The library in the demo has
 each of these as a filter with knobs, and chains built from them
 (Cartoon = Gaussian blur → Posterize → Outline).
@@ -576,11 +579,11 @@ each of these as a filter with knobs, and chains built from them
 Two limits, because a shader loop needs fixed bounds: the square
 functions reach ±8 pixels, so `gaussian(sigma)` inside an expression is
 truncated above `sigma ≈ 2.7`; the one-axis functions reach ±24. A step
-whose whole colour is just `gaussian(sigma)` or `blur(radius)` is
+whose whole color is just `gaussian(sigma)` or `blur(radius)` is
 computed separably for you — an x pass then a y pass, 2n taps instead
 of n², reaching ±24 — so the plain blur is the fast, wide one; write
 `gaussianx`/`gaussiany` yourself only when you want one axis.
-Each call samples the neighbourhood again, so `gaussian(3)` used twice
+Each call samples the neighborhood again, so `gaussian(3)` used twice
 in one expression costs twice — put it in its own step if that matters.
 "Canny edges" in the library is a chain of these: a Gaussian, then
 gradient strength and direction (`atan2(sobely(), sobelx())` into four
@@ -592,7 +595,7 @@ expressions, so it runs on the CPU too.
 ## Running it
 
 The editor runs a filter on the GPU (WebGL) when the browser has it, and on the CPU otherwise —
-*Advanced* → *runs on* lets you choose. Both give the same pixels; the GPU is much faster, so big
+in the editor, the *Download* tab's *Advanced* → *runs on* lets you choose. Both give the same pixels; the GPU is much faster, so big
 pictures and video want it.
 
 <!-- dev -->
@@ -618,7 +621,7 @@ language, types and sampling as the shader (bilinear `pixel()`, edges
 clamped, 8-bit rounding between passes), so both give the same pixels:
 `npm run check -- --cpu` compares them on every library filter (all within
 1/255 apart from a handful of pixels exactly on an edge; `random()` can't
-match — GPUs compute the hash's `sin` in lower precision). Neighbourhood
+match — GPUs compute the hash's `sin` in lower precision). Neighborhood
 functions with an argument that is the same for every pixel (`blur(radius)`)
 are computed once per pass, separably; one that changes per pixel
 (`blur(x * 8)`) is computed pixel by pixel and is slow. Rough single-thread
@@ -628,7 +631,7 @@ workers is 3–5× faster on the heavy ones.
 
 The generated code is compiled only after MathZetta's `checkGeneratedJs`
 passes it (no names but its own, no strings, only its own arrays indexed),
-so a filter from a share link can read the picture and write colours,
+so a filter from a share link can read the picture and write colors,
 nothing else. Pages whose Content-Security-Policy forbids `'unsafe-eval'`
 can't use the CPU runner.
 
@@ -673,9 +676,9 @@ to a canvas, upload it, draw, and read the canvas back (`toBlob` or
 
 ## Sharing filters
 
-A filter is a small JSON document: the maths, a name and author, and the
-knobs it exposes. Since it is only maths, it is safe to accept from
-anyone — it can read the picture and write colours, nothing else.
+A filter is a small JSON document: the math, a name and author, and the
+knobs it exposes. Since it is only math, it is safe to accept from
+anyone — it can read the picture and write colors, nothing else.
 
 ```json
 {
@@ -688,19 +691,19 @@ anyone — it can read the picture and write colours, nothing else.
 }
 ```
 
-- `color` is one expression for the colour, or an object with any of
+- `color` is one expression for the color, or an object with any of
   `r`, `g`, `b`, `a`, `rgb`, `rgba` — exactly as `filterShader()` takes.
 - `params` are the knobs. Each is a number (`"cutoff": 0.5` means
   0–1; larger defaults get 0–2×) or `{ "default", "min", "max", "step",
-  "label" }`, or a colour: `"tint": [1, 0.85, 0.7]` (three numbers, 0–1).
+  "label" }`, or a color: `"tint": [1, 0.85, 0.7]` (three numbers, 0–1).
   A parameter is a value, never a function, so `strength (x + 1)` is a
   product.
   A number knob is a slider, unless it has `"options": [2, 4, 8]` (a menu
   of those values; the default is the first unless given) or
-  `"input": "box"` (a box to type a value in — any maths that works out
+  `"input": "box"` (a box to type a value in — any math that works out
   to a number, such as `1/3`).
 - `notes` is the filter's page, shown in its step in the editor: a list of
-  Markdown texts (maths in `$…$` is drawn by Inline Math, and `{{cutoff}}`
+  Markdown texts (math in `$…$` is drawn by Inline Math, and `{{cutoff}}`
   inside it is a knob's value) and `{ "param": "cutoff" }` entries that
   place a knob's input among them; knobs it doesn't place come first.
   Notes never change the picture.
@@ -711,11 +714,11 @@ anyone — it can read the picture and write colours, nothing else.
 - `name`, `author`, `description` are free text; `format` says which
   version of this format the document follows.
 
-In the editor each knob is written as an Inline Math variable, one line
-you can edit (shown while the step's *Edit* is on): `cutoff := [[0..1 step 0.01 = 0.5]]` (a slider: from, to,
+On the filters page each knob is written as an Inline Math variable, one line
+you can edit (shown while the step's *Edit* is on; the editor shows only the knob): `cutoff := [[0..1 step 0.01 = 0.5]]` (a slider: from, to,
 its step, where it starts), `radius := [[3]]` (a box), `levels := [[2 | 4 | 8]]`
-(a menu) or `tint := #ff8800` (a colour). Renaming a knob there renames it
-in the maths too.
+(a menu) or `tint := #ff8800` (a color). Renaming a knob there renames it
+in the math too.
 
 ### Combining filters
 
@@ -832,7 +835,7 @@ only run what has a numeric meaning per pixel:
 - **Names:** `x y r g b a t w h px py rgb gray unchanged` are taken, as
   are GLSL's own words (`in`, `out`, `float`, `main`, …). Greek letters are
   spelled out (`θ` → `theta`), primes become `_prime`. `f`, `g` and `h`
-  followed by a bracket are read as function calls, as in maths: write
+  followed by a bracket are read as function calls, as in math: write
   `g * (1 - r)`, not `g(1 - r)`.
 
 MathZetta's [how it works](https://github.com/triplelog/mathzetta/blob/main/packages/mathzetta/docs/how-it-works.md)

@@ -82,7 +82,7 @@ const CHECK = `(async () => {
     await run('mask over a blur', { steps: ['gaussian(3)', { images: ['mask'], color: 'mix(source, rgb, luma(mask))' }] });
     await run('picture sampled elsewhere', { steps: [{ images: ['overlay'], color: 'mix(rgb, overlay(px + 20, py), red(overlay))' }] });
     await run('placement overridden', { steps: [{ filter: by('Picture in picture'), with: { inset: { place: 'tile', x: 0.25, zoom: 0.5, angle: 0.3 } } }] });
-    await run('per channel with a colour result', { steps: [{ color: { r: 'gaussian(4)', b: 'if sobel() > 0.3 then 1' } }] });
+    await run('per channel with a color result', { steps: [{ color: { r: 'gaussian(4)', b: 'if sobel() > 0.3 then 1' } }] });
     await run('share link round trip', MZ.filterFromLink(MZ.filterToLink({ name: 'Mine', steps: [by('Cartoon'), { filter: by('Through a mask'), opacity: 0.7 }] })));
     for (const example of D.EXAMPLES) {                                    // every example, as the page shows it
         await D.showExample(example);
@@ -137,7 +137,7 @@ const CHECK = `(async () => {
         D.testPicture();
         results.push({ name: 'GIF in, frame by frame, and GIF out', error: (played ? '' : 'the GIF did not play; ') + (/Saved a 40 × 30 GIF, 3 frames/.test(saved) ? '' : 'save: ' + saved), mean: 0, lit: 0 });
     }
-    // colour spaces: there and back gives the picture again, on both engines
+    // color spaces: there and back gives the picture again, on both engines
     {
         const size = D.readOut();
         const src = document.getElementById('source').getContext('2d').getImageData(0, 0, size.width, size.height).data;
@@ -153,27 +153,27 @@ const CHECK = `(async () => {
             for (let i = 0; i < src.length; i++) if (i % 4 !== 3 && (Math.abs(gpu[i] - src[i]) > tolerance || Math.abs(cpu[i] - src[i]) > 2)) off++;
             if (off > src.length * 0.75 * 0.01) bad.push(space + ': ' + off + ' channels off (' + (D.runner && D.runner.precision) + ' textures)');
         }
-        results.push({ name: 'colour spaces round-trip, GPU and CPU', error: bad.join('; '), mean: 0, lit: 0 });
+        results.push({ name: 'color spaces round-trip, GPU and CPU', error: bad.join('; '), mean: 0, lit: 0 });
     }
     // outside the picture is transparent, on both engines
     D.loadChain({ steps: ['zoom(0.5)'] });
     {
         const gpu = D.readOut();
-        const corner = gpu.data[3], centre = gpu.data[((gpu.height >> 1) * gpu.width + (gpu.width >> 1)) * 4 + 3];
+        const corner = gpu.data[3], center = gpu.data[((gpu.height >> 1) * gpu.width + (gpu.width >> 1)) * 4 + 3];
         let cpuCorner = -1;
         try {
             const r = MZ.createCpuRunner(D.compiled);
             r.setImage(document.getElementById('source'));
             cpuCorner = r.draw({ t: 0 }).data[3];
         } catch (e) { cpuCorner = e.message; }
-        results.push({ name: 'zoomed out: transparent outside the picture', error: error() || (corner === 0 && centre === 255 && cpuCorner === 0 ? '' : 'alpha corner ' + corner + ' centre ' + centre + ' cpu corner ' + cpuCorner), mean: 0, lit: 0 });
+        results.push({ name: 'zoomed out: transparent outside the picture', error: error() || (corner === 0 && center === 255 && cpuCorner === 0 ? '' : 'alpha corner ' + corner + ' center ' + center + ' cpu corner ' + cpuCorner), mean: 0, lit: 0 });
     }
     // a skipped step drops out of the chain; moving a step reorders it
     D.loadChain({ steps: [{ filter: by('Invert'), skip: true }, by('Sepia')] });
     const skippedPasses = D.compiled.passes.length;
     D.moveStep(1, 0);
     results.push({ name: 'skip and reorder', error: error() || (skippedPasses === 1 && D.chain.steps[0].filter.name === 'Sepia' && document.querySelectorAll('#steps li.skipped').length === 1 ? '' : 'passes ' + skippedPasses + ', first step ' + D.chain.steps[0].filter.name), mean: 0, lit: 0 });
-    // a step's editing parts show only while its Edit is on; a knob's line renames it in the maths; the maths box applies on Enter;
+    // a step's editing parts show only while its Edit is on; a knob's line renames it in the math; the math box applies on Enter;
     // a filter written in "Add a new filter" starts with Edit on
     {
         D.loadChain({ steps: [by('Wave')] });
@@ -194,7 +194,7 @@ const CHECK = `(async () => {
         document.getElementById('expr').value = 'gray';
         document.getElementById('add-expr').click();
         const fresh = document.querySelectorAll('#steps li').length === 2 && document.querySelector('#steps li:last-child').classList.contains('editing') && li().classList.contains('editing');
-        results.push({ name: 'a step: Edit shows its parts, a knob renamed by its line, the maths applied on Enter', error: error() || (closed && open && renamed && applied && fresh ? '' : JSON.stringify({ closed, open, renamed, applied, fresh })), mean: 0, lit: 0 });
+        results.push({ name: 'a step: Edit shows its parts, a knob renamed by its line, the math applied on Enter', error: error() || (closed && open && renamed && applied && fresh ? '' : JSON.stringify({ closed, open, renamed, applied, fresh })), mean: 0, lit: 0 });
     }
     // applyFilter in the page, on whichever engine it has (what a review before 0.1.0 found): a plain picture is taken, a changed document is a new filter,
     // a compiled filter's knobs are read on every call, calls made together keep their own picture; and <qblur-image> draws,
@@ -268,11 +268,11 @@ const CHECK = `(async () => {
         const out = D.readOut();
         const src = document.getElementById('source').getContext('2d').getImageData(0, 0, 320, 240).data;
         const at = (x, y) => (y * 320 + x) * 4;
-        const centre = at(Math.round(cx), Math.round(cy)), corner = at(5, 5);
+        const center = at(Math.round(cx), Math.round(cy)), corner = at(5, 5);
         const problems = [];
         if (Math.abs(inside - expected) > expected * 0.12) problems.push('mask area ' + inside + ' vs ' + Math.round(expected));
         if (onRing < (onRing + offRing) * 0.85) problems.push('only ' + onRing + ' of ' + (onRing + offRing) + ' path pixels on the edge');
-        if (Math.abs(out.data[centre] - (255 - src[centre])) > 8) problems.push('centre not inverted: ' + out.data[centre] + ' vs source ' + src[centre]);
+        if (Math.abs(out.data[center] - (255 - src[center])) > 8) problems.push('center not inverted: ' + out.data[center] + ' vs source ' + src[center]);
         if (Math.abs(out.data[corner] - src[corner]) > 4) problems.push('corner changed: ' + out.data[corner] + ' vs source ' + src[corner]);
         S.clear();
         results.push({ name: 'selection traced around the disc (' + points.length + ' clicks, ' + ms.toFixed(0) + ' ms)', error: error() || problems.join('; '), mean: 0, lit: 0 });
@@ -328,7 +328,7 @@ const CHECK = `(async () => {
                         if (x >= x0 - padX && x <= x1 + padX && y >= y0 - padY && y <= y1 + padY) inside++;
                     }
                     const area = (x1 - x0) * (y1 - y0);
-                    // the wiring, not the model's judgement (tools/compare-ai.mjs is for that): RF-DETR and MobileSAM must
+                    // the wiring, not the model's judgment (tools/compare-ai.mjs is for that): RF-DETR and MobileSAM must
                     // outline the car; MagicTouch is known to spill over it, so it only has to take something there
                     const tight = key.startsWith('rfdetr') || key === 'mobilesam';
                     if (tight ? !(picked > 0.25 * area && inside > 0.7 * picked) : !(inside > 0.25 * area)) error = 'outline ' + picked + ' px (' + inside + ' near the car, whose box is ' + Math.round(area) + '): ' + msg();
@@ -366,7 +366,7 @@ const CHECK = `(async () => {
             S.clear();
             results.push({ name: 'refine brush: an inside stroke selects the disc (' + n + ' of ~' + Math.round(expected) + ' px)', error: Math.abs(n - expected) < expected * 0.15 ? '' : 'selected ' + n, mean: 0, lit: 0 });
         }
-        // the wand with two colours: the red disc and the green square, nothing else
+        // the wand with two colors: the red disc and the green square, nothing else
         S.setMode('fill');
         S.wandAt(Math.round(cx), Math.round(cy));
         S.wandAt(Math.round(320 * 0.7), Math.round(240 * 0.25));
@@ -376,7 +376,7 @@ const CHECK = `(async () => {
         const want = expected + 320 * 0.35 * 240 * 0.35;
         S.setMode('off');
         S.clear();
-        results.push({ name: 'wand with two colours: disc and square', error: Math.abs(picked - want) < want * 0.1 && S.state.colours.length === 0 ? '' : 'picked ' + picked + ' of ~' + Math.round(want), mean: 0, lit: 0 });
+        results.push({ name: 'wand with two colors: disc and square', error: Math.abs(picked - want) < want * 0.1 && S.state.colors.length === 0 ? '' : 'picked ' + picked + ' of ~' + Math.round(want), mean: 0, lit: 0 });
     }
     // text: a caption appears where it is placed, follows a change of words, and is drawn again crisp at export size
     {
@@ -404,7 +404,7 @@ const CHECK = `(async () => {
         D.draw(); const a = D.stats();
         results.push({ name: 'text: placed, re-worded, exported ' + bitmap.width + '×' + bitmap.height, error: error() || problems.join('; '), mean: a.mean, lit: a.lit });
     }
-    // shadow layers: "+ text", then a layer added through the controls; the maths follows, and the layer has its own filter
+    // shadow layers: "+ text", then a layer added through the controls; the math follows, and the layer has its own filter
     {
         D.testPicture();
         D.chain.steps.length = 0;
@@ -426,7 +426,7 @@ const CHECK = `(async () => {
             if (r > 245 && g > 245 && b > 245) white++;
         }
         const problems = [];
-        if (!followed) problems.push('the maths did not take the new layer: ' + D.chain.steps[0].filter.color);
+        if (!followed) problems.push('the math did not take the new layer: ' + D.chain.steps[0].filter.color);
         if (red < 300) problems.push('only ' + red + ' red pixels from the layer');
         if (white < 300) problems.push('only ' + white + ' white pixels of text');
         results.push({ name: 'shadow layer added, with its own filter (' + red + ' red, ' + white + ' white)', error: error() || problems.join('; '), mean: 0, lit: 0 });
@@ -504,7 +504,7 @@ const CHECK = `(async () => {
         results.push({ name: 'tracking a moving disc through a GIF (' + tracker.flagged().length + ' flagged)', error: error() || problems.join('; '), mean: 0, lit: 0 });
         D.testPicture();
     }
-    // export: a two-colour result becomes a tiny 1-bit PNG; crop and size apply; JPEG and WebP write
+    // export: a two-color result becomes a tiny 1-bit PNG; crop and size apply; JPEG and WebP write
     {
         const X = D.exporter;
         D.loadChain({ steps: [by('Threshold')] });
@@ -528,7 +528,7 @@ const CHECK = `(async () => {
         const [w, h] = X.outputSize();
         if (bitmap.width !== Math.round(w / 2) || bitmap.height !== Math.round(h / 2)) problems.push('crop gave ' + bitmap.width + 'x' + bitmap.height + ' of ' + w + 'x' + h);
         if (jpeg.blob.type !== 'image/jpeg') problems.push('jpeg type ' + jpeg.blob.type);
-        if (auto.format !== 'png') problems.push('auto chose ' + auto.format + ' for two colours');
+        if (auto.format !== 'png') problems.push('auto chose ' + auto.format + ' for two colors');
         results.push({ name: 'export: palette PNG, crop, JPEG, auto (webp: ' + webp + ')', error: problems.join('; '), mean: 0, lit: 0 });
     }
     D.loadChain({ steps: [by('Sepia')] });

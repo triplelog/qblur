@@ -31,9 +31,9 @@ suite('GIF decoding', () => {
         for (const [frame, source] of [[gif.frames[0], a], [gif.frames[1], b]]) {
             for (let i = 0; i < source.length; i++) maxDiff = Math.max(maxDiff, Math.abs(frame.data[i] - source[i]));
         }
-        if (maxDiff > 12) throw new Error(`pixels off by up to ${maxDiff} after quantizing to 256 colours`);   // 256 colours of a smooth gradient
+        if (maxDiff > 12) throw new Error(`pixels off by up to ${maxDiff} after quantizing to 256 colors`);   // 256 colors of a smooth gradient
     });
-    test('a GIF with few colours decodes exactly', () => {
+    test('a GIF with few colors decodes exactly', () => {
         const w = 64, h = 64;
         const a = picture(w, h, (x, y) => ((x >> 3) + (y >> 3)) % 2 ? [255, 0, 0] : [0, 0, 255]);
         const { frames } = decodeGif(makeGif([a], w, h, [50]));

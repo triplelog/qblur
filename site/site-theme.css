@@ -21,7 +21,7 @@
 	--mz-bg: #fff;                         /* controls, tiles and the canvas frames stay white */
 	--mz-font: var(--ss-font-body);
 }
-/* on the darkest cell, small text takes the full ink (the muted grey is 3.9:1 there) */
+/* on the darkest cell, small text takes the full ink (the muted gray is 3.9:1 there) */
 .ss-p5 { --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
 /* the logo: as wide as the sidebar allows; in the phone bar, the bar's height */
 .ss-logo img { max-width: 200px; display: block; margin: 0 auto; }
@@ -103,7 +103,7 @@ body.ss .app .side h2 { font-family: var(--ss-font-head); color: var(--ss-ink); 
 body.ss .app .status.bad, body.ss .formula + .status { color: #6b0000; }
 body.ss .app .tile { background: var(--ss-panel); border-color: var(--ss-rule); }
 body.ss .app .tile[aria-pressed="true"] { background: var(--ss-panel-strong); border-color: var(--ss-accent); }
-/* the picture on a white surface (the chequerboard shows through a transparent one) */
+/* the picture on a white surface (the checkerboard shows through a transparent one) */
 body.ss .app .frame { border: 1px solid var(--ss-border); background-color: #fff; }
 body.ss .app .frame.round { border-radius: 50%; }
 
@@ -124,6 +124,11 @@ body.ss .qb-doc blockquote { margin: 1rem 0; padding: .6rem 1rem; background: va
 body.ss .qb-doc blockquote p { margin: 0; }
 .qb-skip { position: absolute; left: -9999px; top: 8px; z-index: 50; background: #fff; color: var(--ss-ink); padding: .4rem .8rem; border-radius: var(--ss-radius-sm); }
 .qb-skip:focus { left: 8px; }
+/* a file chooser inside its label (.pick): out of sight, not out of the keyboard's reach — Tab reaches it, Space or
+   Enter opens it, and its label shows the focus */
+label:has(> input[type=file].pick) { position: relative; }
+label > input[type=file].pick { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; opacity: 0; overflow: hidden; clip-path: inset(50%); }
+label:has(> input[type=file].pick:focus-visible) { outline: 2px solid var(--ss-accent, #1f3a93); outline-offset: 2px; }
 /* an empty status line is not a cell (it stays in the page, so a message still gets announced) */
 body.ss .app .side > .status:empty { padding: 0; border: 0; box-shadow: none; background: transparent; min-height: 0; }
 

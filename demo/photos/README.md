@@ -9,7 +9,7 @@ and `npm run build` copies the folder to `site/photos/`.
 
 ```json
 [
-  { "file": "harbour.jpg", "title": "Harbour", "credit": "Photo by [Jane Doe](https://unsplash.com/@janedoe) on [Unsplash](https://unsplash.com/photos/…)" },
+  { "file": "harbor.jpg", "title": "Harbor", "credit": "Photo by [Jane Doe](https://unsplash.com/@janedoe) on [Unsplash](https://unsplash.com/photos/…)" },
   { "file": "portrait.jpg", "title": "Portrait", "credit": "Photo by John Roe (Pexels)" }
 ]
 ```
@@ -18,9 +18,9 @@ and `npm run build` copies the folder to `site/photos/`.
   preview is at most 1440 × 1080 ("sharpest"), and *Download PNG* draws the filter at the
   photo's own size, so bigger only costs download time.
 - One with a face or clear shapes (for edges, blur, spotlight) and one
-  with strong colours (chroma key, tint, posterize) show the library well.
+  with strong colors (chroma key, tint, posterize) show the library well.
 - Use pictures you have the rights to publish (CC0 / the Unsplash or
-  Pexels licences) and keep the credit line; it is shown under the picture.
+  Pexels licenses) and keep the credit line; it is shown under the picture.
   `[text](https://…)` in it becomes a link (Unsplash asks for two: the
   photographer and the photo); anything else is plain text.
 - Videos (.mp4, H.264) go in the same list and play muted and looped, `t`

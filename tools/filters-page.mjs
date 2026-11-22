@@ -21,14 +21,14 @@ export function filtersPage(editor) {
     swap('<!DOCTYPE html>\n', '<!DOCTYPE html>\n<!-- Made from editor.html by tools/filters-page.mjs: edit that file, then run it (npm run build does). -->\n');
     swap(/<title>[^<]*<\/title>/.exec(html)?.[0] ?? '<title>', '<title>Filters — qblur</title>');
     swap(/<meta name="description" content="[^"]*">/.exec(html)?.[0] ?? '<meta name="description"',
-        '<meta name="description" content="Write image filters as maths: steps, knobs and notes, with a live preview — save them in your browser, share them as a link, then use them in the qblur editor.">');
-    swap(/<meta property="og:title" content="[^"]*">/.exec(html)?.[0] ?? '<meta property="og:title"', '<meta property="og:title" content="Write an image filter as maths">');
+        '<meta name="description" content="Write image filters as math: steps, knobs and notes, with a live preview — save them in your browser, share them as a link, then use them in the qblur editor.">');
+    swap(/<meta property="og:title" content="[^"]*">/.exec(html)?.[0] ?? '<meta property="og:title"', '<meta property="og:title" content="Write an image filter as math">');
     swap(/<meta property="og:description" content="[^"]*">/.exec(html)?.[0] ?? '<meta property="og:description"',
         '<meta property="og:description" content="Steps, knobs and notes with a live preview; save it, share it as a link, use it on your photos.">');
     swap('<body class="still qb-editor" data-mode="use">', '<body class="still qb-editor" data-mode="write">');
     swap('<h1>Editor</h1>', '<h1>Filters</h1>');
     swap(/<span class="hint bar-what">[\s\S]*?<\/span>\n/.exec(html)?.[0] ?? '<span class="hint bar-what">',
-        '<span class="hint bar-what">a filter is maths run on every pixel — <a href="#help" class="help-link" title="how to write a filter">how do I write one?</a></span>\n');
+        '<span class="hint bar-what">a filter is math run on every pixel — <a href="#help" class="help-link" title="how to write a filter">how do I write one?</a></span>\n');
     swap("mountShell({ page: 'editor',", "mountShell({ page: 'filters',");
     return html;
 }

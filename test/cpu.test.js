@@ -35,10 +35,10 @@ suite('CPU filters: pixels', () => {
     test('unchanged, as a number and as a branch', () => {
         eq(same(run('if x < 2 then unchanged else 1 - rgb', img).data, img.data), true);   // x is 0–1, so always unchanged
         eq(same(run('if x > 2 then unchanged else 1 - rgb', img).data, run('1 - rgb', img).data), true);
-        // as in the shader, `unchanged` takes the other branch's type: beside a number it is the grey value, beside a colour the colour
+        // as in the shader, `unchanged` takes the other branch's type: beside a number it is the gray value, beside a color the color
         const p = px(img, 0, 0);
-        const grey = Math.round(p[0] * 0.299 + p[1] * 0.587 + p[2] * 0.114);
-        eq(px(run('if x < 0.5 then unchanged else 0', img), 0, 0).slice(0, 3).every((v) => Math.abs(v - grey) <= 1), true);
+        const gray = Math.round(p[0] * 0.299 + p[1] * 0.587 + p[2] * 0.114);
+        eq(px(run('if x < 0.5 then unchanged else 0', img), 0, 0).slice(0, 3).every((v) => Math.abs(v - gray) <= 1), true);
         eq(px(run('if x < 0.5 then unchanged else (0, 0, 0)', img), 0, 0), p);
         eq(px(run({ color: { r: 'unchanged * 0' } }, img), 1, 1)[0], 0);
     });
@@ -84,7 +84,7 @@ suite('CPU filters: which engine', () => {
     });
 });
 
-suite('CPU filters: user input is only maths', () => {
+suite('CPU filters: user input is only math', () => {
     test('unknown names and functions are refused, and nothing is called', () => {
         let called = false;
         globalThis.pwnedForTest = () => { called = true; return 1; };
@@ -116,14 +116,14 @@ export async function asyncTests() {
     }
 }
 
-suite('CPU colour spaces', () => {
+suite('CPU color spaces', () => {
     const picture = (w, h) => {
         const data = new Float32Array(w * h * 4);
         for (let i = 0; i < w * h; i++) data.set([(i % w) / (w - 1), Math.floor(i / w) / (h - 1), ((i * 7) % 11) / 10, 1], i * 4);
         return { data, width: w, height: h };
     };
     for (const space of ['linear', 'hsv', 'hsl', 'lab', 'oklab', 'ycbcr']) {
-        test(`${space}: there and back is the same colour (float textures between passes)`, () => {
+        test(`${space}: there and back is the same color (float textures between passes)`, () => {
             const w = 23, h = 17, src = picture(w, h);
             const runner = createCpuRunner(compileFilter({ space, color: 'rgb' }), { workers: 0, precision: 'float' });
             runner.setImage(src);
@@ -243,4 +243,9 @@ suite('The CPU reads implies, iff and set-builder membership as the shader does'
         eq(one('if r > 0.4 \\iff g > 0.4 then 1 else 0'), 0);             // r > 0.4, g isn't
     });
     test('r ∈ {x | x > 0.4}', () => eq(one('if r \\in \\{x \\mid x > 0.4\\} then 1 else 0'), 255));
+    test('the empty set: ∈ ∅ is false, ∉ ∅ true', () => {
+        eq(one('if r ∈ ∅ then 1 else 0'), 0);
+        eq(one('if r ∉ ∅ then 1 else 0'), 255);
+        eq(one('if r \\in \\emptyset then 1 else 0'), 0);
+    });
 });

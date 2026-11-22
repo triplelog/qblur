@@ -1,5 +1,5 @@
 /**
- * Sends a file's bytes, honouring a Range request — without it a browser
+ * Sends a file's bytes, honoring a Range request — without it a browser
  * cannot seek in a video (it quietly stays on the first frame).
  */
 export function sendFile(req, res, body, headers) {

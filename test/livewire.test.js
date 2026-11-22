@@ -17,7 +17,7 @@ const cost = costMap(rgba, W, H);
 const onCircle = (angle) => [Math.round(CX + R * Math.cos(angle)), Math.round(CY + R * Math.sin(angle))];
 
 suite('livewire: intelligent scissors', () => {
-    test('the cost is low on the edge and high on flat colour', () => {
+    test('the cost is low on the edge and high on flat color', () => {
         const edge = cost[CY * W + (CX + R)], flat = cost[CY * W + CX], outside = cost[10 * W + 10];
         if (!(edge < 40 && flat > 150 && outside > 150)) throw new Error(`edge ${edge}, inside ${flat}, outside ${outside}`);
     });
@@ -38,7 +38,7 @@ suite('livewire: intelligent scissors', () => {
         const d = Math.hypot(x - CX, y - CY);
         if (Math.abs(d - R) > 1.5) throw new Error(`snapped to distance ${d.toFixed(1)}, radius ${R}`);
     });
-    test('the colour fill takes the disc and nothing else', () => {
+    test('the color fill takes the disc and nothing else', () => {
         const mask = floodFill(rgba, W, H, [[CX, CY]], 0.15);
         let n = 0;
         for (let i = 0; i < mask.length; i++) n += mask[i];
@@ -46,7 +46,7 @@ suite('livewire: intelligent scissors', () => {
         if (Math.abs(n - expected) > expected * 0.04) throw new Error(`filled ${n} pixels, the disc has ~${Math.round(expected)}`);
         eq(mask[10 * W + 10], 0);
     });
-    test('several colours: the fill grows through any of them; "anywhere" takes every match', () => {
+    test('several colors: the fill grows through any of them; "anywhere" takes every match', () => {
         // a two-tone shape: the disc plus a red square touching it on the right, and a red island far away
         const two = rgba.slice();
         const paint = (x0, y0, x1, y1, [r, g, b]) => { for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) two.set([r, g, b, 255], (y * W + x) * 4); };
@@ -60,7 +60,7 @@ suite('livewire: intelligent scissors', () => {
         if (count(both) < disc + 40 * 40 * 0.9) throw new Error(`disc ${disc}, with the square ${count(both)}`);
         const anywhere = floodFill(two, W, H, [[CX, CY], [CX + R + 20, CY]], 0.15, { contiguous: false });
         eq(anywhere[20 * W + 20], 1);
-        const named = floodFill(two, W, H, [[CX, CY]], 0.15, { colours: [[200, 40, 40]] });   // the seed's colour isn't in the set: nothing grows from it
+        const named = floodFill(two, W, H, [[CX, CY]], 0.15, { colors: [[200, 40, 40]] });   // the seed's color isn't in the set: nothing grows from it
         eq(count(named), 0);
     });
     test('path cooling freezes a stretch that stayed put, never near the cursor', () => {

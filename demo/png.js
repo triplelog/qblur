@@ -1,26 +1,26 @@
 /**
  * The editor's PNG writer: the package's (src/png.js — indexed PNG-8 when the
- * picture has few colours, RGB when nothing is transparent, Paeth rows) with
+ * picture has few colors, RGB when nothing is transparent, Paeth rows) with
  * gifenc's quantizer for palette 'force', which the package leaves to the caller.
  *
- *   const { blob, kind, colours, bits } = await encodePng({ width, height, data, palette: 'auto', colours: 256, dither: true });
+ *   const { blob, kind, colors, bits } = await encodePng({ width, height, data, palette: 'auto', colors: 256, dither: true });
  */
 import * as G from 'gifenc';
-import { encodePng as encode, colourCount, exactPalette } from '../src/png.js';
+import { encodePng as encode, colorCount, exactPalette } from '../src/png.js';
 
 const { quantize, applyPalette } = G.quantize ? G : G.default;
 
-export { colourCount, exactPalette };
+export { colorCount, exactPalette };
 
 /** As the package's encodePng, with quantizedPalette for palette 'force'. */
 export const encodePng = (o) => encode({ quantize: quantizedPalette, ...o });
 
-/** The picture reduced to `colours` colours (gifenc's quantizer), optionally Floyd–Steinberg dithered. */
-export function quantizedPalette(data, colours, { dither = true, width = 0 } = {}) {
+/** The picture reduced to `colors` colors (gifenc's quantizer), optionally Floyd–Steinberg dithered. */
+export function quantizedPalette(data, colors, { dither = true, width = 0 } = {}) {
     let transparent = false;
     for (let i = 3; i < data.length; i += 4) if (data[i] < 255) { transparent = true; break; }
     const format = transparent ? 'rgba4444' : 'rgb565';
-    const palette = quantize(data, colours, { format }).map((c) => [c[0], c[1], c[2], c.length > 3 ? c[3] : 255]);
+    const palette = quantize(data, colors, { format }).map((c) => [c[0], c[1], c[2], c.length > 3 ? c[3] : 255]);
     if (!dither || !width) return { palette, indices: applyPalette(data, palette, format) };
 
     // Floyd–Steinberg: push each pixel's rounding error onto the pixels to its right and below.

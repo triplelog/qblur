@@ -1,5 +1,5 @@
-qblur.com runs qblur (Copyright (c) 2025-2026 Robert Wilcox, MIT licence: https://github.com/triplelog/qblur).
-These parts of the site are other people's, under their own licences:
+qblur.com runs qblur (Copyright (c) 2025-2026 Robert Wilcox, MIT license: https://github.com/triplelog/qblur).
+These parts of the site are other people's, under their own licenses:
 
 gifenc (https://github.com/mattdesl/gifenc), bundled into app.js and the apps' app.js to write GIFs:
 
@@ -24,7 +24,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 
-ONNX Runtime Web (https://github.com/microsoft/onnxruntime), in ort/, which runs the object model: MIT licence, Copyright (c)
+ONNX Runtime Web (https://github.com/microsoft/onnxruntime), in ort/, which runs the object model: MIT license, Copyright (c)
 Microsoft Corporation (the full text: ort/LICENSE).
 
 MobileSAM and Segment Anything's mask decoder, in models/: Apache License 2.0 (models/LICENSE, models/NOTICE).
@@ -33,5 +33,5 @@ The sample photos and videos, in photos/: from Unsplash and Pexels, under the Un
 (https://unsplash.com/license) and the Pexels License (https://www.pexels.com/license/); each one's author is
 credited under it on the page (photos/index.json).
 
-Loaded from elsewhere when a page opens: MathZetta and Inline Math (Copyright (c) 2025 Robert Wilcox, MIT licence) from
+Loaded from elsewhere when a page opens: MathZetta and Inline Math (Copyright (c) 2025 Robert Wilcox, MIT license) from
 jsDelivr, and the Montserrat and Open Sans fonts (SIL Open Font License) from Google Fonts.

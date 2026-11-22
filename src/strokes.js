@@ -3,14 +3,14 @@
  *
  * A strokes graphic records each stroke's points as the user drew them —
  * [x, y, ms, pressure], x and y as fractions of the frame — and a brush.
- * For frame t it becomes a picture whose channels are data, not colour:
+ * For frame t it becomes a picture whose channels are data, not color:
  *
  *   alpha   coverage: how much paint is here so far, 0–1
  *   red     age: how long ago this pixel was last painted, 0 (just now) → 1 (`age` frames or more)
  *   green   passes ÷ 4: how many strokes have gone over it (soft brushes count partly)
  *   blue    progress: how far through the whole drawing it was painted, 0 → 1
  *
- * so the maths decides what the paint does:
+ * so the math decides what the paint does:
  *
  *   mix(rgb, ink, alpha(brush))                                        ink
  *   mix(rgb, gaussian(2 + 3 min(4 green(brush), 3)), alpha(brush))     a blur that grows with every pass
@@ -265,8 +265,8 @@ export function rasterizeStrokes(spec, w, h, t = Infinity, { mask = null } = {})
 
 /**
  * The outlines of a mask (values > 0.5 are in), each a closed polyline of pixel
- * centres, simplified; parts smaller than `minArea` pixels are left out.
- * Moore-neighbour tracing, one outline per connected part.
+ * centers, simplified; parts smaller than `minArea` pixels are left out.
+ * Moore-neighbor tracing, one outline per connected part.
  */
 export function traceContours(mask, w, h, { minArea = 40, tolerance = 0.8 } = {}) {
     const inside = (x, y) => x >= 0 && y >= 0 && x < w && y < h && mask[y * w + x] > 0.5;

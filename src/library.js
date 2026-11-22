@@ -1,5 +1,5 @@
 /**
- * The built-in filters: what the editor offers, and a catalogue anyone
+ * The built-in filters: what the editor offers, and a catalog anyone
  * embedding the runner can show. Each is a filter document (docs/filters.md)
  * plus a `group` for display (not part of the format; sharing drops it);
  * `npm test` checks that every one validates, compiles and survives a link.
@@ -9,25 +9,25 @@ const FILTERS = [
   { name: 'Wave', group: 'Shape & motion', description: 'Rows slide back and forth as t advances',
     params: { amplitude: { default: 8, min: 0, max: 40 }, wavelength: { default: 10, min: 1, max: 60 }, speed: { default: 5, min: 1, max: 30 } },
     color: 'pixel(px + amplitude sin(py / wavelength + t / speed), py)' },
-  { name: 'Invert', group: 'Colour & tone', color: '(1 - r, 1 - g, 1 - b)' },
-  { name: 'Grayscale', group: 'Colour & tone', color: 'gray' },
-  { name: 'Threshold', group: 'Colour & tone', params: { cutoff: 0.5 }, color: 'if gray > cutoff then 1 else 0' },
-  { name: 'Posterize', group: 'Colour & tone', params: { levels: { default: 4, min: 2, max: 16, step: 1 } }, color: 'min(floor(rgb * levels) / (levels - 1), 1)' },
-  { name: 'Brightness & contrast', group: 'Colour & tone',
+  { name: 'Invert', group: 'Color & tone', color: '(1 - r, 1 - g, 1 - b)' },
+  { name: 'Grayscale', group: 'Color & tone', color: 'gray' },
+  { name: 'Threshold', group: 'Color & tone', params: { cutoff: 0.5 }, color: 'if gray > cutoff then 1 else 0' },
+  { name: 'Posterize', group: 'Color & tone', params: { levels: { default: 4, min: 2, max: 16, step: 1 } }, color: 'min(floor(rgb * levels) / (levels - 1), 1)' },
+  { name: 'Brightness & contrast', group: 'Color & tone',
     params: { brightness: { default: 0, min: -0.5, max: 0.5 }, contrast: { default: 1, min: 0, max: 3 } },
     color: '(rgb - 0.5) contrast + 0.5 + brightness' },
-  { name: 'Tint', group: 'Colour & tone', params: { tint: [1, 0.85, 0.7] }, color: 'rgb * tint' },
-  { name: 'Sepia', group: 'Colour & tone', color: '(0.393r + 0.769g + 0.189b, 0.349r + 0.686g + 0.168b, 0.272r + 0.534g + 0.131b)' },
-  { name: 'Colour circle', group: 'Colour & tone', description: 'Black and white, except a soft circle that keeps its colour',
+  { name: 'Tint', group: 'Color & tone', params: { tint: [1, 0.85, 0.7] }, color: 'rgb * tint' },
+  { name: 'Sepia', group: 'Color & tone', color: '(0.393r + 0.769g + 0.189b, 0.349r + 0.686g + 0.168b, 0.272r + 0.534g + 0.131b)' },
+  { name: 'Color circle', group: 'Color & tone', description: 'Black and white, except a soft circle that keeps its color',
     params: { across: { default: 0.5, min: 0, max: 1, label: 'where, across' }, down: { default: 0.5, min: 0, max: 1, label: 'where, down' },
       radius: { default: 0.3, min: 0, max: 1 }, softness: { default: 0.08, min: 0, max: 0.5 } },
-    notes: ['The colour stays inside a circle and fades to grey over the softness. Sizes are parts of the picture\'s shorter side, so it stays round.',
+    notes: ['The color stays inside a circle and fades to gray over the softness. Sizes are parts of the picture\'s shorter side, so it stays round.',
       { param: 'across' }, { param: 'down' }, { param: 'radius' }, { param: 'softness' }],
     color: 'mix((gray, gray, gray), rgb, 1 - smoothstep(radius, radius + softness, distance((px, py), (across w, down h)) / min(w, h)))' },
-  { name: 'Vignette', group: 'Colour & tone', params: { strength: { default: 1.6, min: 0, max: 4 } }, color: 'rgb * (1 - strength ((x - 0.5)^2 + (y - 0.5)^2))' },
+  { name: 'Vignette', group: 'Color & tone', params: { strength: { default: 1.6, min: 0, max: 4 } }, color: 'rgb * (1 - strength ((x - 0.5)^2 + (y - 0.5)^2))' },
   { name: 'Sobel edges', group: 'Blur & edges', description: 'How fast the brightness changes', params: { gain: { default: 2, min: 0.2, max: 10 } }, color: 'gain sobel()' },
   { name: 'Edge map', group: 'Blur & edges', description: 'White where an edge is stronger than the cutoff', params: { cutoff: { default: 0.3, min: 0, max: 2 } }, color: 'if sobel() > cutoff then 1 else 0' },
-  { name: 'Outline', group: 'Blur & edges', description: 'Ink lines over the colour', params: { gain: { default: 3, min: 0, max: 10 } }, color: 'rgb (1 - gain sobel())' },
+  { name: 'Outline', group: 'Blur & edges', description: 'Ink lines over the color', params: { gain: { default: 3, min: 0, max: 10 } }, color: 'rgb (1 - gain sobel())' },
   { name: 'Box blur', group: 'Blur & edges', params: { radius: { default: 2, min: 0, max: 8, step: 1 } }, color: 'blur(radius)' },
   { name: 'Gaussian blur', group: 'Blur & edges', description: 'Computed in two passes, across then down, so it can be wide', params: { sigma: { default: 3, min: 0, max: 8 } }, color: 'gaussian(sigma)' },
   { name: 'Canny edges', group: 'Blur & edges', description: 'Thin, clean edge lines: smooth, gradient, thinning, two thresholds, hysteresis — a chain',
@@ -35,7 +35,7 @@ const FILTERS = [
       { params: { sigma: { default: 1.4, min: 0.5, max: 4 } }, color: 'gaussian(sigma)' },
       // gradient strength (r) and its direction as one of four buckets (g: 0, ¼, ½, ¾ for 0°, 45°, 90°, 135°)
       { color: '(min(sobel() / 4, 1), floor(fract((atan2(sobely(), sobelx()) + π/8) / π) 4) / 4, 0)' },
-      // non-maximum suppression: keep a pixel only if it is at least as strong as its two neighbours along the gradient
+      // non-maximum suppression: keep a pixel only if it is at least as strong as its two neighbors along the gradient
       { color: 'if green(px, py) < 0.125 then (if r >= red(px - 1, py) & r >= red(px + 1, py) then r else 0)'
         + ' else if green(px, py) < 0.375 then (if r >= red(px + 1, py + 1) & r >= red(px - 1, py - 1) then r else 0)'
         + ' else if green(px, py) < 0.625 then (if r >= red(px, py - 1) & r >= red(px, py + 1) then r else 0)'
@@ -62,7 +62,7 @@ const FILTERS = [
   { name: 'Scanlines', group: 'Shape & motion', params: { period: { default: 4, min: 2, max: 16, step: 1 } }, color: 'if py mod period < period / 2 then rgb else rgb * 0.6' },
   { name: 'Pulse', group: 'Shape & motion', description: 'Brightness breathes with t', params: { speed: { default: 6, min: 1, max: 30 }, depth: { default: 0.25, min: 0, max: 1 } },
     color: 'rgb (1 - depth + depth sin(t / speed))' },
-  { name: 'Chroma key', group: 'Colour & tone', description: 'Replaces one colour with another',
+  { name: 'Chroma key', group: 'Color & tone', description: 'Replaces one color with another',
     params: { key: [0.22, 0.71, 0.29], tolerance: { default: 0.35, min: 0, max: 1 }, background: [0.1, 0.1, 0.4] },
     color: 'if distance(rgb, key) < tolerance then background else rgb' },
   { name: 'Through a mask', group: 'Other pictures', description: 'Put this last: the steps above show only where the mask is light',
@@ -84,28 +84,28 @@ const FILTERS = [
   { name: 'Poster title', group: 'Text & shapes', description: 'Big outlined letters across the top',
     graphics: { title: { text: 'BIG TITLE', font: 'Impact, Haettenschweiler, sans-serif', weight: 'normal', size: 0.16, y: 0.14, outline: { color: '#000000', width: 0.08 }, shadow: null } },
     color: 'mix(rgb, title, alpha(title))' },
-  { name: 'Gradient text', group: 'Text & shapes', description: 'The letters coloured by maths: a sunset from left to right',
+  { name: 'Gradient text', group: 'Text & shapes', description: 'The letters colored by math: a sunset from left to right',
     graphics: { title: { text: 'Golden hour', font: 'Georgia, serif', size: 0.13, y: 0.5, shadow: { color: 'rgba(0,0,0,0.5)', blur: 0.2, dx: 0, dy: 0.05 } } },
     color: 'mix(rgb, mix((1, 0.35, 0.3), (1, 0.85, 0.25), x), alpha(title))' },
-  { name: 'Neon sign', group: 'Text & shapes', description: 'White letters with a coloured glow',
+  { name: 'Neon sign', group: 'Text & shapes', description: 'White letters with a colored glow',
     graphics: { title: { text: 'OPEN', font: 'Trebuchet MS, sans-serif', size: 0.18, y: 0.5, shadow: { color: '#00e5ff', blur: 0.45, dx: 0, dy: 0 } } },
     color: 'mix(rgb * 0.6, title, alpha(title))' },
-  { name: 'Layered shadow', group: 'Text & shapes', description: 'Two shadow layers, each with its own filter: a soft glow that darkens and breathes with t, and a hard offset coloured by a gradient',
+  { name: 'Layered shadow', group: 'Text & shapes', description: 'Two shadow layers, each with its own filter: a soft glow that darkens and breathes with t, and a hard offset colored by a gradient',
     graphics: { title: { text: 'LAYERS', font: 'Impact, Haettenschweiler, sans-serif', weight: 'normal', size: 0.17, y: 0.5, shadow: null,
       shadows: [{ color: '#000000', blur: 0.7, dx: 0, dy: 0.08 }, { color: '#000000', blur: 0, dx: 0.07, dy: 0.07 }] } },
     color: 'mix(mix(mix(rgb, rgb * 0.25, alpha(title_shadow1) (0.7 + 0.3 sin(t / 10))), mix((1, 0.2, 0.6), (0.2, 0.6, 1), x), alpha(title_shadow2)), title, alpha(title))' },
-  { name: 'Ink brush', group: 'Brushes', description: 'Paint in a colour; draw on the picture with "draw" under the step',
+  { name: 'Ink brush', group: 'Brushes', description: 'Paint in a color; draw on the picture with "draw" under the step',
     graphics: { brush: { type: 'strokes', brush: 'round', size: 0.025 } }, params: { ink: [0.95, 0.2, 0.25] }, color: 'mix(rgb, ink, alpha(brush))' },
   { name: 'Blur brush', group: 'Brushes', description: 'Paint a blur in — stronger every time a stroke goes over the same place',
     graphics: { brush: { type: 'strokes', brush: 'soft', size: 0.08 } }, color: 'mix(rgb, gaussian(2 + 3 min(4 green(brush), 3)), alpha(brush))' },
   { name: 'Darken brush', group: 'Brushes', description: 'Each pass darkens a little more, like layers of a wash',
     graphics: { brush: { type: 'strokes', brush: 'soft', size: 0.07, flow: 0.7 } }, color: 'rgb (1 - 0.22 min(4 green(brush), 4))' },
-  { name: 'Colour reveal brush', group: 'Brushes', description: 'The picture starts grey; the brush paints its colour back',
+  { name: 'Color reveal brush', group: 'Brushes', description: 'The picture starts gray; the brush paints its color back',
     graphics: { brush: { type: 'strokes', brush: 'soft', size: 0.1 } }, color: 'mix((gray, gray, gray), rgb, alpha(brush))' },
   { name: 'Fuse brush', group: 'Brushes', description: 'Paint glows as it goes down, then cools to charcoal (red(brush) is its age)',
     graphics: { brush: { type: 'strokes', brush: 'round', size: 0.02, age: 40 } },
     color: 'mix(rgb, mix((1, 0.9, 0.5), (0.1, 0.07, 0.06), red(brush)), alpha(brush)) + (1, 0.5, 0.1) alpha(brush) max(0, 1 - 3 red(brush)) 0.6' },
-  { name: 'Rainbow brush', group: 'Brushes', description: 'The colour runs round the wheel along the drawing (blue(brush) is how far through it)',
+  { name: 'Rainbow brush', group: 'Brushes', description: 'The color runs round the wheel along the drawing (blue(brush) is how far through it)',
     graphics: { brush: { type: 'strokes', brush: 'marker', size: 0.035 } }, color: 'mix(rgb, fromhsv(blue(brush), 0.85, 1), alpha(brush))' },
   { name: 'Chalk outline', group: 'Brushes', description: 'Chalk round an object: select it, then "outline the selection" under the step',
     graphics: { brush: { type: 'strokes', brush: 'chalk', size: 0.018, timing: 'even', speed: 2 } }, color: 'mix(rgb, (0.97, 0.97, 0.92), alpha(brush))' },
@@ -134,17 +134,17 @@ const FILTERS = [
     images: { inset: { description: 'any size: it is fitted whole', place: 'fit', zoom: 0.35, x: 0.8, y: 0.78 } }, color: 'mix(rgb, inset, alpha(inset))' },
   { name: 'Moving overlay', group: 'Other pictures', description: 'Another picture scrolling across at half strength', images: ['overlay'], params: { speed: { default: 2, min: -10, max: 10 } },
     color: 'mix(rgb, shift(overlay, speed t, 0), 0.5)' },
-  { name: 'Hue shift', group: 'Colour & tone', description: 'Turns every colour around the hue wheel (in HSV)', space: 'hsv',
+  { name: 'Hue shift', group: 'Color & tone', description: 'Turns every color around the hue wheel (in HSV)', space: 'hsv',
     params: { amount: { default: 0.1, min: -0.5, max: 0.5 } }, color: '(fract(r + amount), g, b)' },
-  { name: 'Saturation', group: 'Colour & tone', description: 'More or less colour (in HSV)', space: 'hsv',
+  { name: 'Saturation', group: 'Color & tone', description: 'More or less color (in HSV)', space: 'hsv',
     params: { amount: { default: 1.5, min: 0, max: 3 } }, color: '(r, clamp(g amount, 0, 1), b)' },
-  { name: 'Lightness', group: 'Colour & tone', description: 'Lighter or darker without changing the colours (in Lab)', space: 'lab',
+  { name: 'Lightness', group: 'Color & tone', description: 'Lighter or darker without changing the colors (in Lab)', space: 'lab',
     params: { amount: { default: 1.15, min: 0.5, max: 2 } }, color: '(clamp(r amount, 0, 1), g, b)' },
-  { name: 'Vivid', group: 'Colour & tone', description: 'Colourfulness, perceptually even (in OKLab)', space: 'oklab',
+  { name: 'Vivid', group: 'Color & tone', description: 'Colorfulness, perceptually even (in OKLab)', space: 'oklab',
     params: { amount: { default: 1.6, min: 0, max: 3 } }, color: '(r, 0.5 + (g - 0.5) amount, 0.5 + (b - 0.5) amount)' },
   { name: 'Linear-light blur', group: 'Blur & edges', description: 'A Gaussian in linear light: bright spots stay bright, as a lens does', space: 'linear',
     params: { sigma: { default: 3, min: 0, max: 8 } }, color: 'gaussian(sigma)' },
-  { name: 'Film grain', group: 'Colour & tone', description: 'Noise that changes every frame', params: { amount: { default: 0.15, min: 0, max: 0.6 } }, color: 'rgb + amount (random() - 0.5)' },
+  { name: 'Film grain', group: 'Color & tone', description: 'Noise that changes every frame', params: { amount: { default: 0.15, min: 0, max: 0.6 } }, color: 'rgb + amount (random() - 0.5)' },
   { name: 'Swirl', group: 'Shape & motion', params: { strength: { default: 0.02, min: 0, max: 0.1 } },
     color: 'pixel(w/2 + (px - w/2) cos(strength t gray) - (py - h/2) sin(strength t gray), h/2 + (px - w/2) sin(strength t gray) + (py - h/2) cos(strength t gray))' },
 ];
@@ -152,10 +152,10 @@ const byName = (name) => FILTERS.find((f) => f.name === name);
 FILTERS.push(
   { name: 'Old film', group: 'Chains', description: 'Sepia, a vignette and faint scanlines — a chain of three',
     steps: [byName('Sepia'), { filter: byName('Vignette'), with: { strength: 1.2 } }, { filter: byName('Scanlines'), opacity: 0.5 }] },
-  { name: 'Comic', group: 'Chains', description: 'Bold flat colours with ink lines: a small blur first, so a photo\'s fine texture isn\'t inked — a chain of four',
+  { name: 'Comic', group: 'Chains', description: 'Bold flat colors with ink lines: a small blur first, so a photo\'s fine texture isn\'t inked — a chain of four',
     steps: [{ filter: byName('Gaussian blur'), with: { sigma: 1.6 } }, { filter: byName('Vivid'), with: { amount: 1.5 } },
       { filter: byName('Posterize'), with: { levels: 4 } }, { filter: byName('Outline'), with: { gain: 1.2 } }] },
-  { name: 'Cartoon', group: 'Chains', description: 'Blur, then flatten the colours, then outline — a chain of three',
+  { name: 'Cartoon', group: 'Chains', description: 'Blur, then flatten the colors, then outline — a chain of three',
     steps: [{ filter: byName('Gaussian blur'), with: { sigma: 1.5 } }, { filter: byName('Posterize'), with: { levels: 6 } }, { filter: byName('Outline'), with: { gain: 2 } }] },
   { name: 'Dreamy', group: 'Chains', description: 'A soft glow mixed over the picture',
     steps: [{ filter: byName('Bloom'), with: { amount: 1.2 } }, { filter: byName('Gaussian blur'), with: { sigma: 2 }, opacity: 0.4 }] },
@@ -163,11 +163,11 @@ FILTERS.push(
     steps: [{ filter: byName('Gaussian blur'), with: { sigma: 4 } }, byName('Through a mask')] },
   { name: 'Title card', group: 'Chains', description: 'A frosted panel with a caption on it — a chain of two',
     steps: [byName('Frosted panel'), { filter: byName('Caption'), with: { title: { text: 'A title on a panel', y: 0.86 } } }] },
-  { name: 'Colour spotlight', group: 'Chains', description: 'Grey except where the mask is dark — a chain',
+  { name: 'Color spotlight', group: 'Chains', description: 'Gray except where the mask is dark — a chain',
     steps: [byName('Grayscale'), byName('Through a mask')] },
 );
 
 export const LIBRARY = FILTERS;
 
 /** The groups the editor shows the library in, in this order; every filter names one. */
-export const GROUPS = ['Colour & tone', 'Blur & edges', 'Shape & motion', 'Text & shapes', 'Brushes', 'Other pictures', 'Chains'];
+export const GROUPS = ['Color & tone', 'Blur & edges', 'Shape & motion', 'Text & shapes', 'Brushes', 'Other pictures', 'Chains'];
