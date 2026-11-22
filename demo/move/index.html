@@ -24,27 +24,22 @@
 </head>
 <body>
 <main class="app">
-  <section class="ss-cell qb-head">
-  <h1>Make it move</h1>
-  <p class="lead">
-<!-- claude-ui:begin lead -->
-Pick a photo and a motion, set how fast and how much, and save a GIF or a short video. It all happens in your browser — your photo isn't uploaded.
-<!-- claude-ui:end lead -->
-  </p>
-  </section>
-
   <div class="layout">
-    <div class="stage" style="width:min(100%, 560px)">
-      <div id="frame" class="frame"></div>
+    <section class="stage" style="width:min(100%, 560px)" aria-labelledby="h-page">
+      <h1 id="h-page" class="band">Make it move</h1>
+      <div id="frame" class="frame"><canvas id="path-overlay" hidden aria-label="draw the path: where the middle of the view goes" role="img"></canvas></div>
       <div class="row" style="margin-top:.5rem"><button id="pause" type="button" aria-pressed="false">Pause</button></div>
       <div id="credit" class="credit"></div>
-    </div>
+    </section>
 
     <div class="side">
       <section aria-labelledby="h-photo">
         <h2 id="h-photo">Photo</h2>
         <div class="row">
           <label class="button primary">Choose a photo…<input type="file" class="pick" id="file" accept="image/*"></label>
+          <span class="hint" title="it all happens in your browser">Your photo isn't uploaded.</span>
+        </div>
+        <div class="row" style="margin-top:.5rem">
           <label class="hint" for="sample">or try</label>
           <select id="sample"></select>
         </div>
@@ -57,9 +52,21 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
 
       <section aria-labelledby="h-adjust">
         <h2 id="h-adjust">Adjust</h2>
-        <div class="slider"><label for="speed">Speed</label><input type="range" id="speed" min="0.2" max="3" step="0.05" value="1"></div>
+        <div id="kb" hidden>
+          <label class="hint" for="zoom-formula">zoom (1 is the whole picture)</label>
+          <input type="text" id="zoom-formula" class="formula" value="1.15 + 0.25 p" spellcheck="false" autocomplete="off">
+          <p class="formula-help"><code>p</code> goes from 0 to 1 along the path (and back), once over the length you save, so the GIF loops
+            smoothly; <code>t</code> is time (60 a second). Try <code>1.5 - 0.4 p</code> (zoom out as it goes) or <code>1.25 + 0.1 sin(t / 30)</code>.</p>
+          <div class="row" style="margin-top:.5rem">
+            <button id="draw-path" type="button" aria-pressed="false">Draw the path</button>
+            <button id="clear-path" type="button" title="a gentle drift across the middle">Straight path</button>
+            <label class="hint"><input type="checkbox" id="path-back" checked> there and back</label>
+          </div>
+          <p class="hint" style="margin:.4rem 0 0">Draw on the picture where the middle of the view should go, from the start to the end.</p>
+        </div>
+        <div class="slider" id="speed-row"><label for="speed">Speed</label><input type="range" id="speed" min="0.2" max="3" step="0.05" value="1"></div>
         <div class="slider" id="amount-row"><label for="amount">How much</label><input type="range" id="amount" min="0" max="1" step="0.01" value="0.5"></div>
-        <details id="formulas" style="margin-top:.6rem">
+        <details id="formulas" style="margin-top:.6rem" class="not-kb">
           <summary class="hint">Formulas: different speeds and amounts across the picture</summary>
           <label class="hint" for="speed-formula">speed</label>
           <input type="text" id="speed-formula" class="formula" value="speed" spellcheck="false" autocomplete="off">
@@ -70,6 +77,11 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
             Try <code>speed (0.3 + y)</code> (faster lower down), <code>amount gray</code> (bright parts move most) or
             <code>amount smoothstep(0.3, 0.7, x)</code> (only the right side). <button type="button" id="formulas-reset">reset</button></p>
         </details>
+      </section>
+
+      <section aria-labelledby="h-yours">
+        <h2 id="h-yours">Your filter</h2>
+        <div id="yours"></div>
       </section>
 
       <section aria-labelledby="h-save">
@@ -83,7 +95,7 @@ Pick a photo and a motion, set how fast and how much, and save a GIF or a short 
         <div id="status" class="status" role="status"></div>
       </section>
 
-      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Color splash</a> · <a href="../text/">Fancy text</a> · <a href="../editor.html">the full editor</a>.</p>
+      <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../text/">Fancy text</a> · <a href="../editor.html">the full editor</a>.</p>
     </div>
   </div>
 </main>

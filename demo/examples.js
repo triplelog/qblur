@@ -242,12 +242,12 @@ export const EXAMPLES = [
     {
         id: 'aiblur',
         title: 'Portrait: blur the background (select with AI)',
-        picture: 'portrait.jpg',
+        picture: 'anson_profile.jpg',
         shows: ['selections', 'AI object finding', 'neighboring pixels'],
         how: [
             'The math is `mix(gaussian(5) * 0.85, rgb, selected)`: blurred and a little darker where `selected` is 0, the photo where it is 1.',
-            'Nothing changes until something is selected (without a selection `selected` is 1 everywhere). In the editor\'s Select & draw tab, click "find objects (AI)" and then click the woman — the object model outlines her — and press Enter. Or use "trace the edge" and click around her.',
-            'Tick "everything but the selection" to blur her instead; drag "soft edge" to soften the edge of the selection.',
+            'Nothing changes until something is selected (without a selection `selected` is 1 everywhere). In the editor\'s Select & draw tab, click "find objects (AI)" and then click Cap Anson — the object model outlines him — and press Enter. Or use "trace the edge" and click around him.',
+            'Tick "everything but the selection" to blur him instead; drag "soft edge" to soften the edge of the selection.',
         ],
         filter: { name: 'Background blur', steps: ['mix(gaussian(5) * 0.85, rgb, selected)'] },
     },

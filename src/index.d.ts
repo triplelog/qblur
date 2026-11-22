@@ -229,6 +229,21 @@ export function createFilterRunner(gl: WebGLRenderingContext | WebGL2RenderingCo
 export function createCpuRunner(compiled: CompiledFilter, options?: CpuRunnerOptions): CpuRunner;
 /** ImageData, { data, width, height }, or a drawable in a browser → 0–1 floats. */
 export function toPicture(image: PictureSource): { data: Float32Array; width: number; height: number };
+/**
+ * `away`, how far each pixel is from the selection (in pixels), as the picture a filter reads it from (red = 1 − min(d, 255)/255,
+ * green = 1 − min(d, 1020)/1020, blue = the same inside, to 255). The runners make it from `selection` themselves; this is for
+ * making it elsewhere and passing it as runner.setImage('away', …). Measured at most `size` (AWAY_SIZE) on the long side.
+ */
+export function awayPicture(selection: PictureSource | null, options?: { size?: number }): { data: Uint8ClampedArray; width: number; height: number } | null;
+/** The same from a mask's pixels (4 per pixel, bytes or 0–1 floats; on the shape where `channel`, red by default, is at least half). */
+export function encodeAway(data: ArrayLike<number>, width: number, height: number, options?: { channel?: number; scale?: number }): { data: Uint8ClampedArray; width: number; height: number };
+/** The exact Euclidean distance (pixels) from each pixel to the nearest one on the shape; Infinity with no shape. */
+export function distanceTo(inside: ArrayLike<number> | ((index: number) => boolean), width: number, height: number): Float32Array;
+/** `away` in pixels from the picture's red and green channels (0–1). */
+export function awayFromChannels(red: number, green: number): number;
+/** Whether a compiled filter reads `away`. */
+export function usesAway(compiled: CompiledFilter): boolean;
+export const AWAY_SIZE: number;
 /** One pass compiled to JavaScript for the CPU (after the generated-code gate). */
 export function compileCpuPass(pass: Pass): { source: string; uses: Set<string>; pictures: string[]; run(ctx: object): void };
 

@@ -19,6 +19,7 @@
  * where the GPU can render to such textures; `runner.precision` says
  * what was granted.
  */
+import { deriveAway } from './distance.js';
 import { filterVertexShader } from 'mathzetta/glsl';
 
 export function createFilterRunner(gl, compiled, options = {}) {
@@ -188,7 +189,7 @@ export function createFilterRunner(gl, compiled, options = {}) {
             gl.deleteBuffer(triangle);
         },
     };
-    return runner;
+    return deriveAway(runner, compiled);
 }
 
 function clampAndFilter(gl, filter = gl.LINEAR) {

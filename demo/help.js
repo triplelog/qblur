@@ -104,6 +104,7 @@ export const HELP = [
             ['luma(mask)   alpha(overlay)   red(…)', 'one channel of it'],
             ['width(overlay)   height(overlay)', 'its size'],
             ['selected', '1 inside the object you selected on the picture (trace its edge — click past the picture to run along its border —, click its colors, or let the AI find it; the refine brush paints parts in or out and the edge settles), 0 outside — 1 everywhere without a selection. Selecting is in the editor\'s Select & draw tab; on a video or GIF, "Follow the selection through the clip" there makes it follow the object frame by frame'],
+            ['away', 'how many pixels this pixel is from the selection: 0 inside it, 0 everywhere without one — smoothstep(0, 60, away) fades over 60 pixels out from the object'],
         ],
         examples: [
             { def: { images: ['overlay'], color: 'mix(rgb, overlay, 0.5)' }, show: '{ "images": ["overlay"], "color": "mix(rgb, overlay, 0.5)" }', caption: 'fade to another picture' },

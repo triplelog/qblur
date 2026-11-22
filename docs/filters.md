@@ -378,6 +378,25 @@ It is a mask, so a color space leaves it alone. The runner takes it as
 a picture named `selection` (white = in): `runner.setImage('selection',
 maskCanvas)`.
 
+`away` is how far the pixel is from the selection, in pixels: 0 inside
+it, 10 ten pixels out, and so on (0 everywhere when nothing is selected).
+It makes halos and fades that follow the object's shape:
+
+```
+mix((1, 0.8, 0.3), rgb, smoothstep(0, 60, away))        a warm glow round the selection, 60 pixels wide
+mix(rgb, gaussian(6), min(1, away / 150))               sharp near the object, blurrier farther away
+if away > 0 and away < 4 then (1, 1, 1)                 a 4-pixel outline just outside it
+```
+
+<!-- dev -->
+The runners work it out from the `selection` they are given, only for a
+filter that uses `away` (an exact distance transform of the selection
+measured at most 512 pixels across, about 12 ms; `awayPicture()` in
+src/distance.js), so a page has nothing more to do. A page with its own
+distances can pass them as `runner.setImage('away', picture)`: white is
+0, red = 1 − min(d, 255)/255, green = 1 − min(d, 1020)/1020.
+<!-- /dev -->
+
 The editor's *Select & draw* tab makes one. *Trace the edge* is intelligent scissors
 (livewire): click a few points around the object and the line between
 them follows the edge — every pixel has a cost, low where the brightness

@@ -26,9 +26,15 @@ and `npm run build` copies the folder to `site/photos/`.
 - Videos (.mp4, H.264) go in the same list and play muted and looped, `t`
   counting their frames. Keep them short and small — 8 s at 960 px is
   1–3 MB: `ffmpeg -t 8 -i in.mp4 -vf "scale=960:-2,fps=30" -an -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart out.mp4`.
-- `"person": "portrait.person.png"` on a photo is its person's outline, worked out ahead (white = the person, the size of
+- `"person": "anson_profile.person.png"` on a photo is its person's outline, worked out ahead (white = the person, the size of
   the model's copy: 1024 on the long side). The profile-picture page uses it for that sample, so opening the page
-  doesn't download the 19 MB model. After changing the photo, `node tools/person-outline.mjs portrait.jpg` makes it again.
+  doesn't download the 19 MB model. After changing the photo, `node tools/person-outline.mjs anson_profile.jpg` makes it again.
+- `"profile": true` makes a photo one of the profile-picture page's examples (only those are offered there; the tool above needs it).
+  When the usual guess (two points down the middle) misses part of the person, outline it from more points and list them as
+  `"personPoints": [[x, y], …]` (0–1 of the photo): the page starts the user's marks from them (anson_profile.jpg: head, collar, jersey;
+  cropped from the Library of Congress's master TIFF, `originals/anson-loc-bbc.0555fu.tif`, with
+  `magick 0555fu.tif -crop 1595x1488+95+400 +repage -resize 1200x1200 -strip -interlace JPEG -quality 78`, its outline cleaned
+  with `-morphology Close Disk:8 -morphology Open Disk:2` against the card's halftone dots).
 - Raw downloads can live in `originals/` here: it is git-ignored and not copied to the site.
 - To shrink a photo on a Mac: `sips -Z 1600 -s format jpeg -s formatOptions 82 photo.jpg --out photo.jpg`.
 - `?picture=test` on the editor's URL (or the chooser) brings the test

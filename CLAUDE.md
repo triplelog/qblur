@@ -14,7 +14,7 @@ npm run check:nowebgl   # Chrome without WebGL: the editor must fall back to the
 npm run build           # site/ — demo/app.js bundled (via the page's import map) with MathZetta; deployable as is
 npm run check:site      # build, then the checks against site/
 npm run check:docs      # every example in docs/library.md run (pages in Chrome against dist/, `js node` blocks in Node); build first
-npm run check:apps      # the small apps (profile picture, color splash, make it move, fancy text) each doing its job; --site for site/
+npm run check:apps      # the small apps (profile picture, make it move, fancy text) each doing its job; --site for site/
 ```
 
 ## Where things are
@@ -60,11 +60,17 @@ npm run check:apps      # the small apps (profile picture, color splash, make it
   `demo/help.js` is the cheat sheet and `explain()` (errors → hints); test/help.test.js checks its sections against the guide's headings.
   `demo/photos/index.json` lists the default photos. `demo/gif.js` decodes GIFs (tested against gifenc, which encodes "Save as GIF").
 - Dev dependencies: rollup (the build), gifenc (bundled into site/app.js), @mathzetta/inlinemath (the knobs and notes; from jsDelivr on the site, its CSS too), onnxruntime-web and @mediapipe/tasks-vision (NOT bundled: the dev import map points at node_modules, the build copies its WASM files into site/ort/), onnxruntime-node (test/ai.test.js). The package itself has none. The object models (demo/models/: RF-DETR Small and Nano, MobileSAM, MagicTouch 1 and 2; all Apache-2.0, see NOTICE): only MobileSAM is in git — the others are git-ignored for their size, and demo/models/README.md says how to get them — the site ships only `SHIPPED_MODELS` (demo/ai.js: MobileSAM — the editor's "find objects" and the profile picture's person, guessed from two clicks where a portrait's subject is, then the user's clicks; every site file must stay under Cloudflare Pages' 25 MiB, which RF-DETR Small's 39 MB isn't); `npm run build` copies just its file, LICENSE and its NOTICE paragraph to site/models/, and onnxruntime-web to site/ort/. The others (and MediaPipe, which only MagicTouch used) are for comparing in demo/: the model menu shows them there, and only there. `tools/export-model.py` remakes the ONNX ones; `tools/compare-ai.mjs` compares them; `npm run check:ai` / `npm run test:ai` run them.
+- **Color splash (`demo/splash/`) is on hold** (2026-11-22): kept in demo/, but not built (`ON_HOLD` in tools/build.mjs removes site/splash/),
+  linked, checked, in the registry (mathzetta-sites' sites.js has a comment where it was) or in check-sites.mjs. Bringing it back = undoing those.
+- None of the small apps has a heading cell: each page's h1 is its picture card's band (`.stage > h1.band`), and none has a lead.
 - The small apps: `demo/avatar/`, `demo/splash/`, `demo/move/`, `demo/text/` — one page each with a few choices, for people who want one thing done
   (a profile picture — the person outlined by MobileSAM from a guess, then marks: a toggle under the photo (Move / Mark me /
   Mark not me: a point per click, shown as dots — few points work best; the decoder costs ~20 ms for 1 point or 30 — / Keep as is:
-  painted areas (`state.lock`, `state.kept`) keep the outline they had, whatever the model answers later); or, background None and shape Cut-out, a transparent sticker with an outline drawn by the filter (`outline` picture);
-  a color splash; a moving GIF (speed and how much can be per-pixel formulas: `withFormulas` swaps every `t` / `amount` in the motion's math); fancy text — the words drawn by the page as masks `fill`/`border`/`glow`, colored by one filter whose
+  painted areas (`state.lock`, `state.kept`) keep the outline they had, whatever the model answers later); each style and background shows its knobs
+  (a Strength % slider, colors, sizes: `knobs` on STYLES / BACKGROUNDS, the filter's params, so no recompile); Glow and "Sharp near
+  you" use `away`; it opens on the Cap Anson card (`anson_profile.jpg`, from the Library of Congress, its outline made from
+  `personPoints`, see demo/photos/README.md); or, background None and shape Cut-out, a transparent sticker with an outline drawn by the filter (`outline` picture);
+  a color splash; a moving GIF (speed and how much can be per-pixel formulas: `withFormulas` swaps every `t` / `amount` in the motion's math); Ken Burns is a camera — `crop` round a center that follows a path the user draws on the picture (`demo/path.js`: smoothed, evenly spaced, eased; no DOM, test/path.test.js), at a zoom that is the user's formula of `p` (0 → 1 along the path and back, once over the length saved, so the GIF loops) and `t`; cx, cy, p are knobs set every frame); fancy text — the words drawn by the page as masks `fill`/`border`/`glow`, colored by one filter whose
   letter and border colors are user formulas spliced into it (only ever parsed as math), with `pattern` a picture). They share `demo/kit.js` (open a picture, the sample photos, `createView` = a filter
   on the GPU or CPU, download, GIF) and `demo/apps.css`; the avatar uses `ai.js` (MobileSAM, `base` = the folder above) for the person.
   The build bundles each into `site/<app>/`. They are pages of the qblur site in `mathzetta-sites/src/sites.js` and in
@@ -94,8 +100,13 @@ npm run check:apps      # the small apps (profile picture, color splash, make it
   `branding/final/qblur`, copied unchanged — updating the branding is replacing them. `site/_headers` keeps models/, ort/, photos/ and share/ cached (Cloudflare Pages).
 - The guide on the site is docs/filters.md without its `<!-- dev -->…<!-- /dev -->` parts (`forSite` in tools/markdown.mjs):
   repo paths, npm scripts and the API stay on GitHub. Keep new developer-only paragraphs inside such markers.
+- The profile-picture page has no heading cell (its h1 is the picture card's band) and so no lead; its only example is Cap Anson
+  (`"profile": true` in demo/photos/index.json). Its Style card has two tabs, You and Background; the background is drawn by a second
+  view (`backView`: the foreground's style, or with "Same style as you" off one of its own, then the background's step) and laid under
+  the person by `COMPOSITE` (picture `back`, through the outline). The shape is in the picture card; fixing the outline (the tools,
+  "show marks", off by default) is a folded <details>, and folding it goes back to Move.
 - The profile-picture page's opening sample has its outline worked out ahead (`"person"` in demo/photos/index.json,
-  `node tools/person-outline.mjs portrait.jpg` remakes it), so the model downloads only for the user's own photo or marks.
+  `node tools/person-outline.mjs anson_profile.jpg` remakes it), so the model downloads only for the user's own photo or marks.
 - License: MIT, Copyright (c) 2025-2026 Robert Wilcox (LICENSE, every bundle's banner, README's License section). The build
   writes `site/THIRD-PARTY-NOTICES.txt` and `site/ort/LICENSE` for what the site serves that isn't qblur's (gifenc, ONNX Runtime
   Web, the model, the photos): keep it in step when adding someone else's code or files.
@@ -104,14 +115,22 @@ npm run check:apps      # the small apps (profile picture, color splash, make it
   "Draft" note goes when none is left);
   `demo/404.html` (the shioh-style skill's self-contained 404 with the limerick prompt, filled for qblur: its SITE block lists home, a few pages and the MathZetta link; theme block = the base's colors; absolute addresses: the host serves it at any depth); robots.txt and sitemap.xml generated from the registry.
 - The owner's words are on Claude UI's **Content** page (project qblur): docs/site-details.json (pattern fields, one per key),
-  the site's intro and "On your own site" blurb (both on the home page now) and each app's lead (between `<!-- claude-ui:begin/end … -->` lines in
-  demo/index.html and demo/<app>/index.html — keep the markers), each page's meta description, and privacy.md / terms.md whole.
+  the site's intro and "On your own site" blurb (both on the home page now) and the home page's lead (between `<!-- claude-ui:begin/end … -->` lines in
+  demo/index.html — keep the markers; the apps' leads went with their heading cells), each page's meta description, and privacy.md / terms.md whole.
 - `src/library.js` — `LIBRARY`, the built-in filters (tested by test/library.test.js). The editor opens on "Color circle" (still, so no redraw loop).
 - The package's three entries, each with its .d.ts (test/types.test.js checks every export is declared): `@mathzetta/qblur` (src/index.js),
   `@mathzetta/qblur/apply` (src/apply.js: `applyFilter` from src/apply-filter.js — pictures over `maxSize`, 4096 GPU / 2048 CPU, scaled down
   first — and saving: save.js, png.js) and `@mathzetta/qblur/element` (src/element.js, `<qblur-image>`). dist/: qblur.js (the main entry),
   qblur-apply.js, qblur-element.js; the classic scripts carry all of it on window.QBlur.
 - `src/graphics.js` — text/rect/ellipse graphics: validated in the format (`graphics`), drawn by the page (or `renderGraphics`) into frame-sized pictures. Each pass's graphic is bound under its own key (`pass.bind`: `title` → `title~2`), unlike pictures, which are shared by name.
+- `src/distance.js` — `away`, each pixel's distance from the selection in pixels (a value of the language, like `selected`; the GLSL
+  is mathzetta's filterShader, the CPU's src/cpu.js): the runners make its picture from each `selection` they're given, only for
+  a filter that uses it (`deriveAway`, wrapping setImage; an exact distance transform at ≤512 px, ~12 ms). Encoded white = 0.
+- **The user's filters in the small apps** (`demo/kit.js`: `yourFilters()` — saved on the filters page, localStorage "qblur", plus
+  one in the page's `#…` link —, `knobsOf`, `showKnobs`, `yourFilterPicker`, `view.knobsAt(path, values)` so their knob names
+  can't touch the page's own): the profile picture shows them as style tiles (dashed); Make it move and Fancy text (and the held Color splash)
+  as a "Your filter" step after their own (Fancy text puts its transparency back after it, and its letters are the selection).
+  The filters page's "or in …" links (`.to-app`, app.js updateShare) carry the current filter to each.
 - `src/strokes.js` — brush strokes: a `strokes` graphic re-rasterized per frame by its own dab rasterizer (channels are data: alpha coverage, red age, green passes/4, blue progress), uploaded as ImageData (a canvas would premultiply the channels away). The page calls `updateStrokes()` in draw(), export and GIF frames.
 - `demo/tracker.js` — tracking (no DOM, test/tracker.test.js). The page feeds it frames from a second copy of the video (seeked; videos from the list are loaded as blobs so seeking works on any server) or the GIF's frames. tools/send-file.mjs gives the local servers byte ranges.
 - `demo/examples.js` — the guided examples (data); test/examples.test.js compiles them, tools/check.mjs runs them in the page.

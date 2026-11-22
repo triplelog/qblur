@@ -10,10 +10,33 @@
     "credit": "Photo by [Bradley Allweil](https://unsplash.com/@bradleyallweilphoto?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/green-trees-and-mountains-during-daytime-c2xLHa-3L8c?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
   },
   {
-    "file": "portrait.jpg",
-    "title": "Portrait",
-    "credit": "Photo by [Margaret Young](https://unsplash.com/@wildsoulmagsyogi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/a-woman-with-long-brown-hair-and-blue-eyes-DAVi-fYTsXM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)",
-    "person": "portrait.person.png"
+    "file": "anson_profile.jpg",
+    "title": "Cap Anson (baseball card)",
+    "credit": "“Anson, 1st Base, Chicago”, an Old Judge & Gypsy Queen Cigarettes card (Goodwin & Co., 1880s) — Benjamin K. Edwards Collection, [Library of Congress](https://www.loc.gov/resource/bbc.0555f/), no known restrictions on publication",
+    "person": "anson_profile.person.png",
+    "personPoints": [
+      [
+        0.5,
+        0.346
+      ],
+      [
+        0.5,
+        0.576
+      ],
+      [
+        0.323,
+        0.865
+      ],
+      [
+        0.672,
+        0.865
+      ],
+      [
+        0.511,
+        0.778
+      ]
+    ],
+    "profile": true
   },
   {
     "file": "redumbrella.jpg",

@@ -171,6 +171,10 @@ class Generator {
         if (v === 'rgb') return vec(['$r', '$g', '$b']);
         if (v === 'unchanged') return f('$u');   // the kept value; as a whole if/else branch it takes the other branch's type (ternary)
         if (v === 'selected') return f(this.pictureHere('selection').c[0]);   // the selection mask: white = 1; white everywhere when none
+        if (v === 'away') {                          // pixels from the selection, from the picture `away` (src/distance.js; white = 0)
+            const [red, green] = this.pictureHere('away').c;
+            return f(`(${red} > 0 ? 255 * (1 - ${red}) : 1020 * (1 - ${green}))`);
+        }
         if (CONSTANTS[v]) return f(CONSTANTS[v]);
         if (v === 'true' || v === 'false') return bool(v);
         if (Object.prototype.hasOwnProperty.call(this.params, v)) {
@@ -201,7 +205,7 @@ class Generator {
             this.pictureNames.add(name);
             this.body.push(`$h_picture($Q_${name}, $qw_${name}, $qh_${name}, $w, $h, $qz_${name}, $qx_${name}, $qy_${name}, $qa_${name}, $qm_${name}, ${X}, ${Y}, ${out});`);
         }
-        if (this.space && name !== 'selection') this.body.push(`$h_col_to${this.space}(${out}[0], ${out}[1], ${out}[2], ${out});`);   // a mask is not a color
+        if (this.space && name !== 'selection' && name !== 'away') this.body.push(`$h_col_to${this.space}(${out}[0], ${out}[1], ${out}[2], ${out});`);   // a mask is not a color
         return vec([0, 1, 2, 3].map((k) => `${out}[${k}]`));
     }
 

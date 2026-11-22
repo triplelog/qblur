@@ -21,6 +21,11 @@
 .app .slider { display: flex; gap: .6rem; align-items: center; margin-top: .3rem; }
 .app .slider label { min-width: 5.5rem; font-size: .9rem; }
 .app .slider input { flex: 1; }
+.app .knobs { margin-top: .6rem; }
+.app .knobs[hidden] { display: none; }
+.app .knobs input[type=color] { flex: 0 0 3rem; height: 2rem; padding: 0; }
+.app .tile.yours { border-style: dashed; }
+.app .knob-value { min-width: 3.4rem; font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }
 
 /* a formula the user types (math only: it is parsed, never run as code) */
 .app .formula { width: 100%; box-sizing: border-box; font: .9rem ui-monospace, monospace; padding: .35rem .5rem; border: 1px solid var(--mz-line); border-radius: var(--ss-radius-sm); margin: .2rem 0 .4rem; }

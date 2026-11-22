@@ -99,7 +99,7 @@ body.ss .app .side > :nth-child(5n + 2) { background: var(--ss-p1); }
 body.ss .app .side > :nth-child(5n + 3) { background: var(--ss-p2); }
 body.ss .app .side > :nth-child(5n + 4) { background: var(--ss-p4); }
 body.ss .app .side > :nth-child(5n + 5) { background: var(--ss-p5); --ss-muted: var(--ss-ink); --mz-muted: var(--ss-ink); }
-body.ss .app .side h2 { font-family: var(--ss-font-head); color: var(--ss-ink); margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .5rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; text-align: center; font-size: .82rem; }
+body.ss .app .stage > h1.band, body.ss .app .side h2 { font-family: var(--ss-font-head); color: var(--ss-ink); margin: calc(-1 * var(--ss-pad-y)) calc(-1 * var(--ss-pad-x)) .7rem; padding: .5rem var(--ss-pad-x); background: var(--ss-band-pattern), var(--ss-band); border-radius: var(--ss-radius) var(--ss-radius) 0 0; text-align: center; font-size: .82rem; }
 body.ss .app .status.bad, body.ss .formula + .status { color: #6b0000; }
 body.ss .app .tile { background: var(--ss-panel); border-color: var(--ss-rule); }
 body.ss .app .tile[aria-pressed="true"] { background: var(--ss-panel-strong); border-color: var(--ss-accent); }

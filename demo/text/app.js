@@ -6,8 +6,10 @@
  * so `luma(fill)` is how much of the pixel is letter.
  *
  * Saved as a PNG (transparent unless a background color is chosen), or a GIF when a formula uses t.
+ * "Your filter" (a filter of the user's, from the filters page) runs after, then the text's own transparency is put back.
+ * The letters are the selection, so a filter there can use `selected` and `away` (pixels from the letters).
  */
-import { createView, openFile, loadPicture, samplePhotos, download, saveGif, MZ } from '../kit.js';
+import { createView, openFile, loadPicture, samplePhotos, download, saveGif, MZ, yourFilterPicker } from '../kit.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -109,6 +111,16 @@ function filterFor(fillF, borderF) {
     },
   };
 }
+/** After the user's filter: the text's own transparency again (their filter may make every pixel opaque). */
+function keepShape() {
+  const cover = '(luma(fill) + luma(border) (1 - luma(fill)) + shade luma(glow) (1 - luma(fill)) (1 - luma(border)))';
+  return { name: 'The text\'s shape', images: { fill: {}, border: {}, glow: {} }, params: { opaque: 0, shade: 0.8 }, color: { a: `${cover} + opaque (1 - ${cover})` } };
+}
+const yours = yourFilterPicker($('yours'), (recompile) => (recompile ? update({ force: true }) : (view && (applyKnobs(), view.draw(t)))));
+function applyKnobs() {
+  view.knobs(knobs());
+  view.knobsAt([1], yours.values());
+}
 function knobs() {
   const glow = choice('glow');
   return {
@@ -137,18 +149,21 @@ function update({ force = false } = {}) {
         return;
       }
     }
-    view.set(filterFor($('fill').value, $('border').value));
+    const text = filterFor($('fill').value, $('border').value), step = yours.step();
+    try { view.set(step ? { steps: [text, step, keepShape()] } : text); }
+    catch (e) { view.set(text); $('status').textContent = `Your filter doesn't work here: ${e.message.split('\n')[0]}`; }
     compiledKey = key;
     moving = view.compiled.passes.some((p) => { try { return MZ.compileCpuPass(p).uses.has('t'); } catch { return false; } });
     $('gif').hidden = !moving;
   }
   for (const [name, c] of Object.entries(masks)) view.setImage(name, c);
   view.setImage('pattern', pattern);
-  view.knobs(knobs());
+  view.setImage('selection', masks.fill);                         // the letters: `selected`, and `away` from them
+  applyKnobs();
   view.draw(t);
 }
 function frame() {
-  if (moving && view) { t += 1; view.knobs(knobs()); view.draw(t); }
+  if (moving && view) { t += 1; applyKnobs(); view.draw(t); }
   requestAnimationFrame(frame);
 }
 
@@ -169,7 +184,7 @@ $('font').append(...FONTS.map(([f]) => new Option(f, f)));
 presetTiles($('fill-presets'), $('fill'));
 presetTiles($('border-presets'), $('border'));
 $('fill').value = PRESETS.find((p) => p.id === 'gradient').formula;
-$('border').value = PRESETS.find((p) => p.id === 'solid').formula;
+$('border').value = 'c1*y+c2*(1-y)';                                 // the border's own default: a gradient, c2 at the top
 markPreset($('fill-presets'), $('fill'));
 markPreset($('border-presets'), $('border'));
 
@@ -177,7 +192,7 @@ let typing = null;
 const soon = () => { clearTimeout(typing); typing = setTimeout(update, 120); };
 for (const id of ['words', 'size', 'border-width']) $(id).addEventListener('input', soon);
 for (const part of ['fill', 'border']) $(part).addEventListener('input', () => { markPreset($(`${part}-presets`), $(part)); soon(); });
-for (const id of ['c1', 'c2', 'k1', 'k2', 'glow-color', 'bg-color']) $(id).addEventListener('input', () => { if (view) { view.knobs(knobs()); view.draw(t); } });
+for (const id of ['c1', 'c2', 'k1', 'k2', 'glow-color', 'bg-color']) $(id).addEventListener('input', () => { if (view) { applyKnobs(); view.draw(t); } });
 for (const r of document.querySelectorAll('input[name=glow], input[name=bg]')) r.addEventListener('change', () => update());
 $('font').onchange = async () => { await useFont($('font').value); update(); };
 $('words').addEventListener('input', () => useFont($('font').value).then(soon));

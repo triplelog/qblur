@@ -119,6 +119,8 @@ Pick a photo of yourself. It's centered on you and cut to a circle; choose a sty
       <section aria-labelledby="h-style">
         <h2 id="h-style">Style</h2>
         <div id="styles" class="tiles" role="group" aria-labelledby="h-style"></div>
+        <div id="style-knobs" class="knobs" aria-label="the style's settings" role="group"></div>
+        <p class="hint" style="margin:.4rem 0 0">Filters you write and save on the <a href="../filters.html">filters page</a> show here too, after these (its "Use it in" links bring one straight here). Your outline is their selection: <code>selected</code> is 1 on you, <code>away</code> how many pixels from you.</p>
       </section>
 
       <section aria-labelledby="h-bg">
@@ -128,13 +130,11 @@ Pick a photo of yourself. It's centered on you and cut to a circle; choose a sty
           <label><input type="radio" name="bg" value="blur"> Blurred</label>
           <label><input type="radio" name="bg" value="color"> Color</label>
           <label><input type="radio" name="bg" value="gradient"> Gradient</label>
+          <label title="a color that glows around you, fading with the distance from you"><input type="radio" name="bg" value="glow"> Glow</label>
           <label><input type="radio" name="bg" value="none"> None</label>
         </div>
-        <div id="bg-colors" class="row" style="margin-top:.5rem" hidden>
-          <input type="color" id="bg1" value="#2a6fdb" aria-label="background color">
-          <input type="color" id="bg2" value="#f5a3c7" aria-label="second background color (bottom of the gradient)">
-        </div>
-        <p class="hint" style="margin:.4rem 0 0">Everything but "As it is" finds you in the photo with a small neural network (it loads once, about 19 MB). None removes the background: the PNG is transparent there.</p>
+        <div id="bg-knobs" class="knobs" aria-label="the background's settings" role="group" hidden></div>
+        <p class="hint" style="margin:.4rem 0 0">Everything but "As it is" finds you in the photo with a small neural network (it loads once, about 19 MB). Glow and "Sharp near you" use how far each pixel is from you. None removes the background: the PNG is transparent there.</p>
       </section>
 
       <section aria-labelledby="h-shape">

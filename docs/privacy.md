@@ -11,7 +11,7 @@ about you as possible: there are no accounts, and your pictures never leave your
 
 ## Your pictures stay on your device
 
-Every photo, video or GIF you open in the editor or the small apps (profile picture, color splash,
+Every photo, video or GIF you open in the editor or the small apps (profile picture,
 make it move, fancy text) is read and filtered **in your browser**. It is not uploaded to us or to
 anyone else. The same goes for the selection tools: "find objects" runs its neural network (MobileSAM)
 in your browser, from a file our site serves; what it sees is never sent anywhere. What you download

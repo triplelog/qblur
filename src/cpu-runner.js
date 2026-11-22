@@ -27,6 +27,7 @@
  */
 
 import { compileCpuPass } from './cpu.js';
+import { deriveAway } from './distance.js';
 
 export function createCpuRunner(compiled, options = {}) {
     const precision = options.precision === 'float' || options.precision === 'half' ? 'float' : 'byte';
@@ -47,6 +48,7 @@ export function createCpuRunner(compiled, options = {}) {
 
         setImage(name, image) {
             if (typeof name !== 'string') { image = name; name = null; }
+            if (name && name !== 'source' && image == null) { delete pictures[name]; return runner; }   // back to "not given" (white)
             const picture = toPicture(image);
             if (!name || name === 'source') source = picture;
             else pictures[name] = picture;
@@ -158,7 +160,7 @@ export function createCpuRunner(compiled, options = {}) {
             sent = new Map();
         },
     };
-    return runner;
+    return deriveAway(runner, compiled);
 }
 
 /** Clamp to 0–1 and round to 1/255: what an 8-bit texture keeps. */

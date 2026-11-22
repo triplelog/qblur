@@ -3,7 +3,7 @@
  * wheel), picked by clicking the photo; one filter with knobs, so clicking and sliding never
  * recompile. Saved at the photo's own size (up to 2048 on the long side).
  */
-import { createView, openFile, loadPicture, samplePhotos, showCredit, download } from '../kit.js';
+import { createView, openFile, loadPicture, samplePhotos, showCredit, download, yourFilterPicker } from '../kit.js';
 
 const $ = (id) => document.getElementById(id);
 const MAX = 2048;
@@ -29,9 +29,17 @@ function knobs() {
   for (let i = 0; i < 3; i++) { k[`h${i + 1}`] = state.hues[i]?.h ?? 0; k[`on${i + 1}`] = state.hues[i] ? 1 : 0; }
   return k;
 }
+/** The splash, then the user's own filter if one is chosen ("Your filter": its knobs set only in its passes). */
+const yours = yourFilterPicker($('yours'), (recompile) => {
+  if (!view) return;
+  if (recompile) { try { view.set(chain()); status(''); } catch (e) { status(e.message, true); view.set(SPLASH); } }
+  render();
+});
+const chain = () => (yours.step() ? { steps: [SPLASH, yours.step()] } : SPLASH);
 function render() {
   if (!state.picture) return;
   view.knobs(knobs());
+  view.knobsAt([1], yours.values());
   view.draw(0);
 }
 function showKept() {
@@ -78,7 +86,7 @@ async function usePicture(canvas, credit = '', hues = []) {
   state.picture = canvas;
   if (!view) {
     view = createView($('frame'), canvas.width, canvas.height, { label: 'the photo with the colors kept' });
-    view.set(SPLASH);
+    try { view.set(chain()); } catch (e) { status(e.message, true); view.set(SPLASH); }
   } else view.resize(canvas.width, canvas.height);
   view.setImage('source', canvas);
   state.hues = hues;

@@ -16,6 +16,34 @@
     "person": "portrait.person.png"
   },
   {
+    "file": "anson_profile.jpg",
+    "title": "Cap Anson (baseball card)",
+    "credit": "“Anson, 1st Base, Chicago”, an Old Judge & Gypsy Queen Cigarettes card (Goodwin & Co., 1880s) — Benjamin K. Edwards Collection, [Library of Congress](https://www.loc.gov/resource/bbc.0555f/), no known restrictions on publication",
+    "person": "anson_profile.person.png",
+    "personPoints": [
+      [
+        0.5,
+        0.346
+      ],
+      [
+        0.5,
+        0.576
+      ],
+      [
+        0.323,
+        0.865
+      ],
+      [
+        0.672,
+        0.865
+      ],
+      [
+        0.511,
+        0.778
+      ]
+    ]
+  },
+  {
     "file": "redumbrella.jpg",
     "title": "Red Umbrella",
     "credit": "Photo by [Sebastian Alvarado Rojas](https://unsplash.com/@sebastuan4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/people-with-umbrellas-on-city-plaza-wS8fj93wS4M?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"

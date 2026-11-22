@@ -8,42 +8,84 @@
  * a guess from two clicks where a portrait's subject is (face, chest), then the user's own marks —
  * with "Mark me" / "Mark not me" (a toggle under the photo), each click adds a point in or out, shown
  * as a dot; "Keep as is" paints over areas that are right, which later answers don't change. The outline is the `selection`, so the background step is `mix(…, rgb, selected)`.
+ * Each style and background has a few knobs (sliders, colors) under its choices: they are its filter's params, so moving
+ * one doesn't recompile. Glow and "Sharp near you" read `away`, each pixel's distance from the person (the selection).
+ * The user's own filters (saved on the filters page, or carried in this page's link) are styles too, after the built-in
+ * ones: their knobs are their params, set only in their own passes (view.knobsAt), with a Strength slider of ours.
  */
-import { createView, openFile, loadPicture, samplePhotos, showCredit, download, dragAndZoom, byName, ROOT, ORT_URL, MEDIAPIPE_URL } from '../kit.js';
+import { createView, openFile, loadPicture, samplePhotos, showCredit, download, dragAndZoom, byName, ROOT, ORT_URL, MEDIAPIPE_URL, yourFilters, knobsOf, showKnobs, knobValues } from '../kit.js';
 import { setupAI } from '../ai.js';
 
 const $ = (id) => document.getElementById(id);
 const SIZE = 1024;                     // what is saved
 const THUMB = 112;                     // the style previews
 
+/**
+ * The knobs a style or background shows under it: a slider ({ name, label, min, max, step, value, unit, scale }: the filter
+ * gets value × scale) or a color ({ name, label, color }). `name` is the filter's param, so moving one only changes a value.
+ */
+const pct = (name, label, value, min = 0, max = 100) => ({ name, label, min, max, step: 1, value, unit: '%', scale: 0.01 });
+const STRENGTH = pct('pct', 'Strength', 100);
+/** "How much of the style": a last step back toward the photo (`source` is the chain's own picture). */
+const STRENGTH_STEP = { name: 'Strength', params: { pct: { default: 1, min: 0, max: 1 } }, color: 'mix(source, rgb, pct)' };
+
 /** The styles: steps for a filter chain; `s` is the output's size over 1024, for effects measured in pixels. */
 const STYLES = [
-  { id: 'natural', name: 'Natural', steps: () => [] },
-  { id: 'bw', name: 'Black & white', steps: () => [byName('Grayscale'), { filter: byName('Brightness & contrast'), with: { contrast: 1.15 } }] },
-  { id: 'warm', name: 'Warm', steps: () => ['rgb * (1.1, 1.0, 0.86)'] },
-  { id: 'cool', name: 'Cool', steps: () => ['rgb * (0.9, 1.0, 1.12)'] },
-  { id: 'vivid', name: 'Vivid', steps: () => [byName('Vivid')] },
-  { id: 'vintage', name: 'Vintage', steps: () => [byName('Sepia'), { filter: byName('Vignette'), with: { strength: 1.2 } }] },
-  { id: 'duotone', name: 'Duotone', steps: () => [{ name: 'Duotone', params: { dark: [0.12, 0.09, 0.35], light: [1, 0.78, 0.45] }, color: 'mix(dark, light, gray)' }] },
-  { id: 'pop', name: 'Pop art', steps: () => [byName('Vivid'), { filter: byName('Posterize'), with: { levels: 4 } }] },
-  { id: 'comic', name: 'Comic', steps: () => [byName('Comic')] },
-  { id: 'cartoon', name: 'Cartoon', steps: () => [byName('Cartoon')] },
-  { id: 'sketch', name: 'Sketch', steps: (s) => [`gaussian(${(2.2 * s).toFixed(2)})`, '(1 - smoothstep(0.06, 0.3, sobel())) * (1, 1, 1)'] },
-  { id: 'dreamy', name: 'Dreamy', steps: () => [byName('Dreamy')] },
-  { id: 'pixel', name: 'Pixel', steps: (s) => [{ filter: byName('Pixelate'), with: { size: Math.max(2, Math.round(28 * s)) } }] },
+  { id: 'natural', name: 'Natural', knobs: [pct('brightness', 'Brightness', 0, -30, 30), pct('contrast', 'Contrast', 100, 50, 200)],
+    steps: () => [byName('Brightness & contrast')] },
+  { id: 'bw', name: 'Black & white', knobs: [pct('contrast', 'Contrast', 115, 50, 200), STRENGTH],
+    steps: () => [byName('Grayscale'), { filter: byName('Brightness & contrast'), with: { contrast: 1.15 } }, STRENGTH_STEP] },
+  { id: 'warm', name: 'Warm', knobs: [pct('warmth', 'Warmth', 12, 0, 40)],
+    steps: () => [{ name: 'Warm', params: { warmth: 0.12 }, color: 'rgb * (1 + warmth, 1, 1 - 1.2 warmth)' }] },
+  { id: 'cool', name: 'Cool', knobs: [pct('coolness', 'Coolness', 10, 0, 40)],
+    steps: () => [{ name: 'Cool', params: { coolness: 0.1 }, color: 'rgb * (1 - coolness, 1, 1 + 1.2 coolness)' }] },
+  { id: 'vivid', name: 'Vivid', knobs: [pct('amount', 'Color', 160, 100, 300)], steps: () => [byName('Vivid')] },
+  { id: 'vintage', name: 'Vintage', knobs: [pct('pct', 'Sepia', 100), pct('strength', 'Dark corners', 120, 0, 300)],
+    steps: () => [byName('Sepia'), STRENGTH_STEP, { filter: byName('Vignette'), with: { strength: 1.2 } }] },
+  { id: 'duotone', name: 'Duotone', knobs: [{ name: 'dark', label: 'Shadows', color: '#1f175a' }, { name: 'light', label: 'Highlights', color: '#ffc773' }, STRENGTH],
+    steps: () => [{ name: 'Duotone', params: { dark: [0.12, 0.09, 0.35], light: [1, 0.78, 0.45] }, color: 'mix(dark, light, gray)' }, STRENGTH_STEP] },
+  { id: 'pop', name: 'Pop art', knobs: [{ name: 'levels', label: 'Levels', min: 2, max: 8, step: 1, value: 4 }, pct('amount', 'Color', 160, 100, 300)],
+    steps: () => [byName('Vivid'), { filter: byName('Posterize'), with: { levels: 4 } }] },
+  { id: 'comic', name: 'Comic', knobs: [STRENGTH], steps: () => [byName('Comic'), STRENGTH_STEP] },
+  { id: 'cartoon', name: 'Cartoon', knobs: [STRENGTH], steps: () => [byName('Cartoon'), STRENGTH_STEP] },
+  { id: 'sketch', name: 'Sketch', knobs: [pct('lines', 'Lines', 33), { name: 'pencil', label: 'Pencil', color: '#000000' }, { name: 'paper', label: 'Paper', color: '#ffffff' }],
+    steps: (s) => [`gaussian(${(2.2 * s).toFixed(2)})`,
+      { name: 'Sketch', params: { lines: { default: 0.33, min: 0, max: 1 }, pencil: [0, 0, 0], paper: [1, 1, 1] }, color: 'mix(paper, pencil, smoothstep(0.06, 0.4 - 0.3 lines, sobel()))' }] },
+  { id: 'dreamy', name: 'Dreamy', knobs: [STRENGTH], steps: () => [byName('Dreamy'), STRENGTH_STEP] },
+  { id: 'pixel', name: 'Pixel', knobs: [{ name: 'size', label: 'Squares', min: 4, max: 64, step: 1, value: 28, unit: ' px' }],
+    steps: (s) => [{ filter: byName('Pixelate'), with: { size: Math.max(2, Math.round(28 * s)) } }] },
 ];
-/** The background, applied after the style: `selected` is 1 on the person. */
+/**
+ * The backgrounds: each a whole-frame picture, made by the background's own view (the style — the foreground's, or one of its
+ * own — then this step); COMPOSITE puts the person over it. `away` is how many pixels a pixel is from the person (the selection).
+ */
+const C1 = { name: 'c1', label: 'Color', color: '#2a6fdb' };
 const BACKGROUNDS = {
-  keep: null,
-  blur: (s) => ({ name: 'Blurred background', color: `mix(gaussian(${(10 * s).toFixed(1)}), rgb, selected)` }),
-  color: () => ({ name: 'Color background', params: { c1: [0.16, 0.44, 0.86] }, color: 'mix(c1, rgb, selected)' }),
-  gradient: () => ({ name: 'Gradient background', params: { c1: [0.16, 0.44, 0.86], c2: [0.96, 0.64, 0.78] }, color: 'mix(mix(c1, c2, y), rgb, selected)' }),
-  none: () => ({ name: 'No background', color: { rgb: 'rgb', a: 'a selected' } }),
+  keep: { knobs: [], step: null },
+  blur: {
+    knobs: [{ name: 'bsig', label: 'Blur', min: 2, max: 24, step: 0.5, value: 10 }, { name: 'bnear', label: 'Sharp near you', min: 0, max: 400, step: 5, value: 0, unit: ' px' }],
+    step: { name: 'Blurred background', params: { bsig: { default: 10, min: 1, max: 24 }, bnear: { default: 0, min: 0, max: 400 } },
+      color: 'mix(rgb, gaussian(bsig), min(1, away / (bnear + 1)))' },
+  },
+  color: { knobs: [C1], step: { name: 'Color background', params: { c1: [0.16, 0.44, 0.86] }, color: 'c1' } },
+  gradient: {
+    knobs: [{ ...C1, label: 'Top' }, { name: 'c2', label: 'Bottom', color: '#f5a3c7' }],
+    step: { name: 'Gradient background', params: { c1: [0.16, 0.44, 0.86], c2: [0.96, 0.64, 0.78] }, color: 'mix(c1, c2, y)' },
+  },
+  glow: {
+    knobs: [{ name: 'glowc', label: 'Glow', color: '#ffd166' }, { ...C1, label: 'Background' }, { name: 'glowr', label: 'Reach', min: 10, max: 600, step: 5, value: 140, unit: ' px' }],
+    step: { name: 'Glow background', params: { glowc: [1, 0.82, 0.4], c1: [0.16, 0.44, 0.86], glowr: { default: 140, min: 10, max: 600 } },
+      color: 'mix(glowc, c1, smoothstep(0, glowr, away))' },
+  },
+  none: { knobs: [], step: { name: 'No background', color: { rgb: 'rgb', a: '0' } } },
 };
+/** The person (this chain) over the background (`back`, the background view's result). */
+const COMPOSITE = { name: 'Over the background', images: { back: { place: 'stretch' } }, color: { rgb: 'mix(back, rgb, selected)', a: 'mix(alpha(back), a, selected)' } };
 /** A cut-out's outline: `outline` is the person's shape grown a little; where it is and the person isn't, the ring color. */
 const OUTLINE = { name: 'Sticker outline', images: { outline: {} }, params: { ringc: [1, 1, 1] }, color: { rgb: 'mix(ringc, rgb, selected)', a: 'max(a, luma(outline))' } };
 
-const state = { picture: null, person: null, frame: null, style: 'natural', bg: 'keep', moved: false, found: undefined, shape: 'circle' };
+/** style: the foreground's; bgStyle: the background's own, used when bgSame is off. */
+const state = { picture: null, person: null, frame: null, style: 'natural', bgStyle: 'natural', bgSame: true, bg: 'keep', moved: false, found: undefined, shape: 'circle' };
 const framed = Object.assign(document.createElement('canvas'), { width: SIZE, height: SIZE });
 const framedMask = Object.assign(document.createElement('canvas'), { width: SIZE, height: SIZE });
 const outline = Object.assign(document.createElement('canvas'), { width: SIZE, height: SIZE });
@@ -51,6 +93,7 @@ const WHITE = Object.assign(document.createElement('canvas'), { width: 1, height
 WHITE.getContext('2d').fillStyle = '#fff'; WHITE.getContext('2d').fillRect(0, 0, 1, 1);
 
 const view = createView($('frame'), SIZE, SIZE, { label: 'your profile picture' });
+const backView = createView(document.createElement('div'), SIZE, SIZE);   // the background, when it isn't the photo as it is
 const thumbBox = document.createElement('div');                      // the previews are drawn here, then copied to the tiles
 const thumbs = createView(thumbBox, THUMB, THUMB);
 const status = (text, bad = false) => { $('status').textContent = text; $('status').classList.toggle('bad', bad); };
@@ -87,6 +130,7 @@ function drawFramed() {
   if (framed.width !== W || framed.height !== H) {
     for (const c of [framed, framedMask, outline]) { c.width = W; c.height = H; }
     view.resize(W, H);
+    backView.resize(W, H);
     shape = '';                                                    // the passes are sized to the canvas: build them again
   }
   framed.getContext('2d').drawImage(state.picture, r.x, r.y, r.w, r.h, 0, 0, W, H);
@@ -113,30 +157,66 @@ function drawOutline(W, H) {
 }
 
 // ---- the filter -------------------------------------------------------------------
-function chainFor(styleId, bg, s = 1, sticker = false) {
-  const steps = [...STYLES.find((st) => st.id === styleId).steps(s)];
-  if (bg !== 'keep' && state.person) steps.push(BACKGROUNDS[bg](s));
-  if (sticker && state.person) steps.push(OUTLINE);
-  return steps.length ? { steps } : 'rgb';
-}
+// The foreground is the style on the photo. A background other than "as it is", or a style of its own, is made by a second
+// view (backView: the background's style, then its step) and laid under the person by COMPOSITE, through the outline.
+const styleOf = (id) => STYLES.find((st) => st.id === id) ?? STYLES[0];
 const sticker = () => state.shape === 'cutout' && $('ring').checked;
-function bgKnobs() { return { c1: hex($('bg1').value), c2: hex($('bg2').value), ringc: hex($('ring-color').value) }; }
+const backStyle = () => (state.bgSame ? state.style : state.bgStyle);
+const needsBack = () => Boolean(state.person) && (state.bg !== 'keep' || !state.bgSame);
+const chainOf = (steps) => (steps.length ? { steps } : 'rgb');
+function chainFor(styleId, s = 1) {
+  const steps = [...styleOf(styleId).steps(s)];
+  if (needsBack()) steps.push(COMPOSITE);
+  if (sticker() && state.person) steps.push(OUTLINE);
+  return chainOf(steps);
+}
+const backChain = () => chainOf([...styleOf(backStyle()).steps(1), ...(BACKGROUNDS[state.bg].step ? [BACKGROUNDS[state.bg].step] : [])]);
+/** What the knobs are set to, in their own units: the foreground style's by `style:name`, the background style's by
+ *  `bg/style:name` (so the two can differ), the background's own (which share colors) by name. */
+const settings = {};
+const prefix = (id, back) => (back ? `bg/${id}:` : `${id}:`);
+/** A style's values: `all` for every pass, and for a filter of the user's own (step 0) `own`, set only in its passes. */
+function styleValues(id, back) {
+  const st = styleOf(id), p = prefix(id, back && !state.bgSame ? true : false);
+  return { all: knobValues(st.yours ? [STRENGTH] : st.knobs, settings, p), own: st.yours ? knobValues(st.knobs.filter((k) => k !== STRENGTH), settings, p) : null };
+}
+function applyKnobs() {
+  const fg = styleValues(state.style, false);
+  view.knobs({ ringc: hex($('ring-color').value), ...fg.all });
+  if (fg.own) view.knobsAt([0], fg.own);
+  if (!needsBack()) return;
+  const bg = styleValues(backStyle(), true);
+  backView.knobs({ ...bg.all, ...knobValues(BACKGROUNDS[state.bg].knobs, settings) });
+  if (bg.own) backView.knobsAt([0], bg.own);
+}
+const showStyleKnobs = () => showKnobs($('style-knobs'), styleOf(state.style).knobs, settings, render, prefix(state.style, false));
+const showBgStyleKnobs = () => showKnobs($('bg-style-knobs'), styleOf(state.bgStyle).knobs, settings, render, prefix(state.bgStyle, true));
+const showBgKnobs = () => showKnobs($('bg-knobs'), BACKGROUNDS[state.bg].knobs, settings, render);
 let shape = '';
+const shapeNow = () => JSON.stringify([state.style, backStyle(), state.bg, needsBack(), sticker(), framed.width, framed.height]);
 function rebuild() {
   try {
-    view.set(chainFor(state.style, state.bg, 1, sticker()), bgKnobs());
-    shape = JSON.stringify([state.style, state.bg, Boolean(state.person), sticker(), framed.width, framed.height]);
+    view.set(chainFor(state.style));
+    if (needsBack()) backView.set(backChain());
+    shape = shapeNow();
   } catch (e) { status(e.message, true); }
   render();
 }
 function render() {
   if (!state.picture) return;
   drawFramed();
-  if (shape !== JSON.stringify([state.style, state.bg, Boolean(state.person), sticker(), framed.width, framed.height])) { rebuild(); return; }
+  if (shape !== shapeNow()) { rebuild(); return; }
+  const selection = state.person ? framedMask : WHITE;
+  applyKnobs();
+  if (needsBack()) {
+    backView.setImage('source', framed);
+    backView.setImage('selection', selection);
+    backView.draw(0);
+    view.setImage('back', backView.canvas);
+  }
   view.setImage('source', framed);
-  view.setImage('selection', state.person ? framedMask : WHITE);
+  view.setImage('selection', selection);
   view.setImage('outline', outline);
-  view.knobs(bgKnobs());
   view.draw(0);
   const ring = $('ring').checked && state.shape !== 'cutout';      // a cut-out's outline is drawn by the filter
   $('frame').style.setProperty('--ring', ring ? $('ring-color').value : 'transparent');
@@ -144,19 +224,21 @@ function render() {
   drawMarks();
 }
 
-/** The style tiles: each style on a small copy of the frame (redrawn a moment after the frame stops moving). */
-function makeTiles() {
-  const box = $('styles');
+/** The style tiles, for the foreground (#styles) or the background's own (#bg-styles): each style on a small copy of the frame
+ *  (redrawn a moment after the frame stops moving). */
+function makeTiles(box, back) {
   for (const st of STYLES) {
     const tile = Object.assign(document.createElement('button'), { type: 'button', className: 'tile' });
     tile.dataset.style = st.id;
-    tile.setAttribute('aria-pressed', String(st.id === state.style));
+    tile.setAttribute('aria-pressed', String(st.id === (back ? state.bgStyle : state.style)));
     const c = Object.assign(document.createElement('canvas'), { width: THUMB, height: THUMB });
     c.setAttribute('aria-hidden', 'true');
     tile.append(c, st.name);
+    if (st.yours) { tile.classList.add('yours'); tile.title = st.from === 'link' ? 'the filter from your link' : 'saved on the filters page'; }
     tile.onclick = () => {
-      state.style = st.id;
+      state[back ? 'bgStyle' : 'style'] = st.id;
       for (const t of box.children) t.setAttribute('aria-pressed', String(t === tile));
+      if (back) showBgStyleKnobs(); else showStyleKnobs();
       render();
     };
     box.append(tile);
@@ -169,11 +251,11 @@ function updateTiles() {
     const small = Object.assign(document.createElement('canvas'), { width: THUMB, height: THUMB });
     small.getContext('2d').drawImage(framed, 0, 0, THUMB, THUMB);
     thumbs.setImage('source', small);
-    for (const tile of $('styles').children) {
+    for (const st of STYLES) {
       try {
-        thumbs.set(chainFor(tile.dataset.style, 'keep', THUMB / SIZE));
+        thumbs.set(chainOf(st.steps(THUMB / SIZE)));
         thumbs.draw(0);
-        tile.querySelector('canvas').getContext('2d').drawImage(thumbs.canvas, 0, 0);
+        for (const c of document.querySelectorAll(`.tile[data-style="${st.id}"] canvas`)) c.getContext('2d').drawImage(thumbs.canvas, 0, 0);
       } catch { /* a preview is a nicety */ }
     }
   }, 250);
@@ -224,7 +306,7 @@ function useMask(mask, { reframe, prompt = null }) {
 }
 /** A sample's outline worked out ahead of time (photos/index.json "person": a PNG the size of the model's copy, white = the
  *  person), so opening the page doesn't download the model; it loads when the user marks or opens their own photo. */
-async function usePrecomputed(url) {
+async function usePrecomputed(url, points = null) {
   try {
     const img = new Image();
     img.src = url;
@@ -235,7 +317,11 @@ async function usePrecomputed(url) {
     g.drawImage(img, 0, 0, sw, sh);
     const d = g.getImageData(0, 0, sw, sh).data, mask = new Uint8Array(sw * sh);
     for (let i = 0; i < mask.length; i++) mask[i] = d[i * 4] > 127 ? 1 : 0;
-    return useMask(mask, { reframe: true });
+    const ok = useMask(mask, { reframe: true });
+    // the points that made it ("personPoints": 0–1 of the photo), so a first mark refines it rather than the usual guess
+    if (ok && points) state.prompt = { points: points.map(([x, y]) => [x * state.picture.width, y * state.picture.height]), labels: points.map(() => 1) };
+    drawMarks();
+    return ok;
   } catch { return false; }
 }
 /** The person: MobileSAM's outline from a guess (where a portrait's subject is) or the user's clicks; the frame goes to head and shoulders. */
@@ -402,7 +488,7 @@ function frameOn([x0, y0, x1, y1]) {
 }
 
 // ---- the photo ------------------------------------------------------------------------
-async function usePicture(canvas, credit = '', person = '') {
+async function usePicture(canvas, credit = '', person = '', personPoints = null) {
   state.picture = canvas;
   state.person = null;
   state.found = undefined;
@@ -418,23 +504,70 @@ async function usePicture(canvas, credit = '', person = '') {
   shape = '';
   render();
   updateTiles();
-  if (person && await usePrecomputed(person)) return;           // a sample with its outline ready: no model yet
+  if (person && await usePrecomputed(person, personPoints)) return;           // a sample with its outline ready: no model yet
   findPerson({ reframe: true });                              // centered on you, as soon as the model has looked
 }
 
 $('file').onchange = async () => {
-  try { await usePicture(await openFile($('file').files[0], 2048)); $('sample').value = ''; }
+  try { await usePicture(await openFile($('file').files[0], 2048)); }
   catch (e) { status(e.message, true); }
 };
-const samples = await samplePhotos();
-$('sample').append(new Option('a sample photo', ''), ...samples.map((p, i) => new Option(p.title || p.file, String(i))));
-$('sample').onchange = async () => {
-  const p = samples[Number($('sample').value)];
-  if (p) await usePicture(await loadPicture(p.url, 2048), p.credit, p.personUrl);
-};
+// the examples: the photos marked "profile" in photos/index.json (Cap Anson), each a button
+const samples = (await samplePhotos()).filter((p) => p.profile);
+const useSample = async (p) => usePicture(await loadPicture(p.url, 2048), p.credit, p.personUrl, p.personPoints);
+for (const p of samples) {
+  const b = Object.assign(document.createElement('button'), { type: 'button', textContent: p.title || p.file });
+  b.onclick = () => useSample(p);
+  $('samples').append(b);
+}
+$('samples-label').hidden = !samples.length;
 
 // ---- the controls ------------------------------------------------------------------------
-makeTiles();
+// the user's filters, after ours; one from the link is chosen
+for (const f of yourFilters()) {
+  let knobs = [];
+  try { knobs = knobsOf(f.def); } catch { continue; }
+  STYLES.push({ id: f.key, name: f.name, yours: true, from: f.from, knobs: [...knobs, STRENGTH], steps: () => [{ filter: f.def }, STRENGTH_STEP] });
+  if (f.from === 'link') state.style = f.key;
+}
+makeTiles($('styles'), false);
+makeTiles($('bg-styles'), true);
+showStyleKnobs();
+showBgStyleKnobs();
+showBgKnobs();
+
+// Foreground / Background: two tabs over the style card (arrows move between them)
+const tabs = [...document.querySelectorAll('#style-tabs [role=tab]')];
+function showTab(tab) {
+  for (const t of tabs) {
+    const on = t === tab;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    $(t.getAttribute('aria-controls')).hidden = !on;
+  }
+}
+for (const t of tabs) {
+  t.onclick = () => showTab(t);
+  t.onkeydown = (e) => {
+    const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (!k) return;
+    const next = tabs[(tabs.indexOf(t) + k + tabs.length) % tabs.length];
+    showTab(next);
+    next.focus();
+  };
+}
+$('bg-same').onchange = () => {
+  state.bgSame = $('bg-same').checked;
+  $('bg-own').hidden = state.bgSame;
+  if (!state.bgSame && !state.person) findPerson({ reframe: !state.moved });
+  render();
+};
+// fixing the outline is folded away; folding it goes back to moving the photo
+$('outline-tools').addEventListener('toggle', () => {
+  if ($('outline-tools').open) return;
+  const move = document.querySelector('input[name=tool][value=move]');
+  if (!move.checked) { move.checked = true; move.dispatchEvent(new Event('change')); }
+});
 dragAndZoom($('frame'), {
   onStart: () => { dragged = 0; },
   onMove: (dx, dy) => {
@@ -459,12 +592,12 @@ $('zoom').oninput = () => {
 $('center').onclick = () => findPerson({ reframe: true });
 for (const r of document.querySelectorAll('input[name=bg]')) r.onchange = async () => {
   state.bg = r.value;
-  $('bg-colors').hidden = !(r.value === 'color' || r.value === 'gradient');
-  $('bg2').hidden = r.value !== 'gradient';
+  showBgKnobs();
+  $('bg-filter').hidden = r.value === 'none';
   if (r.value !== 'keep' && !state.person) await findPerson({ reframe: !state.moved });
   render();
 };
-for (const id of ['bg1', 'bg2', 'ring', 'ring-color']) $(id).oninput = render;
+for (const id of ['ring', 'ring-color']) $(id).oninput = render;
 for (const r of document.querySelectorAll('input[name=shape]')) r.onchange = async () => {
   if (!r.checked) return;
   if (r.value === 'cutout' && !state.person && !(await findPerson({ reframe: false }))) {
@@ -506,8 +639,7 @@ $('download').onclick = async () => {
   status(`Saved a ${SIZE} × ${SIZE} PNG${circle || state.bg === 'none' ? ' (transparent where there is nothing)' : ''}.`);
 };
 
-// start on the portrait sample
-const first = Math.max(0, samples.findIndex((p) => /portrait/i.test(p.title || p.file)));
-if (samples[first]) { $('sample').value = String(first); await usePicture(await loadPicture(samples[first].url, 2048), samples[first].credit, samples[first].personUrl); }
+// start on the first example (Cap Anson)
+if (samples[0]) await useSample(samples[0]);
 
-window.qblurApp = { state, view, ai, findPerson, render, STYLES, addMark, keepAt, runMarks };     // for tools/check.mjs
+window.qblurApp = { state, view, backView, ai, findPerson, render, STYLES, BACKGROUNDS, settings, addMark, keepAt, runMarks, samples, useSample };     // for tools/check.mjs

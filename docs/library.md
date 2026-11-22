@@ -31,7 +31,7 @@ Some things people build with it: filters on upload in a photo or social app; ef
 webcam stream; a product page that recolors an item as the customer picks; generative art and
 animated backgrounds; previews in a CMS; high-contrast or color-blindness views for accessibility; a
 lesson on how pictures are just numbers. The [small apps](https://qblur.com/avatar/) on qblur.com —
-profile picture, color splash, make it move, fancy text — are each a page of this library and a few
+profile picture, make it move, fancy text — are each a page of this library and a few
 controls.
 
 ## Start here
@@ -456,7 +456,10 @@ A picture of another shape is placed over the frame: `cover` (the default), `fit
 with `zoom`, `x`, `y` and `angle` — set per step (`{ filter, with: { overlay: { place: 'fit', zoom: 0.5 } } }`)
 or live (`runner.passes[i].placements.overlay.x = 0.2`; changing `place` needs a new compile).
 `selected` is the picture named `selection` (the editor's selection): give it a mask to limit a filter to
-part of the picture.
+part of the picture. `away` is how many pixels a pixel is from that selection (0 inside it, and everywhere
+without one): the runner works it out from the `selection` you give, only for a filter that uses it
+(`mix((1, 0.8, 0.3), rgb, smoothstep(0, 60, away))` is a glow round the selection). To give distances of your own,
+`setImage('away', awayPicture(mask))` — or any picture in that encoding.
 
 ## Text and shapes
 
@@ -587,6 +590,8 @@ Everything the package exports — from `@mathzetta/qblur/apply`, the first seve
 | `normalizeStrokes`, `strokeTimeline`, `rasterizeStrokes(spec, w, h, t, { mask })` | brush strokes, frame by frame |
 | `BRUSHES`, `TIMINGS`, `WIDTH_FROM`, `CLIPS`, `FPS`, `STROKES_DEFAULTS` | brush options |
 | `traceContours(mask, w, h)`, `simplify`, `simplifyLoop` | the outlines of a mask, as polylines |
+| `awayPicture(selection, { size })` | the picture `away` is read from, for a selection mask (white = in): its distances measured at most `size` (`AWAY_SIZE`, 512) across; the runners make it themselves |
+| `encodeAway(data, w, h, { channel, scale })`, `distanceTo(inside, w, h)`, `awayFromChannels(red, green)`, `usesAway(compiled)` | the same from a mask's pixels; the exact distance transform; decoding; whether a filter reads `away` |
 | `compileCpuPass(pass)` | one pass as checked JavaScript (what the CPU runner runs; `.uses` says if it reads `t`, other pictures, `random`) |
 
 ## Good to know

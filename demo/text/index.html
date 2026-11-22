@@ -37,23 +37,15 @@
 </head>
 <body>
 <main class="app">
-  <section class="ss-cell qb-head">
-  <h1>Fancy text</h1>
-  <p class="lead">
-<!-- claude-ui:begin lead -->
-Type something, pick a look for the letters and for their border — gold, chrome, fire, a photo inside the letters — and download it as a transparent PNG. Every look is a formula you can change.
-<!-- claude-ui:end lead -->
-  </p>
-  </section>
-
-  <div class="stage wide">
+  <section class="stage wide" aria-labelledby="h-page">
+    <h1 id="h-page" class="band">Fancy text</h1>
     <div id="frame" class="frame text"></div>
     <div class="row" style="margin-top:.6rem">
       <button id="download" class="primary" type="button">Download PNG</button>
       <button id="gif" type="button" hidden>Save a GIF (it moves)</button>
       <span id="status" class="status" role="status"></span>
     </div>
-  </div>
+  </section>
 
   <div class="side">
     <section aria-labelledby="h-words">
@@ -119,12 +111,19 @@ Type something, pick a look for the letters and for their border — gold, chrom
       <p class="hint" style="margin:.4rem 0 0">Used by the "Picture" look, or anywhere a formula says <code>pattern</code>.</p>
     </section>
 
+    <section aria-labelledby="h-yours">
+      <h2 id="h-yours">Your filter</h2>
+      <div id="yours"></div>
+      <p class="hint" style="margin:.4rem 0 0">The letters are its selection: <code>selected</code> is 1 on them, <code>away</code> how many pixels from them.</p>
+    </section>
+
     <details>
       <summary class="hint">Writing your own formula</summary>
       <div class="formula-help">
         <p>A formula gives a color for each pixel of the letters (or the border). It can use
         <code>x y</code> — where the pixel is, 0 to 1 across and down the text; <code>px py</code> — the same in pixels;
-        <code>t</code> — time, so anything with <code>t</code> in it moves; <code>c1 c2</code> — the two colors above it;
+        <code>t</code> — time, so anything with <code>t</code> in it moves; <code>c1 c2</code> — the two colors above it
+        (one channel of each: <code>red(c1) green(c1) blue(c1)</code>, 0 to 1 — <code>(red(c1), green(c2), blue(c1))</code> mixes them);
         <code>pattern</code> — the picture, or <code>pattern(px * 2, py * 2)</code> to read it elsewhere.</p>
         <p>Colors are written <code>(r, g, b)</code> from 0 to 1. Some ideas:
         <code>mix(c1, c2, y)</code> · <code>fromhsv((fract(x + t / 200), 0.8, 1))</code> ·
@@ -133,7 +132,7 @@ Type something, pick a look for the letters and for their border — gold, chrom
       </div>
     </details>
 
-    <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../splash/">Color splash</a> · <a href="../move/">Make it move</a> · <a href="../editor.html">the full editor</a>.</p>
+    <p class="more">Also: <a href="../avatar/">Profile picture</a> · <a href="../move/">Make it move</a> · <a href="../editor.html">the full editor</a>.</p>
   </div>
 </main>
 <script type="module" src="app.js"></script>

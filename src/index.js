@@ -7,6 +7,7 @@ export {
 export { createFilterRunner } from './runtime.js';
 export { createCpuRunner, toPicture } from './cpu-runner.js';
 export { compileCpuPass } from './cpu.js';
+export { awayPicture, encodeAway, distanceTo, awayFromChannels, usesAway, AWAY_SIZE } from './distance.js';
 export { createRunner, chooseEngine } from './auto.js';
 export { LIBRARY, GROUPS } from './library.js';
 export { BRUSHES, TIMINGS, WIDTH_FROM, CLIPS, FPS, STROKES_DEFAULTS, normalizeStrokes, strokeTimeline, rasterizeStrokes, traceContours, simplify, simplifyLoop } from './strokes.js';

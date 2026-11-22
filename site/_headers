@@ -10,6 +10,10 @@
   Cache-Control: public, max-age=86400
 /ort/ort.wasm.min.mjs
   Cache-Control: public, max-age=86400
+/photos/anson_profile.jpg
+  Cache-Control: public, max-age=604800
+/photos/anson_profile.person.png
+  Cache-Control: public, max-age=604800
 /photos/charleston.jpg
   Cache-Control: public, max-age=604800
 /photos/cityabove.jpg

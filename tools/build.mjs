@@ -22,7 +22,7 @@
  *   site/cpu-worker.js  the CPU runner's worker, bundled the same way
  *   site/guide.html     docs/filters.md rendered (tools/markdown.mjs), heading ids as on GitHub
  *   site/library.html   docs/library.md rendered the same way: qblur on your own pages (the CDN, the API)
- *   site/avatar/, splash/, move/, text/   the small apps (demo/<app>/): each page with its app.js bundled
+ *   site/avatar/, move/, text/   the small apps (demo/splash/ is on hold: ON_HOLD) (demo/<app>/): each page with its app.js bundled
  *                       (demo/kit.js inside), sharing site/apps.css, photos/, models/ and ort/
  *   site/photos/        demo/photos/, when there is one
  *   site/models/        the shipped object model (SHIPPED_MODELS in demo/ai.js: MobileSAM, Apache-2.0; every file
@@ -259,7 +259,10 @@ await cp(join(ROOT, 'demo/404.html'), join(ROOT, 'site/404.html'));
     await writeFile(join(ROOT, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, day]) => `  <url><loc>${u}</loc>${day ? `<lastmod>${day}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 }
 // the small apps: a folder each, one level down, so their paths to photos/, models/ and ort/ start with ../
-export const APPS = ['avatar', 'splash', 'move', 'text'];
+export const APPS = ['avatar', 'move', 'text'];
+/** Apps kept in demo/ but not on the site for now (their old copies in site/ are removed): Color splash. */
+export const ON_HOLD = ['splash'];
+for (const app of ON_HOLD) await rm(join(ROOT, 'site', app), { recursive: true, force: true });
 for (const app of APPS) {
     await mkdir(join(ROOT, 'site', app), { recursive: true });
     await bundle(`demo/${app}/app.js`, `${app}/app.js`);

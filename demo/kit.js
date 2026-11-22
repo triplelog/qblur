@@ -103,6 +103,13 @@ export function createView(box, width, height, { label = 'the result' } = {}) {
             if (!compiled) return;
             for (const pass of compiled.passes) for (const [k, v] of Object.entries(values)) if (k in pass.params) pass.values[k] = v;
         },
+        /** The same, only in the passes of one step (`path`: its place in the chain, e.g. [1]) — a filter of the user's, whose
+         *  knob names may be the page's own. Call after knobs(). */
+        knobsAt(path, values) {
+            if (!compiled) return;
+            const under = (pass) => path.every((k, i) => pass.path?.[i] === k);
+            for (const pass of compiled.passes) if (under(pass)) for (const [k, v] of Object.entries(values)) if (k in pass.params) pass.values[k] = v;
+        },
         setImage(name, image) {
             images.set(name, image);
             if (runner) runner.setImage(name, image);
@@ -184,4 +191,121 @@ export function dragAndZoom(el, { onMove, onZoom = () => {}, onStart = () => {} 
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
     el.addEventListener('wheel', (e) => { e.preventDefault(); onZoom(Math.exp(-e.deltaY / 500)); }, { passive: false });
+}
+
+// ---- the user's own filters --------------------------------------------------------------------
+// The filters page saves filters in this browser (localStorage "qblur", a list of the format's JSON); its "Use it in"
+// links carry one in the address (#…, as filterToLink writes it). Every small app offers both: what the user wrote,
+// used like the app's own choices. A filter is only ever math (compiled, checked), never run as code.
+
+/** The filters saved on the filters page, and the one in this page's address: [{ def, from: 'link' | 'saved', key }]. */
+export function yourFilters() {
+    const out = [];
+    if (location.hash.length > 1) {
+        try { out.push({ def: qblur.normalizeFilter(qblur.filterFromLink(location.hash)), from: 'link' }); } catch { /* not a filter */ }
+    }
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('qblur')) ?? []; } catch { /* storage blocked */ }
+    for (const def of Array.isArray(list) ? list : []) {
+        try {
+            const d = qblur.normalizeFilter(def);
+            if (!out.some((f) => JSON.stringify(f.def) === JSON.stringify(d))) out.push({ def: d, from: 'saved' });
+        } catch { /* a broken entry: skip it */ }
+    }
+    return out.map((f, i) => ({ ...f, key: `yours-${i}`, name: f.def.name || (f.from === 'link' ? 'From the filters page' : `Filter ${i + 1}`) }));
+}
+
+/** Its knobs (the filter's params, as the editor shows them): a slider, a menu or a color each, for showKnobs(). */
+export function knobsOf(def) {
+    return Object.entries(qblur.filterParams(qblur.normalizeFilter(def))).map(([name, p]) => {
+        const label = p.label ?? name;
+        if (p.type === 'color') return { name, label, color: '#' + p.default.map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, '0')).join('') };
+        if (p.options) return { name, label, options: p.options, value: p.default };
+        const step = p.step ?? (Number.isInteger(p.min) && Number.isInteger(p.max) && p.max - p.min >= 20 && Number.isInteger(p.default) ? 1 : +((p.max - p.min) / 100).toPrecision(2));
+        return { name, label, min: p.min, max: p.max, step, value: p.default };
+    });
+}
+
+/** '#rrggbb' → [r, g, b], 0–1. */
+export const hexColor = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+
+/**
+ * Knobs under a choice: each a labeled slider (with its value), a menu or a color. A knob is { name, label } and
+ * { min, max, step, value, unit?, scale? } (the filter gets value × scale), { options, value }, or { color: '#rrggbb' }.
+ * `settings` keeps what the user set, by `prefix + name`; `onInput` runs after each change.
+ */
+export function showKnobs(box, knobs, settings, onInput, prefix = '') {
+    box.replaceChildren();
+    box.hidden = !knobs.length;
+    for (const knob of knobs) {
+        const key = prefix + knob.name, id = `knob-${(prefix + knob.name).replace(/[^\w-]/g, '-')}`;
+        const row = Object.assign(document.createElement('div'), { className: 'slider' });
+        const label = Object.assign(document.createElement('label'), { htmlFor: id, textContent: knob.label });
+        let input;
+        if (knob.options) {
+            input = Object.assign(document.createElement('select'), { id });
+            input.append(...knob.options.map((o) => new Option(String(o), String(o))));
+        } else input = Object.assign(document.createElement('input'), { id, type: knob.color ? 'color' : 'range' });
+        const shown = Object.assign(document.createElement('output'), { htmlFor: id, className: 'knob-value' });
+        if (!knob.color && !knob.options) Object.assign(input, { min: knob.min, max: knob.max, step: knob.step });
+        input.value = String(settings[key] ?? knob.color ?? knob.value);
+        const say = () => { shown.textContent = knob.color || knob.options ? '' : `${input.value}${knob.unit ?? ''}`; };
+        input.oninput = () => {
+            settings[key] = knob.color ? input.value : Number(input.value);
+            say();
+            onInput();
+        };
+        say();
+        row.append(label, input, shown);
+        box.append(row);
+    }
+}
+
+/** The filter's values for these knobs (what showKnobs set, or each knob's own): { name: number | [r, g, b] }. */
+export function knobValues(knobs, settings, prefix = '') {
+    const values = {};
+    for (const knob of knobs) {
+        const v = settings[prefix + knob.name] ?? knob.color ?? knob.value;
+        values[knob.name] = knob.color ? hexColor(v) : v * (knob.scale ?? 1);
+    }
+    return values;
+}
+
+/**
+ * "Your filter" for an app's side panel (`box`): a menu of the user's filters (none, then yourFilters()) and the chosen
+ * one's knobs. The app adds `step()` to its chain (null for none) and, after its own knobs, `view.knobsAt([index], values())`.
+ * `onChange(recompile)` runs on every change. A filter from the page's link starts chosen.
+ */
+export function yourFilterPicker(box, onChange) {
+    const filters = yourFilters(), settings = {};
+    const filtersPage = new URL('filters.html', ROOT).href;
+    box.replaceChildren();
+    const note = Object.assign(document.createElement('p'), { className: 'hint' });
+    note.append(filters.length ? 'Filters you write and save on the ' : 'Write a filter on the ', Object.assign(document.createElement('a'), { href: filtersPage, textContent: 'filters page' }),
+        filters.length ? ' show here; it runs after this page\'s own.' : ' and save it (or use its "Use it in" link): it can be added here, after this page\'s own.');
+    if (!filters.length) { box.append(note); return { step: () => null, values: () => ({}), get chosen() { return null; } }; }
+    const row = Object.assign(document.createElement('div'), { className: 'row' });
+    const select = Object.assign(document.createElement('select'), { id: 'your-filter' });
+    select.setAttribute('aria-label', 'your filter');
+    select.append(new Option('none', ''), ...filters.map((f) => new Option(f.from === 'link' ? `${f.name} (from the link)` : f.name, f.key)));
+    row.append(select);
+    const knobsBox = Object.assign(document.createElement('div'), { className: 'knobs' });
+    knobsBox.setAttribute('role', 'group');
+    knobsBox.setAttribute('aria-label', 'your filter\'s settings');
+    box.append(row, knobsBox, note);
+    let chosen = null, knobs = [];
+    const choose = () => {
+        chosen = filters.find((f) => f.key === select.value) ?? null;
+        try { knobs = chosen ? knobsOf(chosen.def) : []; } catch { knobs = []; }
+        showKnobs(knobsBox, knobs, settings, () => onChange(false), `${select.value}:`);
+    };
+    select.onchange = () => { choose(); onChange(true); };
+    const fromLink = filters.find((f) => f.from === 'link');
+    if (fromLink) select.value = fromLink.key;
+    choose();
+    return {
+        get chosen() { return chosen; },
+        step: () => (chosen ? { filter: chosen.def } : null),
+        values: () => (chosen ? knobValues(knobs, settings, `${select.value}:`) : {}),
+    };
 }

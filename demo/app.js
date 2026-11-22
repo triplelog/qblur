@@ -662,6 +662,8 @@ function updateShare() {
   // the other page, with this filter
   $('to-editor').href = def ? MZ.filterToLink(def, PAGE_URL.editor) : PAGE_URL.editor;
   for (const a of document.querySelectorAll('.to-filters')) a.href = def ? MZ.filterToLink(def, PAGE_URL.filters) : PAGE_URL.filters;
+  // the small apps take it as "your filter" (their own knobs and Strength around it)
+  for (const a of document.querySelectorAll('.to-app')) { const page = new URL(`${a.dataset.app}/`, location.href).href.split('?')[0]; a.href = def ? MZ.filterToLink(def, page) : page; }
   if (!def) { $('json').value = ''; history.replaceState(null, '', location.pathname + location.search); return; }
   $('json').value = MZ.filterToJSON(def);
   history.replaceState(null, '', MZ.filterToLink(def, base()));

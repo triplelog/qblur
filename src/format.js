@@ -498,6 +498,7 @@ function makePass(filter, settings, opacity, path, version) {
     const images = Object.keys(placements);
     if (fragment.includes('uniform sampler2D mz_img_source;')) images.push('source');
     if (fragment.includes('uniform sampler2D mz_img_selection;')) images.push('selection');
+    if (fragment.includes('uniform sampler2D mz_img_away;')) images.push('away');      // `away`: the runners make it from the selection
     // `color` is the filter's own expression(s): the CPU runner compiles that, the GPU runner the fragment shader.
     return { name: filter.name ?? '', author: filter.author ?? '', path, color: filter.color, space: filter._space ?? 'srgb', fragment, params, values, opacity, images, placements, graphics, keepInput: 0, blendKept: false };
 }

@@ -14,6 +14,8 @@ await import('./graphics.test.js');
 await import('./examples.test.js');
 await import('./strokes.test.js');
 await import('./tracker.test.js');
+await import('./distance.test.js');
+await import('./path.test.js');
 await import('./ai.test.js');
 const cpu = await import('./cpu.test.js');
 let asyncError = null;

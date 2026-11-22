@@ -30,8 +30,6 @@ export const CARDS = [
     { name: 'avatar', path: '/demo/avatar/index.html', ready: 'Boolean(window.qblurApp && qblurApp.state.person)', shot: '#frame canvas:not(#marks)', color: '#a2d0c0',
         before: "document.getElementById('show-marks').click()",
         title: 'Profile picture', line: 'Centered on you, in a style you like, with the background blurred or replaced.' },
-    { name: 'splash', path: '/demo/splash/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#d09292',
-        title: 'Color splash', line: 'Keep one color and turn the rest of the photo gray.' },
     { name: 'move', path: '/demo/move/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#c094cc',
         title: 'Make it move', line: 'A wave, a ripple, a slow zoom: a photo saved as a GIF or a video.' },
     { name: 'text', path: '/demo/text/index.html', ready: 'Boolean(window.qblurApp && qblurApp.view && qblurApp.view.compiled)', shot: '#frame', color: '#a4b6dd',

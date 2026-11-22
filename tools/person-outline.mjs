@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * `node tools/person-outline.mjs portrait.jpg` — a sample photo's person, outlined ahead of time for the profile-picture
+ * `node tools/person-outline.mjs anson_profile.jpg` — a sample photo's person, outlined ahead of time for the profile-picture
  * page (so opening it doesn't download the model): opens /demo/avatar/ on that photo in headless Chrome (tools/shot.mjs),
  * lets MobileSAM outline the person from its usual guess, and writes demo/photos/<name>.person.png (white = the person,
  * the size of the model's copy) and the photo's "person" entry in demo/photos/index.json. Needs ImageMagick (`magick`).
@@ -22,9 +22,8 @@ delete entry.person;                                       // the page must run 
 await save();
 
 const expr = `(async () => {
-  const s = qblurApp.state, sample = document.getElementById('sample');
-  sample.value = [...sample.options].find((o) => o.textContent === ${JSON.stringify(entry.title || entry.file)}).value;
-  sample.dispatchEvent(new Event('change'));
+  const s = qblurApp.state;
+  qblurApp.useSample(qblurApp.samples.find((p) => p.file === ${JSON.stringify(photo)}));
   await new Promise((r) => setTimeout(r, 500));
   for (let i = 0; i < 1000 && !s.personMask; i++) await new Promise((r) => setTimeout(r, 200));
   if (!s.person) return '';
